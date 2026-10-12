@@ -10,7 +10,6 @@
 package dev.citali.lunartune.playback
 
 import dev.citali.lunartune.constants.NeverRecommendSongIdsKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.utils.neverRecommendIds
 import dev.citali.lunartune.utils.parseIdSet
 import dev.citali.lunartune.playback.queues.YouTubeAlbumRadio
@@ -99,9 +98,7 @@ import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
 import dev.citali.lunartune.constants.PreloadNextSongKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.PreloadQueueSongsCountKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -139,135 +136,73 @@ import dev.citali.lunartune.MainActivity
 import dev.citali.lunartune.R
 import dev.citali.lunartune.aod.ACTION_AOD_MODE
 import dev.citali.lunartune.constants.AodAutoStartScreenOffKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.AodModeEnabledKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.cast.CastMediaItemResolver
 import dev.citali.lunartune.cast.CastPlaybackRepository
 import dev.citali.lunartune.cast.CastPlaybackRepositoryLocator
 import dev.citali.lunartune.cast.CastScreenState
 import dev.citali.lunartune.constants.AudioNormalizationKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.AudioOffload
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.AudioQuality
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.AudioQualityKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.AutoDownloadOnLikeKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.AutoLoadMoreKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.AutoSkipNextOnErrorKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.AutoStartOnBluetoothKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.CrossfadeCurve
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.CrossfadeCurveKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.CrossfadeDurationKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.CrossfadeEnabledKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.CrossfadeGaplessKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.CrossfadeManualSkipKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.DeviceMutePlaybackRecoveryVolumeKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.DiscordShowWhenPausedKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.DiscordTokenKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.EnableDiscordRPCKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.EnableLastFMScrobblingKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.EqualizerAutoHeadroomEnabledKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.EqualizerBandLevelsMbKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.EqualizerBassBoostEnabledKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.EqualizerBassBoostStrengthKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.EqualizerEnabledKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.EqualizerOutputGainEnabledKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.EqualizerOutputGainMbKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.EqualizerSelectedProfileIdKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.EqualizerVirtualizerEnabledKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.EqualizerVirtualizerStrengthKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.HISTORY_DURATION_DEFAULT
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.HISTORY_DURATION_MAX
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.HISTORY_DURATION_MIN
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.HideExplicitKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.HideVideoKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.HistoryDuration
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.LastFMSessionKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.LastFMUseNowPlaying
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.ListenBrainzEnabledKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.ListenBrainzTokenKey
 import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.MaxSongCacheSizeKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.MediaSessionConstants.CommandToggleLike
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.MediaSessionConstants.CommandToggleRepeatMode
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.MediaSessionConstants.CommandToggleShuffle
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.MediaSessionConstants.CommandToggleStartRadio
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.PauseListenHistoryKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.PauseOnDeviceMuteKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.PermanentShuffleKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.PersistentQueueKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.PlayerStreamClient
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.PlayerStreamClientKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.PlayerVolumeKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.RepeatModeKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.ScrobbleDelayPercentKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.ScrobbleDelaySecondsKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.ScrobbleMinSongDurationKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.ShowLyricsKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.SkipSilenceKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.SmartTrimmerKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.StopMusicOnTaskClearKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.TogetherClientIdKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.constants.WakelockKey
-import dev.citali.lunartune.constants.LosslessSkipSilenceDisabledKey
 import dev.citali.lunartune.db.MusicDatabase
 import dev.citali.lunartune.db.entities.AlbumEntity
 import dev.citali.lunartune.db.entities.ArtistEntity
@@ -1201,7 +1136,6 @@ class MusicService :
                 ).setSeekBackIncrementMs(5000)
                 .setSeekForwardIncrementMs(5000)
                 .setDeviceVolumeControlEnabled(true)
-                .setAudioOffloadSchedulingEnabled(true)
                 .build()
                 .apply {
                     addAnalyticsListener(PlaybackStatsListener(false, this@MusicService))
@@ -2971,7 +2905,6 @@ class MusicService :
             .setAudioAttributes(playbackAudioAttributes(), false)
             .setSeekBackIncrementMs(5000)
             .setSeekForwardIncrementMs(5000)
-            .setAudioOffloadSchedulingEnabled(true)
             .build()
             .apply {
                 addListener(secondaryCrossfadeListener)
@@ -8446,7 +8379,6 @@ class MusicService :
         buildFlacOptimizedRenderersFactory(
             context = this,
             enableSilenceSkip = !dataStore.get(LosslessSkipSilenceDisabledKey, false),
-            enableAudioTrackPlaybackParams = false,
         )
 
     override fun onPlaybackStatsReady(

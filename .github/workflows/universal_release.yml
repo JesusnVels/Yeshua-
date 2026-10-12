@@ -32,6 +32,19 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      # ── Yeshua overlay guard ─────────────────────────────────────────────
+      # Fails fast (~20s) if the Yeshua source overlay was not applied to this
+      # commit, instead of burning a full ~7-min Gradle build before failing.
+      - name: Verify Yeshua overlay is applied
+        run: |
+          HUB="app/src/main/kotlin/dev/citali/lunartune/ui/screens/login/UnifiedLoginHub.kt"
+          KEYS="app/src/main/kotlin/dev/citali/lunartune/constants/PreferenceKeys.kt"
+          fail() { echo "::error::$1"; exit 1; }
+          [ -f "$HUB" ] || fail "UnifiedLoginHub.kt is missing. Extract the Yeshua overlay zip over the repo, commit, push, then start a FRESH workflow run (Actions > Build Universal APK > Run workflow — not Re-run)."
+          grep -q "largeTopAppBarColors" "$HUB" || fail "UnifiedLoginHub.kt looks stale. Re-download the fixed overlay zip, extract, commit, push, then fresh-run the workflow."
+          grep -q "ThemePresetIdKey" "$KEYS" || fail "PreferenceKeys.kt is missing the Yeshua keys. Extract the overlay zip, commit, push, then fresh-run the workflow."
+          echo "Yeshua overlay verified."
+
       # ── Java 21 ──────────────────────────────────────────────────────────
       - name: Set up JDK 21
         uses: actions/setup-java@v4

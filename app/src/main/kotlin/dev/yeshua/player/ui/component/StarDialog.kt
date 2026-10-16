@@ -84,7 +84,7 @@ fun StarDialog(
 
             FilledTonalButton(
                 onClick = {
-                    uriHandler.openUri("https://github.com/ReCapzPhyco-420/Yeshua")
+                    uriHandler.openUri("https://github.com/jesusnvels721-blip/Yeshua-Player")
                     onSupport()
                 },
                 modifier = Modifier.fillMaxWidth(),

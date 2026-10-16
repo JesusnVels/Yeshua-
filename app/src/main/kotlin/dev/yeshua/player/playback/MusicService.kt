@@ -1647,7 +1647,6 @@ class MusicService :
         if (!ioScope.isActive) {
             ioScope = CoroutineScope(Dispatchers.IO + scopeJob)
         }
-        startDiscordSyncWorker()
     }
 
     private fun startDiscordSyncWorker() {
@@ -1681,26 +1680,11 @@ class MusicService :
         reason: String,
         force: Boolean = false,
     ) {
-        val request =
-            DiscordSyncRequest(
-                epoch = discordSyncEpoch.incrementAndGet(),
-                reason = reason,
-                force = force,
-            )
-        if (discordSyncRequests.trySend(request).isFailure) {
-            Timber.tag(DISCORD_SYNC_TAG).w(
-                "failed to enqueue sync epoch=%d reason=%s",
-                request.epoch,
-                request.reason,
-            )
-        }
+        // No-op: Discord support removed.
     }
 
     fun forceDiscordSync(reason: String) {
-        requestDiscordSync(
-            reason = reason,
-            force = true,
-        )
+        // No-op: Discord support removed.
     }
 
     private fun ensureDiscordSyncFresh(epoch: Long) {

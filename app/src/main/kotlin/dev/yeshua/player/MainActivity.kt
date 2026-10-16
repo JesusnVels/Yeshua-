@@ -744,7 +744,11 @@ class MainActivity : FragmentActivity() {
                 }
 
                 if (BuildConfig.UPDATER_AVAILABLE) {
-                    if (System.currentTimeMillis() - Updater.lastCheckTime > 1.days.inWholeMilliseconds) {
+                    // Automatic update checks are opt-in (default off).
+                    val autoCheckUpdates = withContext(Dispatchers.IO) {
+                        dataStore.data.first()[dev.yeshua.player.constants.AutoCheckUpdatesKey] ?: false
+                    }
+                    if (autoCheckUpdates && System.currentTimeMillis() - Updater.lastCheckTime > 1.days.inWholeMilliseconds) {
                         val channelString = withContext(Dispatchers.IO) { dataStore.data.first()[UpdateChannelKey] }
                         val actualChannel = UpdateChannel.fromStoredName(channelString, defaultUpdateChannel)
                         val versionResult =

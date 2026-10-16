@@ -257,7 +257,6 @@
     <string name="quick_picks_display_mode">Mode tampilan Pilihan Cepat</string>
     <string name="quick_picks_display_mode_card">Kartu</string>
     <string name="quick_picks_display_mode_list">Daftar</string>
-    <string name="discord">Discord</string>
     <string name="advanced_login">Masuk dengan token</string>
     <string name="token_hidden">Ketuk untuk menampilkan token</string>
     <string name="token_shown">Ketuk lagi untuk menyalin atau mengedit</string>
@@ -632,6 +631,4 @@
     <string name="about_position_zion_huang">Pencipta InnerTune · Fondasi untuk Metrolist, Yeshua, dan fork lainnya</string>
     <string name="about_content_desc_github">GitHub</string>
     <string name="about_content_desc_website">Situs Web</string>
-    <string name="about_content_desc_discord">Discord</string>
-    <string name="about_content_desc_telegram">Telegram</string>
 </resources>

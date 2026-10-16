@@ -39,7 +39,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import dev.yeshua.player.canvas.YeshuaCanvas
 import dev.yeshua.player.constants.*
-import dev.yeshua.player.discord.DiscordOAuthRepository
 import dev.yeshua.player.extensions.*
 import dev.yeshua.player.gatekeeper.GatekeeperResult
 import dev.yeshua.player.gatekeeper.RunGatekeeperCheckUseCase
@@ -188,10 +187,6 @@ class App :
             MoriCipherRuntime
                 .refresh(force = false)
                 .onFailure { Timber.w(it, "Mori cipher background initialization failed") }
-        }
-        applicationScope.launch(Dispatchers.IO) {
-            runCatching { DiscordOAuthRepository.clearSessionFromOtherApplication(this@App) }
-                .onFailure { Timber.w(it, "Failed to check the Discord session's application") }
         }
         applicationScope.launch(Dispatchers.IO) {
             try {

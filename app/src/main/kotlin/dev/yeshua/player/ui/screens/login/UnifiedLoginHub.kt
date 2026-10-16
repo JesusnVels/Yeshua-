@@ -80,7 +80,6 @@ import androidx.navigation.NavController
 import dev.yeshua.player.LocalPlayerAwareWindowInsets
 import dev.yeshua.player.R
 import dev.yeshua.player.constants.AccountNameKey
-import dev.yeshua.player.constants.DiscordConnectedKey
 import dev.yeshua.player.constants.InnerTubeCookieKey
 import dev.yeshua.player.constants.LastFMUsernameKey
 import dev.yeshua.player.constants.ListenBrainzEnabledKey
@@ -120,7 +119,6 @@ fun UnifiedLoginHub(navController: NavController) {
     val (lastFmUsername) = rememberPreference(LastFMUsernameKey, "")
     val (listenBrainzToken) = rememberPreference(ListenBrainzTokenKey, "")
     val (listenBrainzEnabled) = rememberPreference(ListenBrainzEnabledKey, false)
-    val (discordConnected) = rememberPreference(DiscordConnectedKey, false)
 
     val isYouTubeConnected = remember(innerTubeCookie) { hasYouTubeLoginCookie(innerTubeCookie) }
     val isLastFmConnected = remember(lastFmUsername) { lastFmUsername.isNotBlank() }
@@ -133,7 +131,6 @@ fun UnifiedLoginHub(navController: NavController) {
         isYouTubeConnected, accountName,
         isLastFmConnected, lastFmUsername,
         isListenBrainzConnected,
-        discordConnected,
     ) {
         listOf(
             LoginCard(
@@ -177,17 +174,6 @@ fun UnifiedLoginHub(navController: NavController) {
                 connected = isListenBrainzConnected,
                 connectedLabel = "Active",
                 route = "settings/integration",
-            ),
-            LoginCard(
-                id = "discord",
-                label = "Discord",
-                subtitle = if (discordConnected)
-                    "Rich Presence active" else "Show what you're listening to on Discord",
-                icon = Icons.Rounded.Settings,
-                accentColor = Color(0xFF5865F2),
-                connected = discordConnected,
-                connectedLabel = "Rich Presence on",
-                route = "settings/discord",
             ),
         )
     }

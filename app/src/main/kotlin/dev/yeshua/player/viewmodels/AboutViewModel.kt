@@ -416,7 +416,7 @@ class AboutViewModel
                             id = "github",
                             iconResId = R.drawable.github,
                             labelResId = R.string.about_content_desc_github,
-                            url = "https://github.com/ReCapzPhyco-420/Yeshua",
+                            url = "https://github.com/jesusnvels721-blip/Yeshua-Player",
                         ),
                     ),
                 leadDeveloper =
@@ -601,6 +601,6 @@ class AboutViewModel
         private companion object {
             const val MaxDisplayedContributors = 20
             const val DebugBuildBadge = "DEBUG"
-            const val ContributorsReadMoreUrl = "https://github.com/ReCapzPhyco-420/Yeshua/graphs/contributors"
+            const val ContributorsReadMoreUrl = "https://github.com/jesusnvels721-blip/Yeshua-Player/graphs/contributors"
         }
     }

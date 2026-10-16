@@ -103,7 +103,6 @@
     <string name="resume_autoscroll">استئناف التمرير التلقائي</string>
     <string name="lyrics_romanize_japanese">كتابة كلمات الأغاني اليابانية بالحروف اللاتينية</string>
     <string name="lyrics_romanize_korean">كلمات الأغاني الكورية بالحروف اللاتينية</string>
-    <string name="discord">ديسكورد</string>
     <string name="advanced_login">تسجيل الدخول باستخدام الرمز المميز</string>
     <string name="token_hidden">اضغط لعرض التوكن</string>
     <string name="token_shown">اضغط مرة أخرى للنسخ أو التعديل</string>
@@ -651,7 +650,5 @@
     <string name="about_position_zion_huang">منشئ InnerTune · الأساس لـ Metrolist و Yeshua والتفرعات الأخرى</string>
     <string name="about_content_desc_github">GitHub</string>
     <string name="about_content_desc_website">الموقع الإلكتروني</string>
-    <string name="about_content_desc_discord">ديسكورد</string>
-    <string name="about_content_desc_telegram">Telegram</string>
     <string name="about_content_desc_donate">تبرع</string>
 </resources>

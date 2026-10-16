@@ -64,7 +64,6 @@ import dev.yeshua.player.ui.screens.settings.ChiperSettings
 import dev.yeshua.player.ui.screens.settings.ContentSettings
 import dev.yeshua.player.ui.screens.settings.CustomizeBackground
 import dev.yeshua.player.ui.screens.settings.DebugSettings
-import dev.yeshua.player.ui.screens.settings.DiscordSettings
 import dev.yeshua.player.ui.screens.settings.HiddenPlaylistsScreen
 import dev.yeshua.player.ui.screens.settings.IntegrationScreen
 import dev.yeshua.player.ui.screens.settings.InternetSettings
@@ -449,9 +448,6 @@ fun NavGraphBuilder.navigationBuilder(
     composable("settings/music_transfer") {
         MusicTransferScreen(navController)
     }
-    composable("settings/discord") {
-        DiscordSettings(navController)
-    }
     composable("settings/integration") {
         IntegrationScreen(navController)
     }
@@ -463,10 +459,6 @@ fun NavGraphBuilder.navigationBuilder(
     }
     composable("settings/lastfm") {
         LastFMSettings(navController)
-    }
-    composable("settings/discord/experimental") {
-        dev.yeshua.player.ui.screens.settings
-            .DiscordExperimental(navController)
     }
     composable("settings/misc") {
         DebugSettings(navController)

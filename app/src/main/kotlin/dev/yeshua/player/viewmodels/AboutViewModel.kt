@@ -421,23 +421,38 @@ class AboutViewModel
                     ),
                 leadDeveloper =
                     TeamMember(
-                        avatarUrl = "https://avatars.githubusercontent.com/u/273977667?v=4",
-                        name = "cognitiveshadows03",
+                        avatarUrl = "https://avatars.githubusercontent.com/u/281590998?v=4",
+                        name = "ReCapzPhyco-420",
                         positionResId = R.string.about_position_lead_dev,
-                        profileUrl = "https://github.com/cognitiveshadows03",
+                        profileUrl = "https://github.com/ReCapzPhyco-420",
                         links =
                             AboutLinkCollection.of(
                                 AboutLinkUiModel(
                                     id = "github",
                                     iconResId = R.drawable.github,
                                     labelResId = R.string.about_content_desc_github,
-                                    url = "https://github.com/cognitiveshadows03",
+                                    url = "https://github.com/ReCapzPhyco-420",
                                 ),
                             ),
                     ),
                 credits = TeamMemberCollection.of(),
                 collaborators =
                     TeamMemberCollection.of(
+                        TeamMember(
+                            avatarUrl = "https://avatars.githubusercontent.com/u/273977667?v=4",
+                            name = "cognitiveshadows03",
+                            positionResId = R.string.about_position_original,
+                            profileUrl = "https://github.com/cognitiveshadows03",
+                            links =
+                                AboutLinkCollection.of(
+                                    AboutLinkUiModel(
+                                        id = "github",
+                                        iconResId = R.drawable.github,
+                                        labelResId = R.string.about_content_desc_github,
+                                        url = "https://github.com/cognitiveshadows03",
+                                    ),
+                                ),
+                        ),
                         TeamMember(
                             avatarUrl = "https://avatars.githubusercontent.com/u/317606351?v=4",
                             name = "TherealCitali",

@@ -189,6 +189,7 @@ import dev.yeshua.player.constants.PoTokenGvsKey
 import dev.yeshua.player.constants.PoTokenPlayerKey
 import dev.yeshua.player.constants.QueuePeekHeight
 import dev.yeshua.player.constants.ShowPlayerVolumeBarKey
+import dev.yeshua.player.constants.ShowPlayerTimeLabelsKey
 import dev.yeshua.player.constants.SliderStyle
 import dev.yeshua.player.constants.SliderStyleKey
 import dev.yeshua.player.constants.ThumbnailCornerRadiusKey
@@ -1566,7 +1567,9 @@ fun BottomSheetPlayer(
                             Spacer(Modifier.height(16.dp))
                         }
                     }
-                } else if ((playerDesignStyle == PlayerDesignStyle.V8 || playerDesignStyle == PlayerDesignStyle.V10)) {
+                } else if ((playerDesignStyle == PlayerDesignStyle.V8 || playerDesignStyle == PlayerDesignStyle.V10) ||
+                    playerDesignStyle == PlayerDesignStyle.FUSION
+                ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                     ) {
@@ -1871,6 +1874,41 @@ fun BottomSheetPlayer(
 
                             Spacer(Modifier.height(24.dp))
                         }
+                    }
+                } else if (playerDesignStyle == PlayerDesignStyle.FUSION) {
+                    enrichedMetadata?.let { metadata ->
+                        FusionPlayer(
+                            mediaMetadata = metadata,
+                            queueTitle = queueTitle,
+                            playbackState = playbackState,
+                            isPlaying = isPlaying,
+                            isLoading = isLoading,
+                            canSkipPrevious = canSkipPrevious,
+                            canSkipNext = canSkipNext,
+                            currentSongLiked = currentSongLiked,
+                            sliderPosition = sliderPosition,
+                            position = position,
+                            duration = duration,
+                            playerConnection = playerConnection,
+                            navController = navController,
+                            state = state,
+                            menuState = menuState,
+                            bottomSheetPageState = bottomSheetPageState,
+                            canvasPrimaryUrl = artworkCanvas?.animated,
+                            canvasFallbackUrl = artworkCanvas?.videoUrl,
+                            onSliderValueChange = onSliderValueChange,
+                            onSliderValueChangeFinished = onSliderValueChangeFinished,
+                            onCollapse = state::collapseSoft,
+                            onOpenQueue = openQueue,
+                            onOpenLyrics = { isLyricsScreenVisible = true },
+                            modifier =
+                                Modifier
+                                    .fillMaxSize()
+                                    .padding(bottom = queueSheetState.collapsedBound)
+                                    .windowInsetsPadding(
+                                        WindowInsets.systemBars.only(WindowInsetsSides.Horizontal),
+                                    ).nestedScroll(state.preUpPostDownNestedScrollConnection),
+                        )
                     }
                 } else if ((playerDesignStyle == PlayerDesignStyle.V8 || playerDesignStyle == PlayerDesignStyle.V10)) {
                     Box(
@@ -2997,6 +3035,7 @@ private fun LittlePlayerContent(
 
         val displayPositionMs = sliderPosition ?: positionMs
 
+        val (showTimeLabels) = rememberPreference(ShowPlayerTimeLabelsKey, true)
         val timeText =
             remember(displayPositionMs, durationMs) {
                 val positionText = makeTimeString(displayPositionMs)
@@ -3076,17 +3115,19 @@ private fun LittlePlayerContent(
                     }
                 }
 
-                Spacer(Modifier.width((16f * scale).dp))
+                if (showTimeLabels) {
+                    Spacer(Modifier.width((16f * scale).dp))
 
-                Text(
-                    text = timeText,
-                    color = timeColor,
-                    fontSize = timeSize,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.End,
-                    maxLines = 1,
-                    modifier = Modifier.widthIn(min = (140f * scale).dp),
-                )
+                    Text(
+                        text = timeText,
+                        color = timeColor,
+                        fontSize = timeSize,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.End,
+                        maxLines = 1,
+                        modifier = Modifier.widthIn(min = (140f * scale).dp),
+                    )
+                }
             }
 
             Spacer(Modifier.height((14f * scale).dp))

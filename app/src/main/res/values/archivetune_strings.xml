@@ -308,6 +308,20 @@
     <string name="crop_thumbnail_to_square_desc">Display YouTube thumbnails in square format instead of 16:9</string>
     <string name="show_home_category_chips">Show home category chips</string>
     <string name="show_home_category_chips_desc">Show category filter chips on the home screen</string>
+    <string name="home_feed_sections">Home feed sections</string>
+    <string name="home_feed_sections_desc">Choose which sections appear on the home screen</string>
+    <string name="show_home_quick_picks">Quick picks</string>
+    <string name="show_home_speed_dial">Speed dial</string>
+    <string name="show_home_keep_listening">Keep listening</string>
+    <string name="show_home_forgotten_favorites">Forgotten favorites</string>
+    <string name="show_home_similar_recommendations">Similar recommendations</string>
+    <string name="show_home_account_playlists">Account playlists</string>
+    <string name="show_fusion_up_next">Show Up Next strip</string>
+    <string name="show_fusion_up_next_desc">Show the upcoming queue preview in the Fusion player style</string>
+    <string name="show_player_time_labels">Show time labels</string>
+    <string name="show_player_time_labels_desc">Show elapsed and total time on the player</string>
+    <string name="show_mini_player_artwork">Show mini player artwork</string>
+    <string name="show_mini_player_artwork_desc">Show album artwork and progress ring on the mini player</string>
     <string name="show_tags_in_library">Show tags in library</string>
     <string name="show_tags_in_library_desc">Show tag filter chips in the library</string>
     <string name="already_in_playlist">Already in playlist:</string>
@@ -341,6 +355,13 @@
     <string name="player_design_v8">Immersive Extended</string>
     <string name="player_design_v9">Material Extended</string>
     <string name="player_design_v10">Apple Music</string>
+    <string name="player_design_fusion">Fusion</string>
+    <string name="action_collapse">Collapse player</string>
+    <string name="action_shuffle">Shuffle</string>
+    <string name="action_previous">Previous</string>
+    <string name="action_repeat">Repeat</string>
+    <string name="action_repeat_one">Repeat one</string>
+    <string name="up_next">Up next</string>
     <string name="player_style_for_song">Player style</string>
     <string name="player_style_use_default">Use default from settings</string>
     <string name="per_song_settings">Song options</string>
@@ -841,4 +862,10 @@
     <string name="aod_mode_exit">Exit AOD</string>
     <string name="playlist_source_local">Local</string>
     <string name="playlist_source_online">Online</string>
+    <string name="settings_favorites">Favorites</string>
+    <string name="pin_to_favorites">Pin to Favorites</string>
+    <string name="unpin_from_favorites">Remove from Favorites</string>
+    <string name="pinned_to_favorites_toast">Pinned to Favorites</string>
+    <string name="unpinned_from_favorites_toast">Removed from Favorites</string>
+    <string name="sleep_timer_active">Timer active</string>
 </resources>

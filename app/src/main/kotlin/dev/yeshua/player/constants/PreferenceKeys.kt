@@ -306,6 +306,7 @@ enum class AudioQuality {
 val PlayerStreamClientKey = stringPreferencesKey("playerStreamClient")
 val StreamSourcesOrderKey = stringPreferencesKey("streamSourcesOrder")
 val StreamSourcesEnabledKey = stringSetPreferencesKey("streamSourcesEnabled")
+val PinnedSettingsKeysKey = stringSetPreferencesKey("pinned_settings_keys")
 
 val MonochromeEnabledKey = booleanPreferencesKey("monochromeEnabled")
 val MonochromeInstanceKey = stringPreferencesKey("monochromeInstance")
@@ -394,6 +395,15 @@ val PlaylistTagsFilterKey = stringPreferencesKey("playlistTagsFilter")
 val LibraryChipOrderKey = stringPreferencesKey("libraryChipOrder")
 val PlaylistTagOrderKey = stringPreferencesKey("playlistTagOrder")
 val ShowHomeCategoryChipsKey = booleanPreferencesKey("showHomeCategoryChips")
+val ShowHomeQuickPicksKey = booleanPreferencesKey("showHomeQuickPicks")
+val ShowHomeSpeedDialKey = booleanPreferencesKey("showHomeSpeedDial")
+val ShowHomeKeepListeningKey = booleanPreferencesKey("showHomeKeepListening")
+val ShowHomeForgottenFavoritesKey = booleanPreferencesKey("showHomeForgottenFavorites")
+val ShowHomeSimilarRecommendationsKey = booleanPreferencesKey("showHomeSimilarRecommendations")
+val ShowHomeAccountPlaylistsKey = booleanPreferencesKey("showHomeAccountPlaylists")
+val ShowFusionUpNextKey = booleanPreferencesKey("showFusionUpNext")
+val ShowPlayerTimeLabelsKey = booleanPreferencesKey("showPlayerTimeLabels")
+val ShowMiniPlayerArtworkKey = booleanPreferencesKey("showMiniPlayerArtwork")
 val SharedScreenHeaderImageUriKey = stringPreferencesKey("sharedScreenHeaderImageUri")
 val HomeHeaderImageUriKey = stringPreferencesKey("homeHeaderImageUri")
 val SettingsHeaderImageUriKey = stringPreferencesKey("settingsHeaderImageUri")
@@ -750,6 +760,7 @@ enum class PlayerDesignStyle {
     V8,
     V9,
     V10,
+    FUSION,
 }
 
 enum class PlayerBackgroundStyle {

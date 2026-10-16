@@ -106,6 +106,7 @@ import dev.yeshua.player.ui.component.MenuSurfaceSection
 import dev.yeshua.player.ui.component.NewAction
 import dev.yeshua.player.ui.component.NewActionGrid
 import dev.yeshua.player.ui.player.rememberDeviceMusicVolumeController
+import dev.yeshua.player.ui.player.SleepTimerDialog
 import dev.yeshua.player.utils.ExternalDownloaderLaunchResult
 import dev.yeshua.player.utils.SpeedDialPin
 import dev.yeshua.player.utils.SpeedDialPinType
@@ -327,6 +328,10 @@ fun PlayerMenu(
         TempoPitchDialog(
             onDismiss = { showPitchTempoDialog = false },
         )
+    }
+
+    var showSleepTimerDialog by rememberSaveable {
+        mutableStateOf(false)
     }
 
     var showEqualizerDialog by rememberSaveable {
@@ -984,9 +989,50 @@ fun PlayerMenu(
                             modifier = Modifier.clickable { showPitchTempoDialog = true },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(start = 56.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                        )
+
+                        ListItem(
+                            headlineContent = { Text(text = stringResource(R.string.sleep_timer)) },
+                            leadingContent = {
+                                Icon(
+                                    painter = painterResource(R.drawable.timer),
+                                    contentDescription = null,
+                                )
+                            },
+                            supportingContent = {
+                                val sleepActive = playerConnection.service.sleepTimer.isActive
+                                if (sleepActive) {
+                                    Text(
+                                        text = stringResource(R.string.sleep_timer_active),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            },
+                            modifier = Modifier.clickable { showSleepTimerDialog = true },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        )
                     }
                 }
             }
+        }
+
+        if (showSleepTimerDialog) {
+            SleepTimerDialog(
+                onDismiss = { showSleepTimerDialog = false },
+                onConfirm = { minutes ->
+                    showSleepTimerDialog = false
+                    playerConnection.service.sleepTimer.start(minutes)
+                },
+                onEndOfSong = {
+                    showSleepTimerDialog = false
+                    playerConnection.service.sleepTimer.start(-1)
+                },
+            )
         }
     }
 }

@@ -12,6 +12,7 @@ package dev.yeshua.player.ui.screens.settings
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -74,6 +75,7 @@ import dev.yeshua.player.constants.AccountNameKey
 import dev.yeshua.player.constants.AccountRowIdentityEnabledKey
 import dev.yeshua.player.constants.AccountYouTubeBannerUrlKey
 import dev.yeshua.player.constants.InnerTubeCookieKey
+import dev.yeshua.player.constants.PinnedSettingsKeysKey
 import dev.yeshua.player.constants.SettingsHeaderImageUriKey
 import dev.yeshua.player.constants.SharedScreenHeaderImageUriKey
 import dev.yeshua.player.ui.component.IconButton
@@ -198,6 +200,23 @@ fun SettingsScreen(
     var isUpdateDismissed by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     val settingsGroups = buildSettingsGroups(navController, isAndroid12OrLater, hasUpdate, context)
+    val (pinnedKeys, onPinnedKeysChange) = rememberPreference(PinnedSettingsKeysKey, emptySet<String>())
+
+    fun togglePin(itemKey: String) {
+        val newPinned =
+            if (itemKey in pinnedKeys) {
+                Toast.makeText(context, context.getString(R.string.unpinned_from_favorites_toast), Toast.LENGTH_SHORT).show()
+                pinnedKeys - itemKey
+            } else {
+                Toast.makeText(context, context.getString(R.string.pinned_to_favorites_toast), Toast.LENGTH_SHORT).show()
+                pinnedKeys + itemKey
+            }
+        onPinnedKeysChange(newPinned)
+    }
+
+    val favoriteItems = remember(settingsGroups, pinnedKeys) {
+        settingsGroups.flatMap { it.items }.filter { it.key in pinnedKeys }
+    }
     val filteredChildResults = remember(searchQuery, settingsGroups) {
         if (searchQuery.isBlank()) emptyList()
         else {
@@ -415,11 +434,22 @@ fun SettingsScreen(
             }
         }
     }
-    val filteredGroups = remember(searchQuery, settingsGroups) {
+    val filteredGroups = remember(searchQuery, settingsGroups, favoriteItems) {
         if (searchQuery.isBlank()) {
-            settingsGroups.map { group ->
-                group.copy(items = group.items.filterNot { it.hidden })
-            }.filter { it.items.isNotEmpty() }
+            val base =
+                settingsGroups.map { group ->
+                    group.copy(items = group.items.filterNot { it.hidden })
+                }.filter { it.items.isNotEmpty() }
+            if (favoriteItems.isNotEmpty()) {
+                listOf(
+                    SettingsGroup(
+                        title = context.getString(R.string.settings_favorites),
+                        items = favoriteItems,
+                    ),
+                ) + base
+            } else {
+                base
+            }
         } else {
             emptyList()
         }
@@ -624,6 +654,22 @@ fun SettingsScreen(
                     }
                 }
 
+                // Favorites group header — the only group with an explicit title.
+                if (groupIndex == 0 && favoriteItems.isNotEmpty()) {
+                    item(key = "settings_group_favorites_header", contentType = "settings_group_header") {
+                        Text(
+                            text = group.title,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(
+                                horizontal = SettingsDimensions.SegmentedGroupHorizontalPadding,
+                                vertical = 8.dp,
+                            ),
+                        )
+                    }
+                }
+
                 itemsIndexed(
                     items = group.items,
                     key = { _, item -> item.key },
@@ -634,6 +680,8 @@ fun SettingsScreen(
                         item = settingsItem,
                         index = index,
                         count = group.items.size,
+                        isPinned = settingsItem.key in pinnedKeys,
+                        onTogglePin = { togglePin(settingsItem.key) },
                         backgroundModel =
                             accountRowBannerModel.takeIf {
                                 accountRowIdentityEnabled && isAccountRow && isAccountLoggedIn

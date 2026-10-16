@@ -12,6 +12,7 @@ package dev.yeshua.player.ui.screens.settings
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -550,6 +551,8 @@ fun SettingsSegmentedItem(
     iconImageModel: Any? = null,
     titleOverride: String? = null,
     subtitleOverride: String? = null,
+    isPinned: Boolean = false,
+    onTogglePin: (() -> Unit)? = null,
 ) {
     val effectiveAccent =
         if (item.accentColor.isSpecified) {
@@ -582,10 +585,11 @@ fun SettingsSegmentedItem(
                     scaleY = scale
                 }.clip(shape)
                 .focusable()
-                .clickable(
+                .combinedClickable(
                     interactionSource = interactionSource,
                     indication = null,
                     onClick = item.onClick,
+                    onLongClick = onTogglePin,
                 ),
         shape = shape,
         colors =
@@ -697,6 +701,16 @@ fun SettingsSegmentedItem(
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                     )
                 }
+            }
+
+            if (isPinned) {
+                Spacer(modifier = Modifier.width(12.dp))
+                Icon(
+                    painter = painterResource(R.drawable.star_filled),
+                    contentDescription = stringResource(R.string.settings_favorites),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
+                )
             }
         }
     }

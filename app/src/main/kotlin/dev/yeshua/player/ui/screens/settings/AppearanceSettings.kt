@@ -310,6 +310,24 @@ fun AppearanceSettings(navController: NavController) {
             ShowHomeCategoryChipsKey,
             defaultValue = true,
         )
+    val (showHomeQuickPicks, onShowHomeQuickPicksChange) =
+        rememberPreference(ShowHomeQuickPicksKey, defaultValue = true)
+    val (showHomeSpeedDial, onShowHomeSpeedDialChange) =
+        rememberPreference(ShowHomeSpeedDialKey, defaultValue = true)
+    val (showHomeKeepListening, onShowHomeKeepListeningChange) =
+        rememberPreference(ShowHomeKeepListeningKey, defaultValue = true)
+    val (showHomeForgottenFavorites, onShowHomeForgottenFavoritesChange) =
+        rememberPreference(ShowHomeForgottenFavoritesKey, defaultValue = true)
+    val (showHomeSimilarRecommendations, onShowHomeSimilarRecommendationsChange) =
+        rememberPreference(ShowHomeSimilarRecommendationsKey, defaultValue = true)
+    val (showHomeAccountPlaylists, onShowHomeAccountPlaylistsChange) =
+        rememberPreference(ShowHomeAccountPlaylistsKey, defaultValue = true)
+    val (showFusionUpNext, onShowFusionUpNextChange) =
+        rememberPreference(ShowFusionUpNextKey, defaultValue = true)
+    val (showPlayerTimeLabels, onShowPlayerTimeLabelsChange) =
+        rememberPreference(ShowPlayerTimeLabelsKey, defaultValue = true)
+    val (showMiniPlayerArtwork, onShowMiniPlayerArtworkChange) =
+        rememberPreference(ShowMiniPlayerArtworkKey, defaultValue = true)
     val (libraryChipOrderPreference, onLibraryChipOrderChange) =
         rememberPreference(
             LibraryChipOrderKey,
@@ -887,11 +905,41 @@ fun AppearanceSettings(navController: NavController) {
 
                 item {
                     SwitchPreference(
+                        title = { Text(stringResource(R.string.show_player_time_labels)) },
+                        description = stringResource(R.string.show_player_time_labels_desc),
+                        icon = { Icon(painterResource(R.drawable.timer), null) },
+                        checked = showPlayerTimeLabels,
+                        onCheckedChange = onShowPlayerTimeLabelsChange,
+                    )
+                }
+
+                item {
+                    SwitchPreference(
+                        title = { Text(stringResource(R.string.show_mini_player_artwork)) },
+                        description = stringResource(R.string.show_mini_player_artwork_desc),
+                        icon = { Icon(painterResource(R.drawable.image), null) },
+                        checked = showMiniPlayerArtwork,
+                        onCheckedChange = onShowMiniPlayerArtworkChange,
+                    )
+                }
+
+                item {
+                    SwitchPreference(
                         title = { Text(stringResource(R.string.hide_player_thumbnail)) },
                         description = stringResource(R.string.hide_player_thumbnail_desc),
                         icon = { Icon(painterResource(R.drawable.hide_image), null) },
                         checked = hidePlayerThumbnail,
                         onCheckedChange = onHidePlayerThumbnailChange,
+                    )
+                }
+
+                item {
+                    SwitchPreference(
+                        title = { Text(stringResource(R.string.show_fusion_up_next)) },
+                        description = stringResource(R.string.show_fusion_up_next_desc),
+                        icon = { Icon(painterResource(R.drawable.queue_music), null) },
+                        checked = showFusionUpNext,
+                        onCheckedChange = onShowFusionUpNextChange,
                     )
                 }
 
@@ -1149,6 +1197,58 @@ fun AppearanceSettings(navController: NavController) {
                             onHomeHeaderImageUriChange("")
                             onSettingsHeaderImageUriChange("")
                         },
+                    )
+                }
+            }
+
+            PreferenceGroup(title = stringResource(R.string.home_feed_sections)) {
+                item {
+                    SwitchPreference(
+                        title = { Text(stringResource(R.string.show_home_quick_picks)) },
+                        description = stringResource(R.string.home_feed_sections_desc),
+                        icon = { Icon(painterResource(R.drawable.bolt), null) },
+                        checked = showHomeQuickPicks,
+                        onCheckedChange = onShowHomeQuickPicksChange,
+                    )
+                }
+                item {
+                    SwitchPreference(
+                        title = { Text(stringResource(R.string.show_home_speed_dial)) },
+                        icon = { Icon(painterResource(R.drawable.speed), null) },
+                        checked = showHomeSpeedDial,
+                        onCheckedChange = onShowHomeSpeedDialChange,
+                    )
+                }
+                item {
+                    SwitchPreference(
+                        title = { Text(stringResource(R.string.show_home_keep_listening)) },
+                        icon = { Icon(painterResource(R.drawable.history), null) },
+                        checked = showHomeKeepListening,
+                        onCheckedChange = onShowHomeKeepListeningChange,
+                    )
+                }
+                item {
+                    SwitchPreference(
+                        title = { Text(stringResource(R.string.show_home_forgotten_favorites)) },
+                        icon = { Icon(painterResource(R.drawable.favorite), null) },
+                        checked = showHomeForgottenFavorites,
+                        onCheckedChange = onShowHomeForgottenFavoritesChange,
+                    )
+                }
+                item {
+                    SwitchPreference(
+                        title = { Text(stringResource(R.string.show_home_similar_recommendations)) },
+                        icon = { Icon(painterResource(R.drawable.auto_awesome), null) },
+                        checked = showHomeSimilarRecommendations,
+                        onCheckedChange = onShowHomeSimilarRecommendationsChange,
+                    )
+                }
+                item {
+                    SwitchPreference(
+                        title = { Text(stringResource(R.string.show_home_account_playlists)) },
+                        icon = { Icon(painterResource(R.drawable.person), null) },
+                        checked = showHomeAccountPlaylists,
+                        onCheckedChange = onShowHomeAccountPlaylistsChange,
                     )
                 }
             }

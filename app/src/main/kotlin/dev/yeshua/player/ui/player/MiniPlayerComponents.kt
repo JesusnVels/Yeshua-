@@ -77,6 +77,7 @@ import kotlinx.coroutines.launch
 import dev.yeshua.player.R
 import dev.yeshua.player.constants.EnableHapticFeedbackKey
 import dev.yeshua.player.constants.PerSongAlbumArtOverridesKey
+import dev.yeshua.player.constants.ShowMiniPlayerArtworkKey
 import dev.yeshua.player.constants.MiniPlayerHeight
 import dev.yeshua.player.constants.NavigationBarHorizontalPadding
 import dev.yeshua.player.extensions.togglePlayPause
@@ -546,6 +547,7 @@ fun NewMiniPlayerContent(
     val canSkipNext by playerConnection.canSkipNext.collectAsStateWithLifecycle()
 
     val isLoading = playbackState == Player.STATE_BUFFERING
+    val (showArtwork) = rememberPreference(ShowMiniPlayerArtworkKey, true)
     val progressProvider =
         remember(position, duration) {
             { if (duration > 0) (position.toFloat() / duration).coerceIn(0f, 1f) else 0f }
@@ -558,12 +560,14 @@ fun NewMiniPlayerContent(
                 .fillMaxSize()
                 .padding(start = 8.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
     ) {
-        MiniPlayerArtwork(
-            mediaMetadata = mediaMetadata,
-            progress = progressProvider,
-            isLoading = isLoading,
-            colors = colors,
-        )
+        if (showArtwork) {
+            MiniPlayerArtwork(
+                mediaMetadata = mediaMetadata,
+                progress = progressProvider,
+                isLoading = isLoading,
+                colors = colors,
+            )
+        }
 
         mediaMetadata?.let {
             MiniPlayerInfo(

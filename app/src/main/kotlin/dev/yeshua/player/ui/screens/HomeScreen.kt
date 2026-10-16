@@ -64,6 +64,12 @@ import dev.yeshua.player.R
 import dev.yeshua.player.constants.QuickPicks
 import dev.yeshua.player.constants.HomeHeaderImageUriKey
 import dev.yeshua.player.constants.SharedScreenHeaderImageUriKey
+import dev.yeshua.player.constants.ShowHomeQuickPicksKey
+import dev.yeshua.player.constants.ShowHomeSpeedDialKey
+import dev.yeshua.player.constants.ShowHomeKeepListeningKey
+import dev.yeshua.player.constants.ShowHomeForgottenFavoritesKey
+import dev.yeshua.player.constants.ShowHomeSimilarRecommendationsKey
+import dev.yeshua.player.constants.ShowHomeAccountPlaylistsKey
 
 import dev.yeshua.player.home.HomeAction
 import dev.yeshua.player.home.HomeScreenState
@@ -293,6 +299,12 @@ private fun HomeContent(
     val (sharedHeaderImageUri) = rememberPreference(SharedScreenHeaderImageUriKey, "")
     val (homeHeaderImageUri) = rememberPreference(HomeHeaderImageUriKey, "")
     val effectiveHeaderImageUri = homeHeaderImageUri.ifBlank { sharedHeaderImageUri }
+    val (showQuickPicks) = rememberPreference(ShowHomeQuickPicksKey, true)
+    val (showSpeedDial) = rememberPreference(ShowHomeSpeedDialKey, true)
+    val (showKeepListening) = rememberPreference(ShowHomeKeepListeningKey, true)
+    val (showForgottenFavorites) = rememberPreference(ShowHomeForgottenFavoritesKey, true)
+    val (showSimilarRecommendations) = rememberPreference(ShowHomeSimilarRecommendationsKey, true)
+    val (showAccountPlaylists) = rememberPreference(ShowHomeAccountPlaylistsKey, true)
     val remoteQuickPicks =
         uiState
             .takeIf { it.quickPicksMode == QuickPicks.QUICK_PICKS }
@@ -420,7 +432,7 @@ private fun HomeContent(
                             }
                         }
                     } else {
-                        if (remoteQuickPicks?.items?.isNotEmpty() == true) {
+                        if (showQuickPicks && remoteQuickPicks?.items?.isNotEmpty() == true) {
                             item(
                                 key = "home_remote_quick_picks_header",
                                 contentType = "section_header",
@@ -446,7 +458,8 @@ private fun HomeContent(
                                 )
                             }
                         } else if (
-                            uiState.quickPicksMode != QuickPicks.DONT_SHOW &&
+                            showQuickPicks &&
+                                uiState.quickPicksMode != QuickPicks.DONT_SHOW &&
                                 uiState.quickPicks.isNotEmpty()
                         ) {
                             item(
@@ -475,7 +488,7 @@ private fun HomeContent(
                             }
                         }
 
-                        if (uiState.speedDialItems.isNotEmpty()) {
+                        if (showSpeedDial && uiState.speedDialItems.isNotEmpty()) {
                             sectionSpacer("speed_dial")
                             item(
                                 key = "home_speed_dial_header",
@@ -502,7 +515,7 @@ private fun HomeContent(
                             }
                         }
 
-                        if (uiState.keepListening.isNotEmpty()) {
+                        if (showKeepListening && uiState.keepListening.isNotEmpty()) {
                             sectionSpacer("keep_listening")
                             item(
                                 key = "home_keep_listening_header",
@@ -529,7 +542,7 @@ private fun HomeContent(
                             }
                         }
 
-                        if (uiState.accountPlaylists.isNotEmpty()) {
+                        if (showAccountPlaylists && uiState.accountPlaylists.isNotEmpty()) {
                             sectionSpacer("account_playlists")
                             item(
                                 key = "home_account_playlists",
@@ -555,7 +568,7 @@ private fun HomeContent(
                             }
                         }
 
-                        if (uiState.forgottenFavorites.isNotEmpty()) {
+                        if (showForgottenFavorites && uiState.forgottenFavorites.isNotEmpty()) {
                             sectionSpacer("forgotten_favorites")
                             item(
                                 key = "home_forgotten_favorites_header",
@@ -584,7 +597,8 @@ private fun HomeContent(
                             }
                         }
 
-                        uiState.similarRecommendations.forEach { recommendation ->
+                        if (showSimilarRecommendations) {
+                            uiState.similarRecommendations.forEach { recommendation ->
                             sectionSpacer("similar_${recommendation.title.id}")
                             item(
                                 key = "home_similar_header_${recommendation.title.id}",
@@ -610,6 +624,7 @@ private fun HomeContent(
                                     scope = scope,
                                 )
                             }
+                        }
                         }
 
                         homePageSections(

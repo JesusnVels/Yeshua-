@@ -762,7 +762,7 @@ object YTPlayerUtils {
         }
     }
 
-    suspend fun playerResponseForDownload(
+    internal suspend fun playerResponseForDownload(
         videoId: String,
         playlistId: String? = null,
         audioQuality: AudioQuality,

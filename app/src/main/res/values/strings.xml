@@ -197,6 +197,16 @@
     <string name="monochrome_status_maintenance">Down (maintenance) — playback falls back to YouTube Music</string>
     <string name="monochrome_status_down">Down (unreachable) — playback falls back to YouTube Music. Check monochrome.st for notices</string>
     <string name="monochrome_status_unknown">Unknown — tap to re-check</string>
+    <string name="navidrome_source">Navidrome server</string>
+    <string name="navidrome_fallback">Navidrome fallback</string>
+    <string name="navidrome_fallback_description">Search your own Navidrome music server for tracks when YouTube sources fail. Requires a configured server below.</string>
+    <string name="navidrome_server">Server details</string>
+    <string name="navidrome_not_configured">Not configured — tap to set up</string>
+    <string name="navidrome_server_dialog_title">Navidrome server</string>
+    <string name="navidrome_server_dialog_hint">https://music.example.com</string>
+    <string name="navidrome_username_dialog_hint">Username</string>
+    <string name="navidrome_password_dialog_hint">Password</string>
+    <string name="navidrome_server_save">Save</string>
     <string name="hide_playlist">Hide playlist</string>
     <string name="unhide_playlist">Unhide playlist</string>
     <string name="show_hidden_playlists">Show hidden</string>

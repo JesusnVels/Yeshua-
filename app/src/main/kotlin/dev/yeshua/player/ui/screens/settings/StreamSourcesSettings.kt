@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dev.yeshua.player.LocalPlayerAwareWindowInsets
@@ -56,6 +57,10 @@ import dev.yeshua.player.R
 import dev.yeshua.player.constants.DefaultStreamSources
 import dev.yeshua.player.constants.MonochromeEnabledKey
 import dev.yeshua.player.constants.MonochromeInstanceKey
+import dev.yeshua.player.constants.NavidromeEnabledKey
+import dev.yeshua.player.constants.NavidromePasswordKey
+import dev.yeshua.player.constants.NavidromeServerUrlKey
+import dev.yeshua.player.constants.NavidromeUsernameKey
 import dev.yeshua.player.constants.PlayerStreamClient
 import dev.yeshua.player.constants.PlayerStreamClientKey
 import dev.yeshua.player.constants.StreamSourcesEnabledKey
@@ -81,8 +86,20 @@ fun StreamSourcesSettings(navController: NavController) {
         rememberPreference(MonochromeEnabledKey, defaultValue = false)
     val (monochromeInstance, onMonochromeInstanceChange) =
         rememberPreference(MonochromeInstanceKey, defaultValue = MonochromeAudioProvider.DEFAULT_INSTANCE)
+    val (navidromeEnabled, onNavidromeEnabledChange) =
+        rememberPreference(NavidromeEnabledKey, defaultValue = false)
+    val (navidromeServerUrl, onNavidromeServerUrlChange) =
+        rememberPreference(NavidromeServerUrlKey, defaultValue = "")
+    val (navidromeUsername, onNavidromeUsernameChange) =
+        rememberPreference(NavidromeUsernameKey, defaultValue = "")
+    val (navidromePassword, onNavidromePasswordChange) =
+        rememberPreference(NavidromePasswordKey, defaultValue = "")
     var showInstanceDialog by remember { mutableStateOf(false) }
     var instanceDraft by remember { mutableStateOf(monochromeInstance) }
+    var showNavidromeDialog by remember { mutableStateOf(false) }
+    var navidromeServerDraft by remember { mutableStateOf(navidromeServerUrl) }
+    var navidromeUsernameDraft by remember { mutableStateOf(navidromeUsername) }
+    var navidromePasswordDraft by remember { mutableStateOf(navidromePassword) }
     var monochromeStatus by remember {
         mutableStateOf<MonochromeAudioProvider.MonochromeStatus?>(null)
     }
@@ -274,6 +291,32 @@ fun StreamSourcesSettings(navController: NavController) {
                     )
                 }
             }
+
+            PreferenceGroup(title = stringResource(R.string.navidrome_source)) {
+                item {
+                    SwitchPreference(
+                        title = { Text(stringResource(R.string.navidrome_fallback)) },
+                        description = stringResource(R.string.navidrome_fallback_description),
+                        checked = navidromeEnabled,
+                        onCheckedChange = onNavidromeEnabledChange,
+                    )
+                }
+                item {
+                    PreferenceEntry(
+                        title = { Text(stringResource(R.string.navidrome_server)) },
+                        description =
+                            navidromeServerUrl.ifBlank {
+                                stringResource(R.string.navidrome_not_configured)
+                            },
+                        onClick = {
+                            navidromeServerDraft = navidromeServerUrl
+                            navidromeUsernameDraft = navidromeUsername
+                            navidromePasswordDraft = navidromePassword
+                            showNavidromeDialog = true
+                        },
+                    )
+                }
+            }
         }
     }
 
@@ -313,6 +356,66 @@ fun StreamSourcesSettings(navController: NavController) {
                             },
                         ) {
                             Text(stringResource(R.string.monochrome_instance_save))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showNavidromeDialog) {
+        BasicAlertDialog(onDismissRequest = { showNavidromeDialog = false }) {
+            Surface(
+                shape = RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ) {
+                Column(modifier = Modifier.padding(24.dp)) {
+                    Text(
+                        text = stringResource(R.string.navidrome_server_dialog_title),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = navidromeServerDraft,
+                        onValueChange = { navidromeServerDraft = it },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text(stringResource(R.string.navidrome_server_dialog_hint)) },
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = navidromeUsernameDraft,
+                        onValueChange = { navidromeUsernameDraft = it },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text(stringResource(R.string.navidrome_username_dialog_hint)) },
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = navidromePasswordDraft,
+                        onValueChange = { navidromePasswordDraft = it },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = PasswordVisualTransformation(),
+                        placeholder = { Text(stringResource(R.string.navidrome_password_dialog_hint)) },
+                    )
+                    Spacer(Modifier.height(20.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        TextButton(onClick = { showNavidromeDialog = false }) {
+                            Text(stringResource(android.R.string.cancel))
+                        }
+                        TextButton(
+                            onClick = {
+                                onNavidromeServerUrlChange(navidromeServerDraft.trim().trimEnd('/'))
+                                onNavidromeUsernameChange(navidromeUsernameDraft.trim())
+                                onNavidromePasswordChange(navidromePasswordDraft)
+                                showNavidromeDialog = false
+                            },
+                        ) {
+                            Text(stringResource(R.string.navidrome_server_save))
                         }
                     }
                 }

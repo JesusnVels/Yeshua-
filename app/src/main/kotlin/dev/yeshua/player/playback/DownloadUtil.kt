@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -42,6 +43,10 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import dev.yeshua.player.constants.AudioQuality
 import dev.yeshua.player.constants.AudioQualityKey
+import dev.yeshua.player.constants.NavidromeEnabledKey
+import dev.yeshua.player.constants.NavidromePasswordKey
+import dev.yeshua.player.constants.NavidromeServerUrlKey
+import dev.yeshua.player.constants.NavidromeUsernameKey
 import dev.yeshua.player.constants.PlayerStreamClient
 import dev.yeshua.player.constants.PlayerStreamClientKey
 import dev.yeshua.player.db.MusicDatabase
@@ -51,10 +56,12 @@ import dev.yeshua.player.di.DownloadCache
 import dev.yeshua.player.di.PlayerCache
 import moe.rukamori.archivetune.innertube.YouTube
 import dev.yeshua.player.utils.AuthScopedCacheValue
+import dev.yeshua.player.utils.NavidromeStreamResolver
 import dev.yeshua.player.utils.NewPipeStreamResolver
 import dev.yeshua.player.utils.DownloadedArtwork
 import dev.yeshua.player.utils.StreamClientUtils
 import dev.yeshua.player.utils.YTPlayerUtils
+import dev.yeshua.player.utils.dataStore
 import dev.yeshua.player.utils.enumPreference
 import dev.yeshua.player.utils.ipVersionDns
 import dev.yeshua.player.utils.isLowDataModeActive
@@ -177,6 +184,18 @@ class DownloadUtil
                 val playbackData =
                     try {
                         runBlocking(Dispatchers.IO) {
+                            val navidromeConfig =
+                                run {
+                                    val prefs = context.dataStore.data.first()
+                                    if (prefs[NavidromeEnabledKey] != true) return@run null
+                                    val serverUrl = prefs[NavidromeServerUrlKey].orEmpty()
+                                    val username = prefs[NavidromeUsernameKey].orEmpty()
+                                    val password = prefs[NavidromePasswordKey].orEmpty()
+                                    if (serverUrl.isBlank() || username.isBlank() || password.isBlank()) {
+                                        return@run null
+                                    }
+                                    NavidromeStreamResolver.Config(serverUrl, username, password)
+                                }
                             withTimeout(DOWNLOAD_RESOLVE_TIMEOUT_MS) {
                                 context.retryWithoutPlaybackLoginContext {
                                     YTPlayerUtils.playerResponseForDownload(
@@ -185,6 +204,7 @@ class DownloadUtil
                                         connectivityManager = connectivityManager,
                                         networkMetered = lowDataModeActive,
                                         preferredStreamClient = preferredStreamClient,
+                                        navidromeConfig = navidromeConfig,
                                     )
                                 }
                             }

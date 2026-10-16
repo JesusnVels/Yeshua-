@@ -769,13 +769,14 @@ object YTPlayerUtils {
         connectivityManager: ConnectivityManager,
         networkMetered: Boolean? = null,
         preferredStreamClient: PlayerStreamClient = PlayerStreamClient.WEB_REMIX,
+        navidromeConfig: NavidromeStreamResolver.Config? = null,
     ): Result<PlaybackData> =
         runCatching {
             Timber.tag(logTag).i("Fetching download response for videoId: $videoId, playlistId: $playlistId")
 
             // NewPipe-first: upstream-maintained decipher with unthrottled URLs.
-            // Falls through to the FLOSS API resolvers (Piped, Invidious), then
-            // to InnerTube (which carries login context) on failure.
+            // Falls through to the FLOSS API resolvers (Piped, Invidious, Navidrome),
+            // then to InnerTube (which carries login context) on failure.
             val newPipeResult = NewPipeStreamResolver.resolve(videoId, audioQuality)
             if (newPipeResult.isSuccess) return@runCatching newPipeResult.getOrThrow()
             Timber.tag(logTag).w(
@@ -798,7 +799,16 @@ object YTPlayerUtils {
             if (invidiousResult.isSuccess) return@runCatching invidiousResult.getOrThrow()
             Timber.tag(logTag).w(
                 invidiousResult.exceptionOrNull(),
-                "Invidious resolution failed for %s, falling back to InnerTube clients",
+                "Invidious resolution failed for %s, falling back to Navidrome",
+                videoId,
+            )
+
+            // Navidrome: user-configured Subsonic server; fails fast when not configured.
+            val navidromeResult = NavidromeStreamResolver.resolve(videoId, audioQuality, navidromeConfig)
+            if (navidromeResult.isSuccess) return@runCatching navidromeResult.getOrThrow()
+            Timber.tag(logTag).w(
+                navidromeResult.exceptionOrNull(),
+                "Navidrome resolution failed for %s, falling back to InnerTube clients",
                 videoId,
             )
 

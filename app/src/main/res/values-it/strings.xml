@@ -449,7 +449,7 @@
     <string name="update_notification_channel_name">Aggiornamenti dell\'app</string>
     <string name="update_notification_channel_desc">Notifiche per nuovi aggiornamenti dell\'app</string>
     <string name="update_notification_title">Aggiornamento disponibile</string>
-    <string name="update_notification_text">LunarTune %s è ora disponibile</string>
+    <string name="update_notification_text">Yeshua %s è ora disponibile</string>
     <string name="download">Scarica</string>
     <string name="permissions_title">Consenti ad Yeshua di funzionare al meglio</string>
     <string name="permissions_subtitle">Utilizziamo alcune autorizzazioni per riprodurre e gestire la tua musica in modo affidabile. Puoi modificarli in qualsiasi momento nelle impostazioni di sistema.</string>
@@ -493,7 +493,7 @@
     <string name="error_malformed_stream">Errore fonte</string>
     <string name="random_theme_on_startup">Tema random all\'avvio</string>
     <string name="random_theme_on_startup_desc">Applica una palette di colori randomica ad ogni avvio dell\'app</string>
-    <string name="lunartune_canvas">Canvas LunarTune</string>
+    <string name="lunartune_canvas">Canvas Yeshua</string>
     <string name="lunartune_canvas_desc">Anima la copertina dell\'album durante la riproduzione (Fornito da BetterLyrics)</string>
     <string name="disable_animations">Disabilita animazioni</string>
     <string name="disable_animations_desc">Disabilita la maggior parte delle animazioni dell\'app. Raccomandato per dispositivi di fascia bassa</string>

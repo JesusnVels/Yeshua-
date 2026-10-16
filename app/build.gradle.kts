@@ -58,7 +58,7 @@ val hasReleaseSigningConfig =
         releaseKeyAlias != null &&
         releaseKeyPassword != null
 android {
-    namespace = "dev.citali.lunartune"
+    namespace = "dev.yeshua.player"
     compileSdk = 37
 
     defaultConfig {
@@ -390,7 +390,7 @@ androidComponents {
                 metadataFile.set(rootProject.layout.projectDirectory.file("IconPack/metadata.json"))
                 svgDirectory.set(rootProject.layout.projectDirectory.dir("IconPack/svg"))
                 applicationId.set(variant.applicationId)
-                targetActivityClassName.set("dev.citali.lunartune.MainActivity")
+                targetActivityClassName.set("dev.yeshua.player.MainActivity")
                 resourceOutputDirectory.set(
                     layout.buildDirectory.dir("generated/iconPack/${variant.name}/res"),
                 )

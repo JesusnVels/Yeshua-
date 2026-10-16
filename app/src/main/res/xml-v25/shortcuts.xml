@@ -7,7 +7,7 @@
         android:shortcutShortLabel="@string/search">
         <intent
             android:action="dev.yeshua.player.action.SEARCH"
-            android:targetClass="dev.citali.lunartune.MainActivity"
+            android:targetClass="dev.yeshua.player.MainActivity"
             android:targetPackage="dev.yeshua.player" />
     </shortcut>
     <shortcut
@@ -17,7 +17,7 @@
         android:shortcutShortLabel="@string/filter_library">
         <intent
             android:action="dev.yeshua.player.action.LIBRARY"
-            android:targetClass="dev.citali.lunartune.MainActivity"
+            android:targetClass="dev.yeshua.player.MainActivity"
             android:targetPackage="dev.yeshua.player" />
     </shortcut>
     <shortcut
@@ -27,7 +27,7 @@
         android:shortcutShortLabel="@string/music_recognition">
         <intent
             android:action="dev.yeshua.player.action.MUSIC_RECOGNITION"
-            android:targetClass="dev.citali.lunartune.MainActivity"
+            android:targetClass="dev.yeshua.player.MainActivity"
             android:targetPackage="dev.yeshua.player" />
     </shortcut>
 </shortcuts>

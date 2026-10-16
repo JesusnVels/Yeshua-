@@ -58,7 +58,7 @@
     <string name="play">Puter</string>
     <string name="widget_pause">Jeda</string>
     <string name="widget_previous">Sadurunge</string>
-    <string name="widget_tap_to_open">Ketuk untuk membuka LunarTune</string>
+    <string name="widget_tap_to_open">Ketuk untuk membuka Yeshua</string>
     <string name="play_next">Puter sabanjure</string>
     <string name="add_to_queue">Tambahke ke antrean</string>
     <string name="add_to_library">Tambahke ke pustaka</string>
@@ -282,7 +282,7 @@
     <string name="contrast">Kontras</string>
     <string name="brightness">Kecerahan</string>
     <string name="custom_value">Nilai khusus</string>
-    <string name="lunartune_canvas">Kanvas LunarTune</string>
+    <string name="lunartune_canvas">Kanvas Yeshua</string>
     <string name="lunartune_canvas_desc">Menganimasikan sampul album saat diputer (Didukung oleh BetterLyrics)</string>
     <string name="show_button1_description">Alihkan visibilitas tombol 1 di Discord Rich Presence</string>
     <string name="show_button2_description">Alihkan visibilitas tombol 2 di Discord Rich Presence</string>
@@ -468,7 +468,7 @@
     <string name="discord_waiting_for_authorization">Menunggu otorisasi Discord...</string>
     <string name="discord_authorization_success">Akun Discord terhubung</string>
     <string name="discord_authorization_failed">Otorisasi Discord gagal</string>
-    <string name="discord_account_ready">LunarTune siap mempublikasikan Rich Presence untuk sesi mendengarkan Kowe.</string>
+    <string name="discord_account_ready">Yeshua siap mempublikasikan Rich Presence untuk sesi mendengarkan Kowe.</string>
     <string name="discord_connection_settings">Koneksi</string>
     <string name="discord_activity_content">Isi Aktivitas</string>
     <string name="discord_refresh_success">Presence Discord diperbarui</string>
@@ -634,7 +634,7 @@
     <string name="update_notification_channel_name">Pembaruan Aplikasi</string>
     <string name="update_notification_channel_desc">Pemberitahuan untuk pembaruan aplikasi baru</string>
     <string name="update_notification_title">Pembaruan Tersedia</string>
-    <string name="update_notification_text">LunarTune %s kini tersedia</string>
+    <string name="update_notification_text">Yeshua %s kini tersedia</string>
     <string name="download">Unduh</string>
     <string name="permissions_title">Izinkan Yeshua bekerja dengan optimal</string>
     <string name="permissions_subtitle">Kami menggunakan beberapa izin untuk memutar dan mengelola musik Kowe dengan andal. Kowe dapat mengubahnya kapan saja di pengaturan sistem.</string>
@@ -649,7 +649,7 @@
     <string name="playlist_suggestion_source_title">Judul playlist</string>
     <string name="playlist_suggestion_source_content">Konten playlist</string>
     <string name="playlist_suggestion_source_both">Judul dan konten playlist</string>
-    <string name="music_together">LunarTune Musik Bersama</string>
+    <string name="music_together">Yeshua Musik Bersama</string>
     <string name="together_display_name">Nama tampilan</string>
     <string name="together_display_name_placeholder">Nama Kowe</string>
     <string name="together_port">Port sesi</string>

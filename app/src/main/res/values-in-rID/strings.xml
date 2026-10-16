@@ -58,7 +58,7 @@
     <string name="play">Putar</string>
     <string name="widget_pause">Jeda</string>
     <string name="widget_previous">Sebelumnya</string>
-    <string name="widget_tap_to_open">Ketuk untuk membuka LunarTune</string>
+    <string name="widget_tap_to_open">Ketuk untuk membuka Yeshua</string>
     <string name="play_next">Putar berikutnya</string>
     <string name="add_to_queue">Tambahkan ke antrean</string>
     <string name="add_to_library">Tambahkan ke pustaka</string>
@@ -282,7 +282,7 @@
     <string name="contrast">Kontras</string>
     <string name="brightness">Kecerahan</string>
     <string name="custom_value">Nilai kustom</string>
-    <string name="lunartune_canvas">Kanvas LunarTune</string>
+    <string name="lunartune_canvas">Kanvas Yeshua</string>
     <string name="lunartune_canvas_desc">Menganimasikan sampul album saat diputar (Didukung oleh BetterLyrics)</string>
     <string name="show_button1_description">Alihkan visibilitas tombol 1 di Discord Rich Presence</string>
     <string name="show_button2_description">Alihkan visibilitas tombol 1 di Discord Rich Presence</string>
@@ -467,7 +467,7 @@
     <string name="discord_waiting_for_authorization">Menunggu otorisasi Discord...</string>
     <string name="discord_authorization_success">Akun Discord terhubung</string>
     <string name="discord_authorization_failed">Otorisasi Discord gagal</string>
-    <string name="discord_account_ready">LunarTune siap mempublikasikan Rich Presence untuk sesi mendengarkan Anda.</string>
+    <string name="discord_account_ready">Yeshua siap mempublikasikan Rich Presence untuk sesi mendengarkan Anda.</string>
     <string name="discord_connection_settings">Koneksi</string>
     <string name="discord_activity_content">Isi Aktivitas</string>
     <string name="discord_refresh_success">Presence Discord diperbarui</string>
@@ -539,7 +539,7 @@
     <string name="target_language">Bahasa Sasaran</string>
     <string name="close_dialog">Tutup</string>
     <string name="support_development_title">Dukung pengembangan</string>
-    <string name="support_development_message">Halo! Saya cognitiveshadows03, pengembang Yeshua. Jika Yeshua telah menemani aktivitas mendengarkan musikmu sehari-hari, kamu bisa membantu agar proyek ini terus berkembang dengan cara berdonasi atau memberikan bintang (star) pada proyek ini di GitHub. Terima kasih telah mendukung proses pengembangan di balik aplikasi ini.</string>
+    <string name="support_development_message">Halo! Saya ReCapzPhyco-420, pengembang Yeshua. Jika Yeshua telah menemani aktivitas mendengarkan musikmu sehari-hari, kamu bisa membantu agar proyek ini terus berkembang dengan cara berdonasi atau memberikan bintang (star) pada proyek ini di GitHub. Terima kasih telah mendukung proses pengembangan di balik aplikasi ini.</string>
     <string name="support_development_donate">Donasi untuk mendukung pembangunan</string>
     <string name="support_development_star">Bintangi di GitHub</string>
     <string name="later">Nanti</string>
@@ -633,7 +633,7 @@
     <string name="update_notification_channel_name">Pembaruan Aplikasi</string>
     <string name="update_notification_channel_desc">Pemberitahuan untuk pembaruan aplikasi baru</string>
     <string name="update_notification_title">Pembaruan Tersedia</string>
-    <string name="update_notification_text">LunarTune %s kini tersedia</string>
+    <string name="update_notification_text">Yeshua %s kini tersedia</string>
     <string name="download">Unduh</string>
     <string name="permissions_title">Izinkan Yeshua bekerja dengan optimal</string>
     <string name="permissions_subtitle">Kami menggunakan beberapa izin untuk memutar dan mengelola musik Anda dengan andal. Anda dapat mengubahnya kapan saja di pengaturan sistem.</string>
@@ -648,7 +648,7 @@
     <string name="playlist_suggestion_source_title">Judul playlist</string>
     <string name="playlist_suggestion_source_content">Konten playlist</string>
     <string name="playlist_suggestion_source_both">Judul dan konten playlist</string>
-    <string name="music_together">LunarTune Music Together</string>
+    <string name="music_together">Yeshua Music Together</string>
     <string name="together_display_name">Nama tampilan</string>
     <string name="together_display_name_placeholder">Nama Anda</string>
     <string name="together_port">Port sesi</string>
@@ -880,7 +880,7 @@
     <string name="custom_background_adjustments_description">Sesuaikan gambar di kedua pratinjau.</string>
     <string name="custom_background_blur_value">%1$d dp</string>
     <string name="custom_background_scale_value">%1$d%%</string>
-    <string name="custom_background_permission_error">LunarTune tidak dapat mempertahankan akses ke gambar ini.</string>
+    <string name="custom_background_permission_error">Yeshua tidak dapat mempertahankan akses ke gambar ini.</string>
     <string name="custom_background_permission_cleanup_error">Akses gambar sebelumnya tidak dapat dilepaskan.</string>
     <string name="player_background_style_v8_v9_desc">Tidak tersedia untuk gaya pemutar V8 dan V9</string>
     <string name="force_high_refresh_rate">Paksa laju penyegaran tinggi</string>
@@ -903,7 +903,7 @@
     <string name="enable_youlyplus_lyrics">Aktifkan lirik YouLyPlus</string>
     <string name="enable_megalobiz_lyrics">Aktifkan lirik Megalobiz</string>
     <string name="eq_sound_shaping_off">Pembentukan suara nonaktif</string>
-    <string name="eq_enable_description">Terapkan kontrol ini ke pemutaran LunarTune</string>
+    <string name="eq_enable_description">Terapkan kontrol ini ke pemutaran Yeshua</string>
     <string name="eq_control_mode">Mode kontrol</string>
     <string name="eq_basic">Dasar</string>
     <string name="eq_advanced">Lanjutan</string>
@@ -981,7 +981,7 @@
     <string name="enable_update_notification_channel_desc">Dapatkan pemberitahuan ketika rilis baru tersedia di saluran yang dipilih</string>
     <string name="channel_canary">Canary</string>
     <string name="updates_canary_hosting_description">Rilis Canary dipublikasikan secara otomatis dari cabang pengembangan terbaru.</string>
-    <string name="updates_channel_warning_intro">LunarTune menyediakan dua saluran unduhan untuk build:</string>
+    <string name="updates_channel_warning_intro">Yeshua menyediakan dua saluran unduhan untuk build:</string>
     <string name="updates_channel_warning_stable_title">Build stabil</string>
     <string name="updates_channel_warning_stable_source">Didistribusikan melalui GitHub Releases resmi.</string>
     <string name="updates_channel_warning_stable_desc">Versi ini diuji dan direkomendasikan untuk sebagian besar pengguna.</string>
@@ -1005,7 +1005,7 @@
     <string name="download_failed_state">Unduhan gagal</string>
     <string name="search_downloads">Cari unduhan</string>
     <string name="no_matching_downloads">Tidak ada unduhan yang cocok</string>
-    <string name="onboarding_welcome_title">Selamat datang di LunarTune</string>
+    <string name="onboarding_welcome_title">Selamat datang di Yeshua</string>
     <string name="onboarding_welcome_subtitle">Atur pemutaran, musik lokal, dan perbarui izin sebelum Anda mulai mendengarkan.</string>
     <string name="onboarding_permissions_title">Tinjau izin</string>
     <string name="onboarding_permissions_subtitle">Berikan hanya apa yang Anda inginkan sekarang. Anda dapat melanjutkan dan memberikan izin nanti.</string>
@@ -1097,5 +1097,5 @@
     <string name="scheduled_backup_directory_saved">Direktori pencadangan disimpan</string>
     <string name="scheduled_backup_load_failed">Pengaturan pencadangan terjadwal tidak dapat dimuat</string>
     <string name="scheduled_backup_update_failed">Pengaturan pencadangan terjadwal tidak dapat disimpan</string>
-    <string name="gatekeeper_connection_blocked">Koneksi diblokir oleh Yeshua Remote. Aplikasi ini tidak dapat diverifikasi sebagai build Yeshua resmi. Instal build resmi dari https://github.com/cognitiveshadows03/LunarTune atau https://t.me/LunarTuneGC.</string>
+    <string name="gatekeeper_connection_blocked">Koneksi diblokir oleh Yeshua Remote. Aplikasi ini tidak dapat diverifikasi sebagai build Yeshua resmi. Instal build resmi dari https://github.com/ReCapzPhyco-420/Yeshua.</string>
 </resources>

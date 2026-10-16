@@ -433,7 +433,7 @@
     <string name="update_notification_channel_name">Mises à jour de l\'application</string>
     <string name="update_notification_channel_desc">Notifications pour les nouvelles mises à jour de l\'application</string>
     <string name="update_notification_title">Mise à jour disponible</string>
-    <string name="update_notification_text">LunarTune %s est désormais disponible</string>
+    <string name="update_notification_text">Yeshua %s est désormais disponible</string>
     <string name="download">Télécharger</string>
     <string name="added_to_playlist">Ajouté à %s</string>
     <string name="added_n_songs_to_playlist">Ajout de %1$d titres à %2$s</string>
@@ -520,7 +520,7 @@
     <string name="no_releases">Aucune version disponible</string>
     <string name="you_might_like">Vous pourriez aimer</string>
     <string name="refresh_suggestions">Actualiser les suggestions</string>
-    <string name="music_together">LunarTune Music Together</string>
+    <string name="music_together">Yeshua Music Together</string>
     <string name="together_display_name">Nom d\'affichage</string>
     <string name="together_display_name_placeholder">Votre nom</string>
     <string name="together_port">Port de session</string>
@@ -670,7 +670,7 @@
     <string name="providers">Fournisseurs</string>
     <string name="error_malformed_stream">Erreur source</string>
     <string name="support_development_title">Soutenir le développement</string>
-    <string name="support_development_message">Salut ! Je m\'appelle cognitiveshadows03, je suis le développeur d\'LunarTune. Si Yeshua fait désormais partie de vos habitudes d\'écoute quotidiennes, vous pouvez contribuer à son développement en faisant un don ou en ajoutant le projet à vos favoris sur GitHub. Merci de soutenir le travail qui se cache derrière cette application.</string>
+    <string name="support_development_message">Salut ! Je m\'appelle ReCapzPhyco-420, je suis le développeur d\'Yeshua. Si Yeshua fait désormais partie de vos habitudes d\'écoute quotidiennes, vous pouvez contribuer à son développement en faisant un don ou en ajoutant le projet à vos favoris sur GitHub. Merci de soutenir le travail qui se cache derrière cette application.</string>
     <string name="support_development_donate">Faites un don pour soutenir le développement</string>
     <string name="support_development_star">Ajouter à vos favoris sur GitHub</string>
     <string name="later">Plus tard</string>
@@ -710,7 +710,7 @@
     <string name="year_sort">Année</string>
     <string name="discord_activity_type_watching_label">Regarder</string>
     <string name="newest_first">Du plus récent au plus ancien</string>
-    <string name="discord_account_ready">LunarTune est prêt à publier Rich Presence pour votre séance d\'écoute.</string>
+    <string name="discord_account_ready">Yeshua est prêt à publier Rich Presence pour votre séance d\'écoute.</string>
     <string name="discord_connection_settings">Connexion</string>
     <string name="no_saved_accounts">Aucun compte enregistré pour l\'instant</string>
     <string name="recent_requests">Demandes récentes</string>
@@ -735,7 +735,7 @@
     <string name="display">Affichage</string>
     <string name="youtube_synced">Synchronisé avec YouTube</string>
     <string name="your_collection">Votre Collection</string>
-    <string name="discord_login_description">Connectez votre compte Discord via OAuth afin qu\'LunarTune puisse publier des informations de présence enrichies.</string>
+    <string name="discord_login_description">Connectez votre compte Discord via OAuth afin qu\'Yeshua puisse publier des informations de présence enrichies.</string>
     <string name="personal_label">Personnel</string>
     <string name="lyrics_animation_style_v2_only">Disponible uniquement en mode paroles V2</string>
     <string name="discord_platform_ios">iOS</string>
@@ -773,7 +773,7 @@
     <string name="discord_platform_embedded">Intégré</string>
     <string name="lyrics_mode_v2">V2 Legacy</string>
     <string name="saved_accounts">Comptes enregistrés</string>
-    <string name="widget_tap_to_open">Appuyez pour ouvrir LunarTune</string>
+    <string name="widget_tap_to_open">Appuyez pour ouvrir Yeshua</string>
     <string name="discord_refresh_failed">Échec de l\'actualisation de la présence sur Discord</string>
     <string name="top_artist_badge">MEILLEUR ARTISTE</string>
     <string name="youtube_channels">Chaînes YouTube</string>
@@ -821,7 +821,7 @@
     <string name="library_top_mixes_refresh">Actualiser les mixages</string>
     <string name="library_top_mixes_configure_ai">Configurer l\'IA</string>
     <string name="library_top_mixes_ai_not_configured_title">Configurer l\'IA pour créer des mixages</string>
-    <string name="library_top_mixes_ai_not_configured_desc">L\'intégration de l\'IA est nécessaire pour qu\'LunarTune puisse créer des sélections personnalisées.</string>
+    <string name="library_top_mixes_ai_not_configured_desc">L\'intégration de l\'IA est nécessaire pour qu\'Yeshua puisse créer des sélections personnalisées.</string>
     <string name="library_top_mixes_no_recent_history_title">Pas encore de compilation récente</string>
     <string name="library_top_mixes_no_recent_history">Écoutez d\'autres morceaux, puis actualisez la page pour créer des playlists générées par l\'IA à partir de votre historique récent.</string>
     <string name="library_top_mixes_no_valid_mixes">L\'IA n\'a trouvé aucun mix écoutable dans votre historique récent.</string>
@@ -912,7 +912,7 @@
     <string name="lastfm_login_api_key_suspended">Clé API suspendue.</string>
     <string name="lastfm_login_network_error">Erreur réseau. Vérifiez votre connexion.</string>
     <string name="lastfm_login_failed">Échec de la connexion. Veuillez réessayer.</string>
-    <string name="updates_channel_warning_intro">LunarTune propose deux canaux de téléchargement pour les versions :</string>
+    <string name="updates_channel_warning_intro">Yeshua propose deux canaux de téléchargement pour les versions :</string>
     <string name="updates_channel_warning_stable_title">Versions stables</string>
     <string name="updates_channel_warning_stable_source">Distribué via les versions officielles de GitHub.</string>
     <string name="updates_channel_warning_stable_desc">Ces versions ont été testées et sont recommandées pour la plupart des utilisateurs.</string>
@@ -938,7 +938,7 @@
     <string name="together_activity_host_transferred">L\'hôte a été transféré vers %1$s</string>
     <string name="unhide">Afficher</string>
     <string name="download_complete">Téléchargement complet</string>
-    <string name="onboarding_welcome_title">Bienvenue sur LunarTune</string>
+    <string name="onboarding_welcome_title">Bienvenue sur Yeshua</string>
     <string name="onboarding_welcome_subtitle">Configurez la lecture, la musique locale et les autorisations de mise à jour avant de commencer à écouter.</string>
     <string name="onboarding_permissions_title">Vérifier les autorisations</string>
     <string name="onboarding_permissions_subtitle">N\'accordez que les autorisations dont vous avez besoin pour l\'instant. Vous pourrez toujours en accorder d\'autres ultérieurement.</string>
@@ -1018,7 +1018,7 @@
     <string name="updates_channel_warning_canary_acknowledgement">Remarque : le téléchargement direct depuis GitHub contourne tout contrôle supplémentaire effectué par la boutique à partir de laquelle vous avez initialement installé l\'application.\nEn poursuivant, vous reconnaissez que les versions Canary peuvent être instables et que vous les utilisez à vos propres risques.</string>
     <string name="updates_canary_channel_confirmation">Passez sur le canal Canary pour recevoir les versions de développement.\n\nLes versions Canary sont publiées automatiquement à partir de la dernière branche de développement.\nRemarque : le téléchargement direct depuis GitHub contourne tout contrôle supplémentaire effectué par la boutique à partir de laquelle vous avez initialement installé l\'application.</string>
     <string name="onboarding_permission_device_audio_capture_title">Reconnaissance audio intégrée à l\'appareil</string>
-    <string name="onboarding_permission_device_audio_capture_desc">Identifiez la musique diffusée dans d\'autres applications sans utiliser le microphone. Android vous demande à chaque fois l\'autorisation de capturer l\'écran et le son, tandis qu\'LunarTune traite uniquement le son.</string>
+    <string name="onboarding_permission_device_audio_capture_desc">Identifiez la musique diffusée dans d\'autres applications sans utiliser le microphone. Android vous demande à chaque fois l\'autorisation de capturer l\'écran et le son, tandis qu\'Yeshua traite uniquement le son.</string>
     <string name="remove_playlist_cover">Retirer la pochette personnalisée</string>
     <string name="playlist_cover_updated">Mise à jour de la pochette de la playlist</string>
     <string name="playlist_cover_update_failed">Impossible de mettre à jour la pochette de la playlist</string>
@@ -1036,13 +1036,13 @@
     <string name="custom_background_adjustments_description">Ajustez l\'image dans les deux aperçus.</string>
     <string name="custom_background_blur_value">%1$d dp</string>
     <string name="custom_background_scale_value">%1$d%%</string>
-    <string name="custom_background_permission_error">LunarTune n\'a pas pu conserver l\'accès à cette image.</string>
+    <string name="custom_background_permission_error">Yeshua n\'a pas pu conserver l\'accès à cette image.</string>
     <string name="custom_background_permission_cleanup_error">L\'accès à l\'image précédente n\'a pas pu être libéré.</string>
     <string name="playback_login_po_token">Jeton de connexion PO</string>
     <string name="eq_screen_subtitle">Une lecture sur mesure pour vos oreilles et votre équipement</string>
     <string name="eq_sound_shaping_on">Le façonnage du son est activé</string>
     <string name="eq_sound_shaping_off">Le façonnage du son est désactivé</string>
-    <string name="eq_enable_description">Applique ces commandes à la lecture d\'LunarTune</string>
+    <string name="eq_enable_description">Applique ces commandes à la lecture d\'Yeshua</string>
     <string name="eq_control_mode">Mode de commande</string>
     <string name="eq_basic">Basique</string>
     <string name="eq_advanced">Avancé</string>
@@ -1116,7 +1116,7 @@
     <string name="scheduled_backup_directory_saved">Répertoire de sauvegarde enregistré</string>
     <string name="scheduled_backup_load_failed">Impossible de charger les paramètres de sauvegarde planifiée</string>
     <string name="scheduled_backup_update_failed">Impossible d\'enregistrer les paramètres de sauvegarde planifiée</string>
-    <string name="gatekeeper_connection_blocked">Connexion bloquée par Yeshua Remote. Il n\'a pas été possible de vérifier que cette application correspondait à une version officielle d\'LunarTune. Installez une version officielle à partir de https://github.com/cognitiveshadows03/LunarTune ou https://t.me/LunarTuneGC.</string>
+    <string name="gatekeeper_connection_blocked">Connexion bloquée par Yeshua Remote. Il n\'a pas été possible de vérifier que cette application correspondait à une version officielle d\'Yeshua. Installez une version officielle à partir de https://github.com/ReCapzPhyco-420/Yeshua.</string>
     <string name="enable_megalobiz_lyrics">Activer les paroles de Megalobiz</string>
     <string name="enable_betterlyrics_portato">Activer BetterLyrics Portato</string>
 </resources>

@@ -108,11 +108,11 @@
 
 ## Queue Persistence Rules
 # Keep queue-related classes to prevent serialization issues in release builds
--keep class dev.citali.lunartune.models.PersistQueue { *; }
--keep class dev.citali.lunartune.models.PersistPlayerState { *; }
--keep class dev.citali.lunartune.models.QueueData { *; }
--keep class dev.citali.lunartune.models.QueueType { *; }
--keep class dev.citali.lunartune.playback.queues.** { *; }
+-keep class dev.yeshua.player.models.PersistQueue { *; }
+-keep class dev.yeshua.player.models.PersistPlayerState { *; }
+-keep class dev.yeshua.player.models.QueueData { *; }
+-keep class dev.yeshua.player.models.QueueType { *; }
+-keep class dev.yeshua.player.playback.queues.** { *; }
 
 # Keep serialization methods for queue persistence
 -keepclassmembers class * implements java.io.Serializable {

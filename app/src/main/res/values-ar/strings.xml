@@ -580,7 +580,7 @@
     <string name="playlist_cover_update_failed">تعذر تحديث غلاف قائمة التشغيل</string>
     <string name="cast">إرسال</string>
     <string name="cast_devices">أجهزة الإرسال</string>
-    <string name="cast_sheet_subtitle">اختر أين يعزف LunarTune</string>
+    <string name="cast_sheet_subtitle">اختر أين يعزف Yeshua</string>
     <string name="cast_available_devices">الأجهزة المتاحة</string>
     <string name="cast_searching_devices">جاري البحث عن أجهزة</string>
     <string name="cast_no_devices">لم يتم العثور على أجهزة إرسال</string>
@@ -593,7 +593,7 @@
     <string name="start_mix">بدء القائمة المختلطة</string>
     <string name="widget_pause">إيقاف مؤقت</string>
     <string name="widget_previous">السابق</string>
-    <string name="widget_tap_to_open">انقر لفتح LunarTune</string>
+    <string name="widget_tap_to_open">انقر لفتح Yeshua</string>
     <string name="widget_insights_title">رؤى الاستماع</string>
     <string name="widget_recommendations">التوصيات</string>
     <string name="widget_listening_time_empty">لا يوجد وقت استماع بعد</string>
@@ -775,7 +775,7 @@
     <string name="eq_screen_subtitle">ضبط الصوت بما يناسب أذنيك ومعداتك</string>
     <string name="eq_sound_shaping_on">تشكيل الصوت قيد التشغيل</string>
     <string name="eq_sound_shaping_off">تشكيل الصوت معطل</string>
-    <string name="eq_enable_description">يطبق هذه الضوابط على تشغيل LunarTune</string>
+    <string name="eq_enable_description">يطبق هذه الضوابط على تشغيل Yeshua</string>
     <string name="eq_control_mode">وضع التحكم</string>
     <string name="eq_basic">بسيط</string>
     <string name="eq_advanced">متقدم</string>
@@ -839,7 +839,7 @@
     <string name="discord_waiting_for_authorization">في انتظار مصادقة Discord...</string>
     <string name="discord_authorization_success">تم ربط حساب Discord</string>
     <string name="discord_authorization_failed">فشلت مصادقة Discord</string>
-    <string name="discord_account_ready">LunarTune جاهز لنشر حالة الحضور لجلسة الاستماع الخاصة بك.</string>
+    <string name="discord_account_ready">Yeshua جاهز لنشر حالة الحضور لجلسة الاستماع الخاصة بك.</string>
     <string name="discord_reauthorize_required_title">انتهت جلسة Discord</string>
     <string name="discord_reauthorize_required_description">لا يمكن إظهار حالة الحضور حتى تقوم بمصادقة Discord مرة أخرى.</string>
     <string name="discord_reauthorize_action">إعادة المصادقة</string>
@@ -896,7 +896,7 @@
     <string name="discord_image_album_artwork">غلاف الألبوم</string>
     <string name="discord_image_artist_artwork">صورة الفنان</string>
     <string name="support_development_title">دعم التطوير</string>
-    <string name="support_development_message">مرحبًا! أنا cognitiveshadows03، مطور Yeshua. إذا كسب Yeshua مكاناً في استماعك اليومي، يمكنك المساعدة في استمرار تطويره بالتبرع أو إعطاء نجمة للمشروع على GitHub. شكرًا لدعمك للعمل خلف التطبيق.</string>
+    <string name="support_development_message">مرحبًا! أنا ReCapzPhyco-420، مطور Yeshua. إذا كسب Yeshua مكاناً في استماعك اليومي، يمكنك المساعدة في استمرار تطويره بالتبرع أو إعطاء نجمة للمشروع على GitHub. شكرًا لدعمك للعمل خلف التطبيق.</string>
     <string name="support_development_donate">تبرع لدعم التطوير</string>
     <string name="support_development_star">نجمة على GitHub</string>
     <string name="later">لاحقًا</string>
@@ -968,7 +968,7 @@
     <string name="update_notification_channel_name">تحديثات التطبيق</string>
     <string name="update_notification_channel_desc">إشعارات التحديثات الجديدة للتطبيق</string>
     <string name="update_notification_title">تحديث متوفر</string>
-    <string name="update_notification_text">LunarTune %s متوفر الآن</string>
+    <string name="update_notification_text">Yeshua %s متوفر الآن</string>
     <string name="download">تنزيل</string>
     <string name="download_complete">اكتمل التنزيل</string>
     <string name="downloads">التنزيلات</string>
@@ -991,7 +991,7 @@
     <string name="permission_status_allowed">مسموح</string>
     <string name="next">التالي</string>
     <string name="allow">سماح</string>
-    <string name="onboarding_welcome_title">مرحبًا بك في LunarTune</string>
+    <string name="onboarding_welcome_title">مرحبًا بك في Yeshua</string>
     <string name="onboarding_welcome_subtitle">قم بإعداد التشغيل والموسيقى المحلية وأذونات التحديث قبل البدء في الاستماع.</string>
     <string name="onboarding_permissions_title">مراجعة الأذونات</string>
     <string name="onboarding_permissions_subtitle">امنح فقط ما تريده الآن. يمكنك المتابعة والسماح بالأذونات لاحقًا.</string>
@@ -1033,7 +1033,7 @@
     <string name="playlist_suggestion_source_title">عنوان قائمة التشغيل</string>
     <string name="playlist_suggestion_source_content">محتوى قائمة التشغيل</string>
     <string name="playlist_suggestion_source_both">عنوان ومحتوى قائمة التشغيل</string>
-    <string name="music_together">LunarTune Music Together</string>
+    <string name="music_together">Yeshua Music Together</string>
     <string name="together_display_name">الاسم المعروض</string>
     <string name="together_display_name_placeholder">اسمك</string>
     <string name="together_port">منفذ الجلسة</string>
@@ -1149,7 +1149,7 @@
     <string name="scheduled_backup_directory_saved">تم حفظ دليل النسخ الاحتياطي</string>
     <string name="scheduled_backup_load_failed">تعذر تحميل إعدادات النسخ الاحتياطي المجدول</string>
     <string name="scheduled_backup_update_failed">تعذر حفظ إعدادات النسخ الاحتياطي المجدول</string>
-    <string name="gatekeeper_connection_blocked">تم حظر الاتصال بواسطة Yeshua Remote. لم يتم التحقق من هذا التطبيق كإصدار رسمي من Yeshua. قم بتثبيت إصدار رسمي من https://github.com/cognitiveshadows03/LunarTune أو https://t.me/LunarTuneGC.</string>
+    <string name="gatekeeper_connection_blocked">تم حظر الاتصال بواسطة Yeshua Remote. لم يتم التحقق من هذا التطبيق كإصدار رسمي من Yeshua. قم بتثبيت إصدار رسمي من https://github.com/ReCapzPhyco-420/Yeshua.</string>
     <string name="updates_channel_warning_canary_unstable">تُوفر إصدارات Canary للاختبار والوصول المبكر فقط.\nالاستقرار، التوافق، والوظائف غير مضمونة.</string>
     <string name="updates_channel_warning_canary_acknowledgement">ملاحظة: التنزيل مباشرة من GitHub يتجاوز أي فحص إضافي يجريه المتجر الذي ربما ثبّت التطبيق منه سابقًا.\nبالمتابعة، فإنك تقر بأن إصدارات Canary قد تكون غير مستقرة وتتحمل مسؤولية استخدامها.</string>
     <string name="updates_canary_channel_confirmation">التبديل إلى قناة Canary لتلقي إصدارات التطوير.\n\nتُحمل إصدارات Canary تلقائيًا من أحدث فرع تطوير.\nملاحظة: التنزيل مباشرة من GitHub يتجاوز أي فحص إضافي يجريه المتجر الذي ربما ثبّت التطبيق منه سابقًا.</string>

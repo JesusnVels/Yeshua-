@@ -325,7 +325,7 @@
     <string name="storage_folder_selected_restart">תיקיית האחסון נשמרה. האפליקציה תופעל מחדש בעוד 3 שניות.</string>
     <string name="storage_folder_invalid">בחר תיקייה תקינה.</string>
     <string name="storage_folder_unsupported">לא ניתן להשתמש בתיקייה זו על ידי מטמון המדיה המגובה בקבצים.</string>
-    <string name="storage_folder_not_writable">ל-LunarTune אין אפשרות לכתוב קבצי מטמון בתיקייה זו.</string>
+    <string name="storage_folder_not_writable">ל-Yeshua אין אפשרות לכתוב קבצי מטמון בתיקייה זו.</string>
     <string name="storage_cache_cleared">המטמון נוקה.</string>
     <string name="storage_cache_clear_failed">לא ניתן היה לנקות את המטמון. בדוק את הגישה לכרטיס ה-SD.</string>
     <string name="storage_clear_song_cache_progress">מנקה את מטמון השיר... %1$d%%</string>

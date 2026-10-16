@@ -5,7 +5,7 @@
  * Do not remove or alter this notice. - Per GPL-3.0 Section 4 & Section 5
  */
 
-package dev.citali.lunartune.shazamkit
+package dev.yeshua.player.shazamkit
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -27,9 +27,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
-import dev.citali.lunartune.shazamkit.models.RecognitionResult
-import dev.citali.lunartune.shazamkit.models.ShazamRequestJson
-import dev.citali.lunartune.shazamkit.models.ShazamResponseJson
+import dev.yeshua.player.shazamkit.models.RecognitionResult
+import dev.yeshua.player.shazamkit.models.ShazamRequestJson
+import dev.yeshua.player.shazamkit.models.ShazamResponseJson
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue

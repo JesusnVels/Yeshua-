@@ -555,7 +555,7 @@
     <string name="update_notification_channel_name">Оновлення додатку</string>
     <string name="update_notification_channel_desc">Сповіщення про нові оновлення додатку</string>
     <string name="update_notification_title">Доступно нове оновлення</string>
-    <string name="update_notification_text">LunarTune %s тепер доступно</string>
+    <string name="update_notification_text">Yeshua %s тепер доступно</string>
     <string name="download">Завантажити</string>
     <string name="permissions_title">Дозволити Yeshua працювати на повну</string>
     <string name="permissions_subtitle">Для безперебійного відтворення та управління вашою музикою нам потрібні деякі дозволи. Ви можете змінити їх у будь-який час у налаштуваннях системи.</string>
@@ -566,7 +566,7 @@
     <string name="allow">Дозволити</string>
     <string name="you_might_like">Вам може сподобатися</string>
     <string name="refresh_suggestions">Оновити пропозиції</string>
-    <string name="music_together">LunarTune Музика разом</string>
+    <string name="music_together">Yeshua Музика разом</string>
     <string name="together_display_name">Ім\'я для відображення</string>
     <string name="together_display_name_placeholder">Ваше ім\'я</string>
     <string name="together_port">Порт сесії</string>

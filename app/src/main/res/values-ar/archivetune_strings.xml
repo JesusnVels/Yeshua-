@@ -477,7 +477,7 @@
     <string name="audio_crossfade_seconds">%1$s ث</string>
     <string name="crossfade_gapless_title">تخطي ألبومات التشغيل المتواصل</string>
     <string name="crossfade_gapless_description">عدم تطبيق التلاشي المتقاطع على الأغاني المتتالية من نفس الألبوم.</string>
-    <string name="player_stream_client_lunartune_extractor">مستخرج LunarTune</string>
+    <string name="player_stream_client_lunartune_extractor">مستخرج Yeshua</string>
     <string name="player_stream_client_lunartune_extractor_desc">يستخدم مستخرج Yeshua الخلفي لبث التشغيل. يفضل الصوت التلقائي عالي الجودة.</string>
     <string name="player_stream_client_lunartune_extractor_login_required">يجب عليك تسجيل الدخول باستخدام حساب Google وتوكن PoToken في الإعدادات لاستخدام هذا</string>
     <string name="settings_appearance_subtitle">السمات، التخطيط، والأنماط البصرية</string>

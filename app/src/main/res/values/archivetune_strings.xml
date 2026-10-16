@@ -424,7 +424,7 @@
     <string name="storage_folder_selected_restart">Storage folder saved. App will restart in 3 seconds.</string>
     <string name="storage_folder_invalid">Select a valid folder.</string>
     <string name="storage_folder_unsupported">This folder cannot be used by the file-backed media cache.</string>
-    <string name="storage_folder_not_writable">LunarTune cannot write cache files in this folder.</string>
+    <string name="storage_folder_not_writable">Yeshua cannot write cache files in this folder.</string>
     <string name="storage_cache_cleared">Cache cleared.</string>
     <string name="storage_cache_clear_failed">Cache could not be cleared. Check SD card access.</string>
     <string name="storage_clear_song_cache_progress">Clearing song cache...%1$d%%</string>
@@ -525,7 +525,7 @@
     <string name="stream_client_web_creator_body">Creator web client.</string>
     <string name="player_stream_client_web_remix">Web Remix</string>
     <string name="player_stream_client_web_remix_desc">Extended format support at the cost of speed. JavaScript signature decryption introduces a ~5–10 second startup delay.</string>
-    <string name="player_stream_client_lunartune_extractor">LunarTune Extractor</string>
+    <string name="player_stream_client_lunartune_extractor">Yeshua Extractor</string>
     <string name="player_stream_client_lunartune_extractor_desc">Uses the Yeshua backend extractor for playback streams. Prefer Auto High Quality Audio.</string>
     <string name="player_stream_client_lunartune_extractor_login_required">You Must Login Using Google Account and PoToken in Settings to use this</string>
     <string name="settings_section_player_content">Player &amp; Content</string>
@@ -793,7 +793,7 @@
     <string name="mori_cipher_refresh_remaining">%1$d manual refreshes remaining</string>
     <string name="mori_cipher_rate_limit_countdown">Available again in %1$s</string>
     <string name="mori_cipher_automatic_updates">Automatic updates</string>
-    <string name="mori_cipher_automatic_updates_description">LunarTune refreshes the current YouTube player configuration every six hours and after decryption failures.</string>
+    <string name="mori_cipher_automatic_updates_description">Yeshua refreshes the current YouTube player configuration every six hours and after decryption failures.</string>
     <string name="mori_cipher_refresh_success">Player configuration updated</string>
     <string name="mori_cipher_refresh_failed">Player configuration could not be updated</string>
     <string name="mori_cipher_rate_limited">Manual refresh limit reached</string>
@@ -821,7 +821,7 @@
     <string name="about_license">LICENSE</string>
     <string name="about_license_unknown">Unknown license</string>
     <string name="about_legal_notice">Legal Notice</string>
-    <string name="about_legal_notice_body">LunarTune does not host any content. All music content is provided by third-party sources through YouTube Music and the optional Monochrome lossless source. Please respect copyright laws and support official artists and distributors.</string>
+    <string name="about_legal_notice_body">Yeshua does not host any content. All music content is provided by third-party sources through YouTube Music and the optional Monochrome lossless source. Please respect copyright laws and support official artists and distributors.</string>
     <string name="about_position_lead_dev">Lead developer of Yeshua</string>
     <string name="about_position_original">Base framework</string>
     <string name="about_position_bot_contributor">Contributor</string>

@@ -139,7 +139,7 @@
     <string name="play">Tocar</string>
     <string name="widget_pause">Pausar</string>
     <string name="widget_previous">Anteriror</string>
-    <string name="widget_tap_to_open">Carrega para abrir o LunarTune</string>
+    <string name="widget_tap_to_open">Carrega para abrir o Yeshua</string>
     <string name="widget_insights_title">Detalhes de músicas ouvidas</string>
     <string name="widget_recommendations">Recomendações</string>
     <string name="widget_listening_time_empty">Sem tempo de escuta</string>
@@ -336,7 +336,7 @@
     <string name="app_icon_available">Ícones disponíveis</string>
     <string name="app_icon_builtin">Integrado</string>
     <string name="app_icon_community">Ícone da comunidade</string>
-    <string name="app_icon_builtin_description">Ícone original do LunarTune</string>
+    <string name="app_icon_builtin_description">Ícone original do Yeshua</string>
     <string name="app_icon_identifier">ID %1$s</string>
     <string name="app_icon_community_notice">Os ícones da comunidade são criados pelos usuários e podem mudar futuramente.</string>
     <plurals name="app_icon_count">
@@ -591,7 +591,7 @@
     <string name="eq_screen_subtitle">Personaliza a reprodução de acordo com a tua audição e equipamento</string>
     <string name="eq_sound_shaping_on">A função de modelagem de áudio está ativada</string>
     <string name="eq_sound_shaping_off">A função de modelagem de áudio está desativada</string>
-    <string name="eq_enable_description">Aplica estes controles à reprodução do LunarTune</string>
+    <string name="eq_enable_description">Aplica estes controles à reprodução do Yeshua</string>
     <string name="eq_control_mode">Modo de controle</string>
     <string name="eq_basic">Básico</string>
     <string name="eq_advanced">Avançado</string>
@@ -807,7 +807,7 @@
     <string name="target_language">Idioma de Destino</string>
     <string name="close_dialog">Fechar</string>
     <string name="support_development_title">Apoiar o desenvolvimento</string>
-    <string name="support_development_message">Olá! Sou cognitiveshadows03, desenvolvedora do Yeshua. Se o Yeshua conquistou um lugar tua rotina diária, poderás ajudar o projeto a evoluir fazendo uma doação ou dando uma estrela no GitHub. Obrigada por apoiar o trabalho por detrás desta app.</string>
+    <string name="support_development_message">Olá! Sou ReCapzPhyco-420, desenvolvedora do Yeshua. Se o Yeshua conquistou um lugar tua rotina diária, poderás ajudar o projeto a evoluir fazendo uma doação ou dando uma estrela no GitHub. Obrigada por apoiar o trabalho por detrás desta app.</string>
     <string name="support_development_donate">Doa para apoiar o desenvolvimento</string>
     <string name="support_development_star">Dar estrela no GitHub</string>
     <string name="later">Depois</string>
@@ -921,7 +921,7 @@
     <string name="update_notification_channel_name">Atualizações da App</string>
     <string name="update_notification_channel_desc">Notificações de novas atualizações da app</string>
     <string name="update_notification_title">Atualização Disponível</string>
-    <string name="update_notification_text">LunarTune %s já está disponível</string>
+    <string name="update_notification_text">Yeshua %s já está disponível</string>
     <string name="download">Transferir</string>
     <string name="download_complete">Transferência concluída</string>
     <string name="downloads">Transferências</string>
@@ -944,7 +944,7 @@
     <string name="permission_status_allowed">Permitido</string>
     <string name="next">Próximo</string>
     <string name="allow">Permitir</string>
-    <string name="onboarding_welcome_title">Bem-vindo ao LunarTune</string>
+    <string name="onboarding_welcome_title">Bem-vindo ao Yeshua</string>
     <string name="onboarding_welcome_subtitle">Configura a reprodução, músicas locais e permissões de atualização antes de começar a ouvir.</string>
     <string name="onboarding_permissions_title">Rever permissões</string>
     <string name="onboarding_permissions_subtitle">Concede apenas o que desejas agora. Podes continuar e depois ativar as permissões.</string>
@@ -986,7 +986,7 @@
     <string name="playlist_suggestion_source_title">Título da lista de reprodução</string>
     <string name="playlist_suggestion_source_content">Conteúdo da lista de reprodução</string>
     <string name="playlist_suggestion_source_both">Título e conteúdo da lista de reprodução</string>
-    <string name="music_together">LunarTune Music Together</string>
+    <string name="music_together">Yeshua Music Together</string>
     <string name="together_display_name">Nome em exibição</string>
     <string name="together_display_name_placeholder">O teu nome</string>
     <string name="together_port">Porta da sessão</string>
@@ -1118,5 +1118,5 @@
     <string name="scheduled_backup_directory_saved">Diretório de cópias de segurança guardado</string>
     <string name="scheduled_backup_load_failed">Não foi possível carregar as configurações de cópia de segurança programadas</string>
     <string name="scheduled_backup_update_failed">Não foi possível guardar as configurações de cópia de segurança programadas</string>
-    <string name="gatekeeper_connection_blocked">Ligação bloqueada pelo Yeshua Remote. Não foi possível verificar se esta aplicação é uma versão oficial do Yeshua. Instala uma versão oficial em https://github.com/cognitiveshadows03/LunarTune ou https://t.me/LunarTuneGC.</string>
+    <string name="gatekeeper_connection_blocked">Ligação bloqueada pelo Yeshua Remote. Não foi possível verificar se esta aplicação é uma versão oficial do Yeshua. Instala uma versão oficial em https://github.com/ReCapzPhyco-420/Yeshua.</string>
 </resources>

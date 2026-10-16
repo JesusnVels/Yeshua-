@@ -5,7 +5,7 @@
  * Do not remove or alter this notice. - Per GPL-3.0 Section 4 & Section 5
  */
 
-package dev.citali.lunartune.shazamkit
+package dev.yeshua.player.shazamkit
 
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer

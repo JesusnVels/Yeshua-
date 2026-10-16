@@ -58,7 +58,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="false"
-        android:theme="@style/Theme.LunarTune"
+        android:theme="@style/Theme.Yeshua"
         tools:targetApi="tiramisu">
         <uses-library
             android:name="org.apache.http.legacy"
@@ -75,7 +75,7 @@
             android:enabled="true"
             android:exported="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.LunarTune"
+            android:theme="@style/Theme.Yeshua"
             android:windowSoftInputMode="adjustResize">
             <!-- Launcher entry is provided by generated activity-aliases (see GenerateIconPackTask). -->
             <intent-filter>
@@ -202,12 +202,12 @@
             android:name=".musicrecognition.MusicRecognitionTileActionActivity"
             android:excludeFromRecents="true"
             android:exported="false"
-            android:theme="@style/Theme.LunarTune.Transparent" />
+            android:theme="@style/Theme.Yeshua.Transparent" />
 
         <activity
             android:name=".RestoreBackupFileActivity"
             android:exported="true"
-            android:theme="@style/Theme.LunarTune"
+            android:theme="@style/Theme.Yeshua"
             android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -398,19 +398,19 @@
             android:name=".DebugActivity"
             android:exported="true"
             android:process=":crash"
-            android:theme="@style/Theme.LunarTune">
+            android:theme="@style/Theme.Yeshua">
         </activity>
 
         <activity
             android:name=".ui.screens.settings.PoTokenExtractionActivity"
             android:exported="false"
-            android:theme="@style/Theme.LunarTune" />
+            android:theme="@style/Theme.Yeshua" />
 
         <activity
             android:name=".discord.DiscordOAuthCallbackActivity"
             android:exported="true"
             android:noHistory="true"
-            android:theme="@style/Theme.LunarTune">
+            android:theme="@style/Theme.Yeshua">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 

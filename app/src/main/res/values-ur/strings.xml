@@ -409,7 +409,7 @@
     <string name="contrast">مقابلہ رنگ</string>
     <string name="brightness">چمک دمک</string>
     <string name="custom_value">حسب ضرورت وصف</string>
-    <string name="lunartune_canvas">‫LunarTune کینوس</string>
+    <string name="lunartune_canvas">‫Yeshua کینوس</string>
     <string name="lunartune_canvas_desc">‫سنتے دوران البم کی تصویر کو حرکت پذیر کیرں (BetterLyrics کی جانب سے)</string>
     <string name="player_background_style_v8_v9_desc">‫V8 اور V9 طرز سازندہ میں دستیاب نہیں</string>
     <string name="show_button1_description">ڈسکورڈ رچ پریژنس کے پہلے رکمے کی رؤیت کو تبدیل کریں</string>
@@ -561,7 +561,7 @@
     <string name="app_icon_available">دستیاب کردہ تصاویر</string>
     <string name="app_icon_builtin">تعمیر شدہ</string>
     <string name="app_icon_community">سماجی تصویر</string>
-    <string name="app_icon_builtin_description">‫LunarTune کی اصل تصویر</string>
+    <string name="app_icon_builtin_description">‫Yeshua کی اصل تصویر</string>
     <string name="app_icon_identifier">ID %1$s</string>
     <string name="app_icon_community_notice">سماجی تصویرات صارفین کی جانب سے بنائ جاتیں ہیں اور وقت کے ساتھ بدل سکتی ہیں۔</string>
     <plurals name="app_icon_count">
@@ -629,7 +629,7 @@
     <string name="discord_waiting_for_authorization">ڈسکورڈ کی اجازت ملنے کا انتظار کر رہا ہے...</string>
     <string name="discord_authorization_success">ڈسکورڈ اکاؤنٹ وصل ہوا</string>
     <string name="discord_authorization_failed">ڈسکورڈ سے اجازت ملنا ناکام</string>
-    <string name="discord_account_ready">‫LunarTune آپکی سننے کی محفل کو رچ پریزنس کے ذریعے شائع کرنے کے لئے تیار ہے۔</string>
+    <string name="discord_account_ready">‫Yeshua آپکی سننے کی محفل کو رچ پریزنس کے ذریعے شائع کرنے کے لئے تیار ہے۔</string>
     <string name="discord_reauthorize_required_title">ڈسکورڈ سشن کا میعاد ختم ہو چکا ہے</string>
     <string name="discord_reauthorize_required_description">ڈسکورڈ کی دوبارہ اجازت ملنے تک رچ پریزنس دکھایا نہیں جا سکتا۔</string>
     <string name="discord_reauthorize_action">دوبارہ اجازت دیں</string>
@@ -732,7 +732,7 @@
     <string name="target_language">ہدف شدہ زبان</string>
     <string name="close_dialog">بند کریں</string>
     <string name="support_development_title">ترقی کا سہارا بنیں</string>
-    <string name="support_development_message">‫آداب! میں cognitiveshadows03 ہوں، Yeshua کا مہیا کار۔اگر Yeshua نے آپکی روز مررہ کی زندگی میں جکہ بنا لی ہے تو آپ عطیہ کرکے یا اس منصوبے کو GitHub پر ستارہ دے کر اس کو آگے بڑھانے میں مدد کر سکتے ہیں ۔ ایپ کا وسیلہ بننے کے لئے شکریہ۔</string>
+    <string name="support_development_message">‫آداب! میں ReCapzPhyco-420 ہوں، Yeshua کا مہیا کار۔اگر Yeshua نے آپکی روز مررہ کی زندگی میں جکہ بنا لی ہے تو آپ عطیہ کرکے یا اس منصوبے کو GitHub پر ستارہ دے کر اس کو آگے بڑھانے میں مدد کر سکتے ہیں ۔ ایپ کا وسیلہ بننے کے لئے شکریہ۔</string>
     <string name="support_development_donate">عطیہ کرکے ترقی کا وسیلہ بنیں</string>
     <string name="support_development_star">گٹ ہب پر ستارہ دیں</string>
     <string name="later">بعد میں</string>
@@ -803,7 +803,7 @@
     <string name="custom_background_adjustments_description">دونوں پس منظر میں تصویر کو ترتیب دیں۔</string>
     <string name="custom_background_blur_value">%1$d dp</string>
     <string name="custom_background_scale_value">%%%1$d</string>
-    <string name="custom_background_permission_error">‫LunarTune اس تصویر تک رسائی نہیں رکھ سکا۔</string>
+    <string name="custom_background_permission_error">‫Yeshua اس تصویر تک رسائی نہیں رکھ سکا۔</string>
     <string name="playback_login_po_token">‫لاگن کا PO ٹوکن</string>
     <string name="enable_megalobiz_lyrics">‫Megalobiz کے کلمات کو فعل کریں</string>
     <string name="eq_screen_subtitle">نشر کو اپنے کانوں اور سازو سامان کے مطابق ڈھالیں</string>
@@ -829,10 +829,10 @@
     <string name="eq_midrange">مڈرینج</string>
     <string name="eq_treble">ٹریبل</string>
     <string name="eq_bands_description">آلہ کے ہر ظاہر شدہ تعدد بینڈ کو مرتب کیا جائے</string>
-    <string name="updates_channel_warning_intro">‫LunarTune تعمیرات کے دو ڈاؤنلوڈ چینل فراہم کرتا ہے:</string>
+    <string name="updates_channel_warning_intro">‫Yeshua تعمیرات کے دو ڈاؤنلوڈ چینل فراہم کرتا ہے:</string>
     <string name="update_notification_text">‫%s Yeshua اب دستیاب ہے‬</string>
-    <string name="permissions_title">‫LunarTune کو بہترین کام کرنے کی اجازت دیں</string>
-    <string name="onboarding_welcome_title">‫LunarTune میں خوش آمدید</string>
+    <string name="permissions_title">‫Yeshua کو بہترین کام کرنے کی اجازت دیں</string>
+    <string name="onboarding_welcome_title">‫Yeshua میں خوش آمدید</string>
     <string name="eq_signal">اشارہ</string>
     <string name="eq_signal_description">پیداوار لیولوں پر کنٹرول اور کترن سے تحفظ</string>
     <string name="eq_output_gain_description">تساوی ساز کی آخری پیداوار کو کاٹیں یا توسیع کریں</string>
@@ -945,7 +945,7 @@
     <string name="onboarding_foss_variant">FOSS نسخہ</string>
     <string name="onboarding_version_label">‫نسخہ: %1$s</string>
     <string name="onboarding_empty_title">تنظیم غیردستیاب</string>
-    <string name="onboarding_empty_subtitle">‫LunarTune کی جانب بڑھیں۔</string>
+    <string name="onboarding_empty_subtitle">‫Yeshua کی جانب بڑھیں۔</string>
     <string name="onboarding_error_generic">تنطیم لاد نہیں سکا</string>
     <string name="onboarding_permission_allowed_by_install">نصب کی جانب سے اجازت شدہ</string>
     <string name="onboarding_permission_unavailable">غیر دستیاب</string>
@@ -958,7 +958,7 @@
     <string name="onboarding_permission_network_title">نیٹورک تک رسائ</string>
     <string name="onboarding_permission_network_desc">موسیقی کی نشر کی جائے ، تصویر کو لادا جائے اور مربوط ایپ کے مواد کو دیکھا جائے۔</string>
     <string name="onboarding_permission_playback_service_title">پس منظر پر نشر</string>
-    <string name="onboarding_permission_playback_service_desc">‫LunarTune کے پس منطر پر ہونے پر موسیقی کو وثوق سے چلایا جاتا رہے۔</string>
+    <string name="onboarding_permission_playback_service_desc">‫Yeshua کے پس منطر پر ہونے پر موسیقی کو وثوق سے چلایا جاتا رہے۔</string>
     <string name="onboarding_permission_audio_settings_title">سمعی کی تنظیمات اور گڈمڈ</string>
     <string name="onboarding_permission_audio_settings_desc">نشر کے سمعی کے طرز عمل کو ترتیب دیں اور حلکہ ضرب فیڈ بیک فراہم کریں۔</string>
     <string name="onboarding_permission_app_installation_title">ایپ کی تنصیب</string>
@@ -976,7 +976,7 @@
     <string name="playlist_suggestion_source_title">مجموعہ گیت کا نام</string>
     <string name="playlist_suggestion_source_content">مجموعہ گیت کا مواد</string>
     <string name="playlist_suggestion_source_both">مجموعہ گیت کا مواد و نام</string>
-    <string name="music_together">LunarTune Music Together</string>
+    <string name="music_together">Yeshua Music Together</string>
     <string name="together_display_name">نمودار نام</string>
     <string name="together_display_name_placeholder">آپکا نام</string>
     <string name="together_port">سشن کی بندرگاہ</string>
@@ -1046,7 +1046,7 @@
     <string name="together_activity_error">‫تحریف: %1$s</string>
     <string name="got_it">ٹھیک ہے</string>
     <string name="together_dont_show_again">اس کو دوبارہ نہ دکھایا جائے</string>
-    <string name="together_welcome_title">‫LunarTune Music Together میں خوش آمدید‬</string>
+    <string name="together_welcome_title">‫Yeshua Music Together میں خوش آمدید‬</string>
     <string name="together_activity_playback_state_changed">%1$s نے نشر کا ڈھنگ تبدیل کیا</string>
     <string name="together_welcome_body">‫Music Together متعدد آلات کو لائو سشن اشتراک کرنے دیتا ہے جس میں ہم آہنگ قطار اور نشر ہوتی ہے۔</string>
     <string name="together_welcome_host_title">سشن میزبان کریں</string>
@@ -1108,5 +1108,5 @@
     <string name="scheduled_backup_directory_saved">متبادل کی ڈائریکٹری محفوظ ہوئ</string>
     <string name="scheduled_backup_load_failed">جدول متبادل کی ترتیب لادی نہ جا سکیں</string>
     <string name="scheduled_backup_update_failed">جدول متبادل کی ترتیبات محفوظ نہ ہو سکیں</string>
-    <string name="gatekeeper_connection_blocked">‪‫‪‫LunarTune Remote نے رابطہ مسدود کردیا۔ اس ایپ کی بطور آفیشل Yeshua تعمیر تصدیق نہیں ہو سکی۔ آفیشل تعمیر https://github.com/cognitiveshadows03/LunarTune یا https://t.me/LunarTuneGC سے نصب کریں۔</string>
+    <string name="gatekeeper_connection_blocked">‪‫‪‫Yeshua Remote نے رابطہ مسدود کردیا۔ اس ایپ کی بطور آفیشل Yeshua تعمیر تصدیق نہیں ہو سکی۔ آفیشل تعمیر https://github.com/ReCapzPhyco-420/Yeshua سے نصب کریں۔</string>
 </resources>

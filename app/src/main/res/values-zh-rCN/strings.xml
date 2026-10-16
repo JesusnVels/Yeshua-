@@ -88,7 +88,7 @@
     <string name="update_notification_channel_desc">新应用更新通知</string>
     <string name="update_notification_title">更新可用</string>
     <string name="download">下载</string>
-    <string name="permissions_title">让LunarTune发挥最佳作用</string>
+    <string name="permissions_title">让Yeshua发挥最佳作用</string>
     <string name="permissions_subtitle">我们使用一些权限来可靠地播放和管理您的音乐，你可以随时在系统设置中更改这些</string>
     <string name="permission_storage_title">存储访问</string>
     <string name="permission_storage_desc">播放时必须读取下载的和本地音频文件</string>
@@ -278,7 +278,7 @@
     <string name="latest_version_format">最新消息：%s</string>
     <string name="enable_update_notification">启用更新通知</string>
     <string name="recent_commits">近期提交</string>
-    <string name="update_notification_text">LunarTune%s现已发布</string>
+    <string name="update_notification_text">Yeshua%s现已发布</string>
     <string name="permission_status_allowed">允许</string>
     <string name="next">下一个</string>
     <string name="delete_playlist_confirm">你真的想删除播放列表”%s\"吗?</string>
@@ -381,7 +381,7 @@
     <string name="blur">模糊</string>
     <string name="contrast">对比</string>
     <string name="brightness">亮度</string>
-    <string name="lunartune_canvas">LunarTune画布</string>
+    <string name="lunartune_canvas">Yeshua画布</string>
     <string name="lunartune_canvas_desc">播放时动画化专辑封面（由BetterLyrics提供）</string>
     <string name="show_button1_description">在Discord Rich Presence中切换按钮1的可见性</string>
     <string name="show_button2_description">在Discord Rich Presence中切换按钮2的可见性</string>
@@ -517,7 +517,7 @@
     <string name="no_releases">未发现任何发布</string>
     <string name="you_might_like">猜你喜欢</string>
     <string name="refresh_suggestions">刷新建议</string>
-    <string name="music_together">LunarTune 音乐共赏</string>
+    <string name="music_together">Yeshua 音乐共赏</string>
     <string name="together_display_name">昵称</string>
     <string name="together_display_name_placeholder">你的名字</string>
     <string name="together_port">会话端口</string>
@@ -669,7 +669,7 @@
     <string name="start_mix">播放合辑</string>
     <string name="widget_pause">暂停</string>
     <string name="widget_previous">上一首</string>
-    <string name="widget_tap_to_open">点击打开 LunarTune</string>
+    <string name="widget_tap_to_open">点击打开 Yeshua</string>
     <string name="widget_insights_title">听歌偏好</string>
     <string name="widget_recommendations">为你推荐</string>
     <string name="widget_listening_time_empty">暂无听歌时长</string>
@@ -727,7 +727,7 @@
     <string name="app_icon_available">可用图标</string>
     <string name="app_icon_builtin">内置</string>
     <string name="app_icon_community">社区图标</string>
-    <string name="app_icon_builtin_description">LunarTune 原创图标</string>
+    <string name="app_icon_builtin_description">Yeshua 原创图标</string>
     <string name="app_icon_identifier">ID %1$s</string>
     <string name="app_icon_community_notice">社区图标由用户创建，可能会随时间有所变动</string>
     <plurals name="app_icon_count">
@@ -754,7 +754,7 @@
     <string name="custom_background_adjustments_description">调整参数将同时作用于两处预览</string>
     <string name="custom_background_blur_value">%1$d dp</string>
     <string name="custom_background_scale_value">%1$d%%</string>
-    <string name="custom_background_permission_error">LunarTune 无法保持对此图片的访问权限</string>
+    <string name="custom_background_permission_error">Yeshua 无法保持对此图片的访问权限</string>
     <string name="custom_background_permission_cleanup_error">无法释放原图片的访问权限</string>
     <string name="player_background_style_v8_v9_desc">不适用于 V8 和 V9 播放器样式</string>
     <string name="disable_animations">禁用动画效果</string>
@@ -771,9 +771,9 @@
     <string name="lyrics_animation_style_v2_only">仅在 V2 歌词模式下可用</string>
     <string name="playback_login_po_token">登录 PO Token</string>
     <string name="playback_confirmation_required">需要确认播放</string>
-    <string name="playback_requires_youtube_music_confirmation">请先在 YouTube Music 中确认播放，然后返回 LunarTune</string>
+    <string name="playback_requires_youtube_music_confirmation">请先在 YouTube Music 中确认播放，然后返回 Yeshua</string>
     <string name="playback_login_refresh_required">刷新 YouTube Music 登录状态</string>
-    <string name="playback_requires_youtube_music_login_refresh">请重新登录 YouTube Music，然后返回 LunarTune</string>
+    <string name="playback_requires_youtube_music_login_refresh">请重新登录 YouTube Music，然后返回 Yeshua</string>
     <string name="playback_error_code">错误代码</string>
     <string name="playback_error_http">HTTP 状态</string>
     <string name="playback_error_message">错误信息</string>
@@ -886,7 +886,7 @@
     <string name="discord_waiting_for_authorization">正在等待 Discord 授权…</string>
     <string name="discord_authorization_success">Discord 账号已连接</string>
     <string name="discord_authorization_failed">Discord 授权失败</string>
-    <string name="discord_account_ready">LunarTune 已准备就绪，将为你的听歌活动发布播放状态</string>
+    <string name="discord_account_ready">Yeshua 已准备就绪，将为你的听歌活动发布播放状态</string>
     <string name="discord_reauthorize_required_title">Discord 登录会话已过期</string>
     <string name="discord_reauthorize_required_description">需要重新完成 Discord 授权后才能显示播放状态</string>
     <string name="discord_reauthorize_action">重新授权</string>
@@ -942,7 +942,7 @@
     <string name="discord_image_artist_artwork">艺人图片</string>
     <string name="discord_image_album_artwork">专辑封面</string>
     <string name="support_development_title">支持项目开发</string>
-    <string name="support_development_message">你好！我是 Yeshua 的开发者 cognitiveshadows03。如果 Yeshua 已经成为你日常听歌不可或缺的一部分，欢迎通过捐赠或在 GitHub 上点亮 Star 来支持后续的开发与维护。感谢你对本应用的支持与鼓励！</string>
+    <string name="support_development_message">你好！我是 Yeshua 的开发者 ReCapzPhyco-420。如果 Yeshua 已经成为你日常听歌不可或缺的一部分，欢迎通过捐赠或在 GitHub 上点亮 Star 来支持后续的开发与维护。感谢你对本应用的支持与鼓励！</string>
     <string name="support_development_donate">捐赠支持开发</string>
     <string name="support_development_star">在 GitHub 点亮 Star</string>
     <string name="later">以后再说</string>
@@ -960,7 +960,7 @@
     <string name="update_channel_desc">在经过测试的稳定版与开发快照版之间进行选择</string>
     <string name="channel_canary">Canary（金丝雀预览版）</string>
     <string name="updates_canary_hosting_description">Canary 版本将基于最新的开发分支自动编译发布</string>
-    <string name="updates_channel_warning_intro">LunarTune 提供两个构建版本的下载通道：</string>
+    <string name="updates_channel_warning_intro">Yeshua 提供两个构建版本的下载通道：</string>
     <string name="updates_channel_warning_stable_title">稳定版 (Stable)</string>
     <string name="updates_channel_warning_stable_source">通过官方 GitHub Releases 分发</string>
     <string name="updates_channel_warning_stable_desc">这些版本均经过充分测试，推荐绝大多数用户使用</string>
@@ -987,25 +987,25 @@
     <string name="download_failed_state">下载失败</string>
     <string name="search_downloads">搜索下载内容</string>
     <string name="no_matching_downloads">未找到匹配的下载项</string>
-    <string name="onboarding_welcome_title">欢迎使用 LunarTune</string>
+    <string name="onboarding_welcome_title">欢迎使用 Yeshua</string>
     <string name="onboarding_welcome_subtitle">在开始听歌前，请完成播放设置、本地音乐接入及必要的权限配置</string>
     <string name="onboarding_permissions_title">权限检查</string>
     <string name="onboarding_permissions_subtitle">仅授予你目前所需的权限即可。你可以直接继续，并在日后随时进行授权</string>
     <string name="onboarding_community_title">保持联系</string>
-    <string name="onboarding_community_subtitle">关注开发进展、反馈问题或支持 LunarTune</string>
+    <string name="onboarding_community_subtitle">关注开发进展、反馈问题或支持 Yeshua</string>
     <string name="onboarding_finish">开始听歌</string>
     <string name="onboarding_gms_variant">GMS 版本</string>
     <string name="onboarding_foss_variant">FOSS 版本</string>
     <string name="onboarding_version_label">版本 %1$s</string>
     <string name="onboarding_empty_title">初始化跳过</string>
-    <string name="onboarding_empty_subtitle">直接进入 LunarTune</string>
+    <string name="onboarding_empty_subtitle">直接进入 Yeshua</string>
     <string name="onboarding_error_generic">无法加载初始化向导</string>
     <string name="onboarding_permission_allowed_by_install">安装时已默认允许</string>
     <string name="onboarding_permission_unavailable">不可用</string>
     <string name="onboarding_permission_notifications_title">通知权限</string>
     <string name="onboarding_permission_notifications_desc">在通知栏中显示播放控制与音乐活动</string>
     <string name="onboarding_permission_device_audio_capture_title">端侧音频识别</string>
-    <string name="onboarding_permission_device_audio_capture_desc">无需麦克风即可识别其他应用中播放的音乐。Android 每次都会弹窗询问屏幕和音频捕获授权，LunarTune 将仅处理音频数据</string>
+    <string name="onboarding_permission_device_audio_capture_desc">无需麦克风即可识别其他应用中播放的音乐。Android 每次都会弹窗询问屏幕和音频捕获授权，Yeshua 将仅处理音频数据</string>
     <string name="onboarding_permission_bluetooth_connect_title">蓝牙音频连接</string>
     <string name="onboarding_permission_bluetooth_connect_desc">连接附近的蓝牙音频设备以进行播放</string>
     <string name="onboarding_permission_network_title">网络访问</string>
@@ -1091,7 +1091,7 @@
     <string name="scheduled_backup_directory_saved">备份目录已保存</string>
     <string name="scheduled_backup_load_failed">无法加载计划自动备份设置</string>
     <string name="scheduled_backup_update_failed">无法保存计划自动备份设置</string>
-    <string name="gatekeeper_connection_blocked">连接已被 Yeshua Remote 拒绝。当前应用未能通过官方 Yeshua 构建验证。请从 https://github.com/cognitiveshadows03/LunarTune 或 https://t.me/LunarTuneGC 获取官方构建版本</string>
+    <string name="gatekeeper_connection_blocked">连接已被 Yeshua Remote 拒绝。当前应用未能通过官方 Yeshua 构建验证。请从 https://github.com/ReCapzPhyco-420/Yeshua 获取官方构建版本</string>
     <plurals name="widget_total_plays">
         <item quantity="other">%d 次播放</item>
     </plurals>

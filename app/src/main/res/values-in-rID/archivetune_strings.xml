@@ -550,7 +550,7 @@
     <string name="storage_folder_selected_restart">Folder penyimpanan disimpan. Aplikasi akan dimulai ulang dalam 3 detik.</string>
     <string name="storage_folder_invalid">Pilih folder yang valid.</string>
     <string name="storage_folder_unsupported">Folder ini tidak dapat digunakan oleh cache media berbasis file.</string>
-    <string name="storage_folder_not_writable">LunarTune tidak dapat menulis file cache di folder ini.</string>
+    <string name="storage_folder_not_writable">Yeshua tidak dapat menulis file cache di folder ini.</string>
     <string name="storage_cache_cleared">Cache dibersihkan.</string>
     <string name="storage_cache_clear_failed">Cache tidak dapat dibersihkan. Periksa akses kartu SD.</string>
     <string name="storage_clear_song_cache_progress">Membersihkan cache lagu...%1$d%%</string>
@@ -565,7 +565,7 @@
     <string name="release_type_album">Album</string>
     <string name="release_type_single">Single</string>
     <string name="release_metadata">%1$s • %2$d</string>
-    <string name="player_stream_client_lunartune_extractor">Ekstraktor LunarTune</string>
+    <string name="player_stream_client_lunartune_extractor">Ekstraktor Yeshua</string>
     <string name="player_stream_client_lunartune_extractor_desc">Menggunakan ekstraktor backend Yeshua untuk aliran pemutaran. Lebih disukai Audio Kualitas Tinggi Otomatis.</string>
     <string name="player_stream_client_lunartune_extractor_login_required">Anda Harus Login Menggunakan Akun Google dan PoToken di Pengaturan untuk menggunakan ini</string>
     <string name="top_albums">Album Teratas</string>
@@ -610,7 +610,7 @@
     <string name="mori_cipher_refresh_remaining">Tersisa %1$d penyegaran manual</string>
     <string name="mori_cipher_rate_limit_countdown">Tersedia lagi dalam %1$s</string>
     <string name="mori_cipher_automatic_updates">Pembaruan otomatis</string>
-    <string name="mori_cipher_automatic_updates_description">LunarTune menyegarkan konfigurasi pemutar YouTube saat ini setiap enam jam dan setelah kegagalan dekripsi.</string>
+    <string name="mori_cipher_automatic_updates_description">Yeshua menyegarkan konfigurasi pemutar YouTube saat ini setiap enam jam dan setelah kegagalan dekripsi.</string>
     <string name="mori_cipher_refresh_success">Konfigurasi pemutar diperbarui</string>
     <string name="mori_cipher_refresh_failed">Konfigurasi pemutar tidak dapat diperbarui</string>
     <string name="mori_cipher_rate_limited">Batas penyegaran manual tercapai</string>

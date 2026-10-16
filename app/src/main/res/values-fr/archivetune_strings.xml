@@ -516,7 +516,7 @@
     <string name="year_in_music_empty_subtitle">Écoutez davantage de musique pendant %d et votre récapitulatif s\'affichera ici.</string>
     <string name="storage_location_free">%s libre</string>
     <string name="aod_customize_show_artist">Afficher l\'artiste</string>
-    <string name="storage_folder_not_writable">LunarTune ne peut pas enregistrer de fichiers de cache dans ce dossier.</string>
+    <string name="storage_folder_not_writable">Yeshua ne peut pas enregistrer de fichiers de cache dans ce dossier.</string>
     <string name="ai_api_status_failed">L\'API a échoué. Veuillez réessayer après avoir mis à jour les paramètres.</string>
     <string name="storage_folder_unsupported">Ce dossier ne peut pas être utilisé par le cache multimédia basé sur des fichiers.</string>
     <string name="force_sync_on_switch_account">Forcer la synchronisation sur le compte Switch</string>
@@ -574,7 +574,7 @@
     <string name="theme_creator_title">Créateur de thèmes</string>
     <string name="block_artist">Bloquer l\'artiste</string>
     <string name="unblock_artist">Débloquer l\'artiste</string>
-    <string name="player_stream_client_lunartune_extractor">Extracteur LunarTune</string>
+    <string name="player_stream_client_lunartune_extractor">Extracteur Yeshua</string>
     <string name="player_stream_client_lunartune_extractor_desc">Utilise l\'extracteur Yeshua pour les flux de lecture. Privilégie l\'audio haute qualité automatique.</string>
     <string name="music_recognition_settings">Paramètres de reconnaissance musicale</string>
     <string name="music_recognition_background_title">Reconnaissance en arrière-plan</string>
@@ -628,7 +628,7 @@
     <string name="mori_cipher_refresh_remaining">%1$d actualisations manuelles restantes</string>
     <string name="mori_cipher_rate_limit_countdown">À nouveau disponible dans %1$s</string>
     <string name="mori_cipher_automatic_updates">Mises à jour automatiques</string>
-    <string name="mori_cipher_automatic_updates_description">LunarTune actualise la configuration actuelle du lecteur YouTube toutes les six heures et après chaque échec de décryptage.</string>
+    <string name="mori_cipher_automatic_updates_description">Yeshua actualise la configuration actuelle du lecteur YouTube toutes les six heures et après chaque échec de décryptage.</string>
     <string name="mori_cipher_refresh_success">Mise à jour de la configuration du lecteur</string>
     <string name="mori_cipher_refresh_failed">La configuration du lecteur n\'a pas pu être mise à jour</string>
     <string name="mori_cipher_rate_limited">Limite d\'actualisation manuelle atteinte</string>

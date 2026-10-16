@@ -26,18 +26,18 @@
 #   **                              -> wildcard
 
 # ---- Application startup ---------------------------------------------------
-HSPLdev/citali/lunartune/App;->onCreate()V
-HSPLdev/citali/lunartune/App;->**(**)**
-Ldev/citali/lunartune/App**;
-HSPLdev/citali/lunartune/MainActivity;->onCreate(Landroid/os/Bundle;)V
-HSPLdev/citali/lunartune/MainActivity;->onStart()V
-HSPLdev/citali/lunartune/MainActivity;->onResume()V
-HSPLdev/citali/lunartune/MainActivity;->**(**)**
-Ldev/citali/lunartune/MainActivity**;
+HSPLdev/yeshua/player/App;->onCreate()V
+HSPLdev/yeshua/player/App;->**(**)**
+Ldev/yeshua/player/App**;
+HSPLdev/yeshua/player/MainActivity;->onCreate(Landroid/os/Bundle;)V
+HSPLdev/yeshua/player/MainActivity;->onStart()V
+HSPLdev/yeshua/player/MainActivity;->onResume()V
+HSPLdev/yeshua/player/MainActivity;->**(**)**
+Ldev/yeshua/player/MainActivity**;
 
 # ---- Navigation + top-level UI scaffolding --------------------------------
-HSPLdev/citali/lunartune/ui/screens/NavigationBuilderKt;->**(**)**
-Ldev/citali/lunartune/ui/screens/**;
+HSPLdev/yeshua/player/ui/screens/NavigationBuilderKt;->**(**)**
+Ldev/yeshua/player/ui/screens/**;
 
 # ---- Scroll-driven nav bar hide (per-frame hot path) -----------------------
 # NavBarScrollTracker.consume() runs once per scroll frame for the whole of a
@@ -45,60 +45,60 @@ Ldev/citali/lunartune/ui/screens/**;
 # onPostFling overrides running alongside it, so both need AOT compilation and
 # not merely class loading: an interpreted consume() at 120Hz is exactly the
 # jank this feature exists to avoid. The tracker is a top-level class in the
-# root dev.citali.lunartune package, which the App** and MainActivity** rules
+# root dev.yeshua.player package, which the App** and MainActivity** rules
 # above do not reach, so it needs its own entry. The connection is MainActivity's
 # single anonymous NestedScrollConnection, addressed through the MainActivity$**
 # inner-class wildcard with the method names pinned so the rule does not drag in
 # every lambda class of a 3.7k-line composable.
-Ldev/citali/lunartune/NavBarScrollTracker;
-HSPLdev/citali/lunartune/NavBarScrollTracker;->**(**)**
-HSPLdev/citali/lunartune/MainActivity$**;->onPostScroll(**)**
-HSPLdev/citali/lunartune/MainActivity$**;->onPreFling(**)**
-HSPLdev/citali/lunartune/MainActivity$**;->onPostFling(**)**
+Ldev/yeshua/player/NavBarScrollTracker;
+HSPLdev/yeshua/player/NavBarScrollTracker;->**(**)**
+HSPLdev/yeshua/player/MainActivity$**;->onPostScroll(**)**
+HSPLdev/yeshua/player/MainActivity$**;->onPreFling(**)**
+HSPLdev/yeshua/player/MainActivity$**;->onPostFling(**)**
 
 # ---- Home screen ------------------------------------------------------------
 # HomeScreen and the main SearchScreen live directly in ui/screens in LunarTune,
 # not in ArchiveTune's old ui/screens/home package.
-HSPLdev/citali/lunartune/viewmodels/HomeViewModel;->**(**)**
-HSPLdev/citali/lunartune/ui/screens/HomeScreenKt;->**(**)**
-HSPLdev/citali/lunartune/ui/screens/SearchScreenKt;->**(**)**
-HSPLdev/citali/lunartune/ui/screens/NavigationBuilderKt;->**(**)**
-Ldev/citali/lunartune/ui/screens/HomeScreenKt;
-Ldev/citali/lunartune/ui/screens/SearchScreenKt;
-# ChartsScreenKt was matched only by the Ldev/citali/lunartune/ui/screens/**;
+HSPLdev/yeshua/player/viewmodels/HomeViewModel;->**(**)**
+HSPLdev/yeshua/player/ui/screens/HomeScreenKt;->**(**)**
+HSPLdev/yeshua/player/ui/screens/SearchScreenKt;->**(**)**
+HSPLdev/yeshua/player/ui/screens/NavigationBuilderKt;->**(**)**
+Ldev/yeshua/player/ui/screens/HomeScreenKt;
+Ldev/yeshua/player/ui/screens/SearchScreenKt;
+# ChartsScreenKt was matched only by the Ldev/yeshua/player/ui/screens/**;
 # load rule above, so its composables ran interpreted while Home and Search
 # were AOT-compiled.
-HSPLdev/citali/lunartune/ui/screens/ChartsScreenKt;->**(**)**
-Ldev/citali/lunartune/ui/screens/ChartsScreenKt;
+HSPLdev/yeshua/player/ui/screens/ChartsScreenKt;->**(**)**
+Ldev/yeshua/player/ui/screens/ChartsScreenKt;
 
 # ---- Library / playlists / search ------------------------------------------
-HSPLdev/citali/lunartune/viewmodels/**;->**(**)**
-Ldev/citali/lunartune/viewmodels/**;
-HSPLdev/citali/lunartune/ui/screens/library/**;->**(**)**
-Ldev/citali/lunartune/ui/screens/library/**;
-HSPLdev/citali/lunartune/ui/screens/playlist/**;->**(**)**
-Ldev/citali/lunartune/ui/screens/playlist/**;
-HSPLdev/citali/lunartune/ui/screens/search/**;->**(**)**
-Ldev/citali/lunartune/ui/screens/search/**;
+HSPLdev/yeshua/player/viewmodels/**;->**(**)**
+Ldev/yeshua/player/viewmodels/**;
+HSPLdev/yeshua/player/ui/screens/library/**;->**(**)**
+Ldev/yeshua/player/ui/screens/library/**;
+HSPLdev/yeshua/player/ui/screens/playlist/**;->**(**)**
+Ldev/yeshua/player/ui/screens/playlist/**;
+HSPLdev/yeshua/player/ui/screens/search/**;->**(**)**
+Ldev/yeshua/player/ui/screens/search/**;
 
 # ---- Player / lyrics / queue ------------------------------------------------
-HSPLdev/citali/lunartune/ui/player/**;->**(**)**
-Ldev/citali/lunartune/ui/player/**;
-HSPLdev/citali/lunartune/ui/component/LyricsEnhancedKt;->**(**)**
-HSPLdev/citali/lunartune/ui/component/Lyrics**;->**(**)**
-Ldev/citali/lunartune/ui/component/**;
+HSPLdev/yeshua/player/ui/player/**;->**(**)**
+Ldev/yeshua/player/ui/player/**;
+HSPLdev/yeshua/player/ui/component/LyricsEnhancedKt;->**(**)**
+HSPLdev/yeshua/player/ui/component/Lyrics**;->**(**)**
+Ldev/yeshua/player/ui/component/**;
 
 # ---- Liquid glass / blur / haze (the lag-critical rendering stack) --------
-HSPLdev/citali/lunartune/ui/component/CapsuleNavigationBarKt;->**(**)**
-HSPLdev/citali/lunartune/ui/component/BottomSheetKt;->**(**)**
-HSPLdev/citali/lunartune/ui/theme/**;->**(**)**
+HSPLdev/yeshua/player/ui/component/CapsuleNavigationBarKt;->**(**)**
+HSPLdev/yeshua/player/ui/component/BottomSheetKt;->**(**)**
+HSPLdev/yeshua/player/ui/theme/**;->**(**)**
 Ldev/chrisbanes/haze/**;
 HSPLdev/chrisbanes/haze/**;->**(**)**
 
 # ---- Playback service -------------------------------------------------------
-HSPLdev/citali/lunartune/playback/MusicService;->**(**)**
-Ldev/citali/lunartune/playback/**;
-HSPLdev/citali/lunartune/playback/PlayerConnection;->**(**)**
+HSPLdev/yeshua/player/playback/MusicService;->**(**)**
+Ldev/yeshua/player/playback/**;
+HSPLdev/yeshua/player/playback/PlayerConnection;->**(**)**
 
 # ---- InnerTube networking + models (core and app-side) ---------------------
 Lmoe/rukamori/archivetune/innertube/**;
@@ -107,13 +107,13 @@ HSPLmoe/rukamori/archivetune/innertube/**;->**(**)**
 # charts browse on the load path, and had no rule at all - not even a class
 # load - so every convertToChartItem / convertMusicTwoRowItem call ran
 # interpreted on first open.
-Ldev/citali/lunartune/innertube/**;
-HSPLdev/citali/lunartune/innertube/**;->**(**)**
-Ldev/citali/lunartune/models/**;
+Ldev/yeshua/player/innertube/**;
+HSPLdev/yeshua/player/innertube/**;->**(**)**
+Ldev/yeshua/player/models/**;
 
 # ---- Room database ----------------------------------------------------------
-Ldev/citali/lunartune/db/**;
-HSPLdev/citali/lunartune/db/**;->**(**)**
+Ldev/yeshua/player/db/**;
+HSPLdev/yeshua/player/db/**;->**(**)**
 
 # ---- Serialization (InnerTube JSON parse) ----------------------------------
 Lkotlinx/serialization/**;

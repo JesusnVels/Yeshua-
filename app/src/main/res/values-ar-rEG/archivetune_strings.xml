@@ -324,7 +324,7 @@
     <string name="storage_folder_selected_restart">اتحفظ مجلد التخزين. التطبيق هيقفل ويفتح تاني خلال 3 ثواني.</string>
     <string name="storage_folder_invalid">اختار مجلد صالح.</string>
     <string name="storage_folder_unsupported">المجلد ده مش متاح للاستخدام بواسطة التخزين المؤقت المدعوم بالملفات.</string>
-    <string name="storage_folder_not_writable">LunarTune مش قادر يكتب ملفات التخزين المؤقت في المجلد ده.</string>
+    <string name="storage_folder_not_writable">Yeshua مش قادر يكتب ملفات التخزين المؤقت في المجلد ده.</string>
     <string name="storage_cache_cleared">اتمسحت الملفات المؤقتة.</string>
     <string name="storage_cache_clear_failed">معرفناش نمسح الملفات المؤقتة. اتأكد من صلاحية الوصول لكارت الميموري.</string>
     <string name="storage_clear_song_cache_progress">جاري مسح التخزين المؤقت للأغاني… %1$d%%</string>
@@ -397,7 +397,7 @@
     <string name="player_stream_client_desc">يتحكم في مصدر التشغيل المستخدم لجلب البث</string>
     <string name="player_stream_client_web_remix">ويب ريمكس</string>
     <string name="player_stream_client_web_remix_desc">دعم تنسيقات ممتدة على حساب السرعة. فك تشفير توقيع JavaScript بيسبب تأخير في بدء التشغيل من 5 لـ 10 ثوانٍ.</string>
-    <string name="player_stream_client_lunartune_extractor">مستخرج LunarTune</string>
+    <string name="player_stream_client_lunartune_extractor">مستخرج Yeshua</string>
     <string name="player_stream_client_lunartune_extractor_desc">بيستخدم مستخرج Yeshua الخلفي لبث التشغيل. يُفضل استخدامه لجودة الصوت التلقائية العالية.</string>
     <string name="settings_section_player_content">المشغل والمحتوى</string>
     <string name="settings_appearance_subtitle">السمات، التخطيط، والأنماط البصرية</string>
@@ -626,7 +626,7 @@
     <string name="mori_cipher_refresh_remaining">فاضل %1$d تحديثات يدوية</string>
     <string name="mori_cipher_rate_limit_countdown">هيبقى متاح تاني خلال %1$s</string>
     <string name="mori_cipher_automatic_updates">التحديثات التلقائية</string>
-    <string name="mori_cipher_automatic_updates_description">LunarTune بيحدث تكوين مشغل يوتيوب الحالي كل 6 ساعات وبعد أي فشل في فك التشفير.</string>
+    <string name="mori_cipher_automatic_updates_description">Yeshua بيحدث تكوين مشغل يوتيوب الحالي كل 6 ساعات وبعد أي فشل في فك التشفير.</string>
     <string name="mori_cipher_refresh_success">اتحدث تكوين المشغل بنجاح</string>
     <string name="mori_cipher_refresh_failed">مقدرناش نحدث تكوين المشغل</string>
     <string name="mori_cipher_rate_limited">وصلت للحد الأقصى للتحديث اليدوي</string>

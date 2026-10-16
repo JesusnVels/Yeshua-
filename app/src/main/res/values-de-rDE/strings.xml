@@ -619,7 +619,7 @@
     <string name="discord_activity_type_playing_label">Spielt</string>
     <string name="discord_activity_type_streaming_label">Streamt</string>
     <string name="support_development_title">Entwicklung unterstützen</string>
-    <string name="support_development_message">Hallo! Ich bin cognitiveshadows03, der Entwickler von Yeshua. Wenn Yeshua einen festen Platz in deinem Musikalltag gefunden hat, kannst du dazu beitragen, dass es weiterentwickelt wird, indem du spendest oder das Projekt auf GitHub mit einem Stern markierst. Vielen Dank für deine Unterstützung der Arbeit hinter der App.</string>
+    <string name="support_development_message">Hallo! Ich bin ReCapzPhyco-420, der Entwickler von Yeshua. Wenn Yeshua einen festen Platz in deinem Musikalltag gefunden hat, kannst du dazu beitragen, dass es weiterentwickelt wird, indem du spendest oder das Projekt auf GitHub mit einem Stern markierst. Vielen Dank für deine Unterstützung der Arbeit hinter der App.</string>
     <string name="support_development_donate">Spende, um die Entwicklung zu unterstützen</string>
     <string name="support_development_star">Stern auf GitHub geben</string>
     <string name="later">Später</string>
@@ -658,7 +658,7 @@
     <string name="update_notification_channel_name">App-Updates</string>
     <string name="update_notification_channel_desc">Benachrichtigungen bei neuen App-Updates</string>
     <string name="update_notification_title">Update verfügbar</string>
-    <string name="update_notification_text">LunarTune %s ist jetzt verfügbar</string>
+    <string name="update_notification_text">Yeshua %s ist jetzt verfügbar</string>
     <string name="download">Herunterladen</string>
     <string name="permissions_title">Erlaube Yeshua am Besten zu funktionieren</string>
     <string name="permissions_subtitle">Wir verwenden einige Berechtigungen um deine Musik zuverlässig zu spielen und verwalten. Diese kannst du jederzeit in den Systemeinstellungen verändern.</string>
@@ -803,7 +803,7 @@
     <string name="lastfm_login_network_error">Netzwerkfehler. Prüfe deine Verbindung.</string>
     <string name="lastfm_login_failed">Anmeldung fehlgeschlagen. Versuche es erneut.</string>
     <string name="duration_seconds_short">%1$ds</string>
-    <string name="onboarding_welcome_title">Willkommen bei LunarTune</string>
+    <string name="onboarding_welcome_title">Willkommen bei Yeshua</string>
     <string name="top_mixes">Top-Mixe für dich</string>
     <string name="library_top_mixes_ai_not_configured_desc">KI-Integration wird benötigt, bevor Yeshua persönliche Top-Mixe erstellen kann.</string>
     <string name="library_top_mixes_no_valid_mixes">KI hat keine abspielbaren Mixe aus deinem bisherigen Verlauf zurückgegeben.</string>
@@ -811,7 +811,7 @@
     <string name="subscribed_only">Nur Abonnierte</string>
     <string name="app_icon_available">Verfügbare Symbole</string>
     <string name="app_icon_community">Community-Symbol</string>
-    <string name="app_icon_builtin_description">Originales LunarTune‐Symbol</string>
+    <string name="app_icon_builtin_description">Originales Yeshua‐Symbol</string>
     <string name="app_icon_identifier">ID %1$s</string>
     <plurals name="app_icon_count">
         <item quantity="one">%d Symbol</item>
@@ -857,7 +857,7 @@
     <string name="copy_log_entry">Logeintrag kopieren</string>
     <string name="enable_update_notification_channel_desc">Werde benachrichtigt, wenn eine neue Veröffentlichung auf dem ausgewählten Kanal verfügbar ist</string>
     <string name="update_channel_desc">Wähle zwischen getesteten Veröffentlichungen und Entwicklungssnapshots.</string>
-    <string name="updates_channel_warning_intro">LunarTune stellt zwei Downloadkanäle für Builds zur Verfügung:</string>
+    <string name="updates_channel_warning_intro">Yeshua stellt zwei Downloadkanäle für Builds zur Verfügung:</string>
     <string name="updates_channel_warning_stable_title">Stabile Builds</string>
     <string name="updates_channel_warning_stable_source">Verteilt über die offiziellen GitHub Releases.</string>
     <string name="updates_channel_warning_stable_desc">Diese Versionen sind getestet und für die meisten Nutzer empfohlen.</string>
@@ -982,7 +982,7 @@
     <string name="eq_screen_subtitle">Passe die Wiedergabe für deine Ohren und dein Equipment an</string>
     <string name="eq_sound_shaping_on">Soundanpassung ist an</string>
     <string name="eq_sound_shaping_off">Soundanpassung ist aus</string>
-    <string name="eq_enable_description">Diese Kontrollen auf die LunarTune-Wiedergabe anwenden</string>
+    <string name="eq_enable_description">Diese Kontrollen auf die Yeshua-Wiedergabe anwenden</string>
     <string name="eq_control_mode">Kontrollmodus</string>
     <string name="eq_advanced">Erweitert</string>
     <string name="eq_preset_number">Voreinstellung %1$d</string>
@@ -999,7 +999,7 @@
     <string name="onboarding_welcome_subtitle">Richte die Wiedergabe und lokale Musik ein und aktualisiere die Berechtigungen bevor du mit dem Hören beginnst.</string>
     <string name="onboarding_permission_notifications_desc">Wiedergabesteuerung und Musikaktivitäten im Benachrichtigungscenter anzeigen.</string>
     <string name="onboarding_permission_bluetooth_connect_desc">Verbinde mit Bluetooth-Audiogeräten in der Nähe für die Wiedergabe.</string>
-    <string name="music_together">LunarTune Music Together</string>
+    <string name="music_together">Yeshua Music Together</string>
     <string name="together_activity_playback_state_changed">%1$s änderte den Wiedergabestatus</string>
     <string name="together_welcome_title">Willkommen bei Yeshua Music Together</string>
     <string name="po_token_account_notice_title">Dasselbe Konto verwenden</string>
@@ -1021,7 +1021,7 @@
     <string name="web_client_po_token">Webclient-PO-Token</string>
     <string name="po_token_gvs">PO-Token (GVS)</string>
     <string name="po_token_account_notice_body">Melde dich hier mit demselben Google-Konto an, dass du bereits für YouTube Music in Yeshua benutzt, bevor du ein PO-Token generierst.</string>
-    <string name="gatekeeper_connection_blocked">Verbindung durch Yeshua Remote blockiert. Diese App konnte nicht als offizieller LunarTune-Build verifiziert werden. Installiere einen offiziellen Build von https://github.com/cognitiveshadows03/LunarTune oder https://t.me/LunarTuneGC.</string>
+    <string name="gatekeeper_connection_blocked">Verbindung durch Yeshua Remote blockiert. Diese App konnte nicht als offizieller Yeshua-Build verifiziert werden. Installiere einen offiziellen Build von https://github.com/ReCapzPhyco-420/Yeshua.</string>
     <string name="scheduled_backup_disabled_description">Automatische Sicherungen sind pausiert.</string>
     <string name="scheduled_backup_enabled_description">Sicherungen laufen automatisch nach dem untenstehenden Plan.</string>
     <string name="po_token_account_notice_same_account">Wenn diese Webansicht ein anderes Konto benutzt, wird das generierte Token nicht richtig funktionieren.</string>
@@ -1057,7 +1057,7 @@
     <string name="widget_top_song_summary">Aktuell Top: %1$s</string>
     <string name="custom_background_subtitle">Vorschau und Anpassung des Players und des Hintergrunds für die Songtexte</string>
     <string name="custom_background_preview_player">Player</string>
-    <string name="custom_background_permission_error">LunarTune konnte den Zugriff auf dieses Bild nicht aufrechterhalten.</string>
+    <string name="custom_background_permission_error">Yeshua konnte den Zugriff auf dieses Bild nicht aufrechterhalten.</string>
     <string name="eq_signal">Signal</string>
     <string name="enable_betterlyrics_portato">BetterLyrics Portato aktivieren</string>
 </resources>

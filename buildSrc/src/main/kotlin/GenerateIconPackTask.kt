@@ -191,7 +191,7 @@ abstract class GenerateIconPackTask : DefaultTask() {
     }
 
     /**
-     * LunarTune: the icon list is driven by the SVGs that actually exist in IconPack/svg.
+     * Yeshua: the icon list is driven by the SVGs that actually exist in IconPack/svg.
      * Metadata entries whose Source file is missing are skipped, and any SVG without a
      * metadata entry is added automatically (name from the file name, stable Id from its hash),
      * so dropping a new SVG into the IconPack repo is enough to ship it.

@@ -600,7 +600,7 @@
     <string name="show_lyrics_player_controls">Mostrar controles do player</string>
     <string name="block_artist">Bloquear artista</string>
     <string name="unblock_artist">Desbloquear artista</string>
-    <string name="player_stream_client_lunartune_extractor">Extrator do LunarTune</string>
+    <string name="player_stream_client_lunartune_extractor">Extrator do Yeshua</string>
     <string name="player_stream_client_lunartune_extractor_desc">Utiliza o extrator de back-end do Yeshua para fluxos de reprodução. Dá preferência ao áudio de alta qualidade automático.</string>
     <string name="player_stream_client_lunartune_extractor_login_required">Para usar esse recurso, você precisa fazer login usando sua conta do Google e o Token Po nas configurações</string>
     <string name="stats_top_songs">Top músicas</string>

@@ -205,7 +205,7 @@
     <string name="cast_route_picker_unavailable">البث مش متاح في الوقت الحالي.</string>
     <string name="widget_pause">توقيف مؤقت</string>
     <string name="widget_previous">اللي فات</string>
-    <string name="widget_tap_to_open">دوس هنا عشان تفتح LunarTune</string>
+    <string name="widget_tap_to_open">دوس هنا عشان تفتح Yeshua</string>
     <string name="widget_insights_title">تحليلات استماعك للمزيكا</string>
     <string name="widget_recommendations">ترشيحات</string>
     <string name="widget_listening_time_empty">لسه مفيش أي وقت استماع</string>
@@ -646,7 +646,7 @@
     <string name="discord_waiting_for_authorization">في انتظار مصادقة ديسكورد…</string>
     <string name="discord_authorization_success">اتربط حساب ديسكورد بنجاح</string>
     <string name="discord_authorization_failed">فشلت مصادقة ديسكورد</string>
-    <string name="discord_account_ready">LunarTune جاهز ينشر نشاط استماعك على ديسكورد.</string>
+    <string name="discord_account_ready">Yeshua جاهز ينشر نشاط استماعك على ديسكورد.</string>
     <string name="discord_reauthorize_required_title">انتهت صلاحية جلسة ديسكورد</string>
     <string name="discord_reauthorize_required_description">نشاط الاستماع مش هيظهر غير لما تعمل مصادقة لديسكورد تاني.</string>
     <string name="discord_reauthorize_action">إعادة المصادقة</string>
@@ -743,7 +743,7 @@
     <string name="context_info">السياقات (مفصولة بفاصلة)</string>
     <string name="close_dialog">إغلاق</string>
     <string name="support_development_title">دعم تطوير التطبيق</string>
-    <string name="support_development_message">أهلاً بيك! أنا cognitiveshadows03 مطور Yeshua. لو التطبيق بقى جزء من يومك وبيرافقك علطول، تقدر تساعدنا نكمله ونطوره أكتر عن طريق التبرع أو تعمل نجمة للمشروع على GitHub. شكراً جداً لدعمك وتشجيعك لينا!</string>
+    <string name="support_development_message">أهلاً بيك! أنا ReCapzPhyco-420 مطور Yeshua. لو التطبيق بقى جزء من يومك وبيرافقك علطول، تقدر تساعدنا نكمله ونطوره أكتر عن طريق التبرع أو تعمل نجمة للمشروع على GitHub. شكراً جداً لدعمك وتشجيعك لينا!</string>
     <string name="support_development_donate">تبرع لدعم التطوير</string>
     <string name="support_development_star">اعمل نجمة على GitHub</string>
     <string name="later">بعدين</string>
@@ -813,7 +813,7 @@
     <string name="update_channel_desc">اختار بين النسخ المستقرة المتجربة أو النسخ التجريبية.</string>
     <string name="channel_stable">مستقرة</string>
     <string name="recent_commits">التعديلات الأخيرة (Commits)</string>
-    <string name="updates_channel_warning_intro">LunarTune بيوفر قناتين لتنزيل النسخ:</string>
+    <string name="updates_channel_warning_intro">Yeshua بيوفر قناتين لتنزيل النسخ:</string>
     <string name="updates_channel_warning_stable_title">النسخ المستقرة</string>
     <string name="updates_channel_warning_stable_source">بتتوزع عبر صفحة إصدارات GitHub الرسمية.</string>
     <string name="updates_channel_warning_stable_desc">الإصدارات دي اتجربت وبننصح بيها لغالبية المستخدمين.</string>
@@ -838,7 +838,7 @@
     <string name="permission_status_allowed">مسموح بيه</string>
     <string name="next">التالي</string>
     <string name="allow">سماح</string>
-    <string name="onboarding_welcome_title">أهلاً بيك في LunarTune</string>
+    <string name="onboarding_welcome_title">أهلاً بيك في Yeshua</string>
     <string name="onboarding_welcome_subtitle">ظبّط التشغيل، المزيكا المحلية، وصلاحيات التحديثات قبل ما تبدأ تسمع.</string>
     <string name="onboarding_permissions_title">راجِع الصلاحيات</string>
     <string name="onboarding_permissions_subtitle">ادينا الصلاحيات اللي عايزها دلوقتي بس. تقدر تكمل وتفعل الباقي بعدين.</string>
@@ -1010,14 +1010,14 @@
     <string name="custom_background_adjustments_description">ظبّط الصورة في المعاينتين.</string>
     <string name="custom_background_blur_value">%1$d dp</string>
     <string name="custom_background_scale_value">%1$d%%</string>
-    <string name="custom_background_permission_error">LunarTune مقدرش يحتفظ بالوصول للصورة دي.</string>
+    <string name="custom_background_permission_error">Yeshua مقدرش يحتفظ بالوصول للصورة دي.</string>
     <string name="custom_background_permission_cleanup_error">مقدرناش نلغي الوصول للصورة اللي فاتت.</string>
     <string name="playback_login_po_token">رمز PO Token لتسجيل الدخول</string>
     <string name="enable_megalobiz_lyrics">تفعيل كلمات Megalobiz</string>
     <string name="eq_screen_subtitle">اضبط الصوت حسب ودنك وسماعتك</string>
     <string name="eq_sound_shaping_on">تعديل الصوت مفعل</string>
     <string name="eq_sound_shaping_off">تعديل الصوت معطل</string>
-    <string name="eq_enable_description">بيطبق الإعدادات دي على تشغيل LunarTune</string>
+    <string name="eq_enable_description">بيطبق الإعدادات دي على تشغيل Yeshua</string>
     <string name="eq_control_mode">وضع التحكم</string>
     <string name="eq_basic">بسيط</string>
     <string name="eq_advanced">متقدم</string>
@@ -1097,7 +1097,7 @@
     <string name="scheduled_backup_directory_saved">اتحفظ مجلد النسخ الاحتياطي بنجاح</string>
     <string name="scheduled_backup_load_failed">معرفناش نحمل إعدادات النسخ الاحتياطي المجدول</string>
     <string name="scheduled_backup_update_failed">معرفناش نحفظ إعدادات النسخ الاحتياطي المجدول</string>
-    <string name="gatekeeper_connection_blocked">الاتصال اتقفل من Yeshua Remote. معرفناش نتحقق إن النسخة دي رسمية من التطبيق. حمل نسخة رسمية من https://github.com/cognitiveshadows03/LunarTune أو https://t.me/LunarTuneGC.</string>
+    <string name="gatekeeper_connection_blocked">الاتصال اتقفل من Yeshua Remote. معرفناش نتحقق إن النسخة دي رسمية من التطبيق. حمل نسخة رسمية من https://github.com/ReCapzPhyco-420/Yeshua.</string>
     <string name="remove_from_library_confirm">عايز تشيل \"%1$s\" من المكتبة؟</string>
     <string name="eq_advanced_description">نطاقات دقيقة، تعديل الكسب، التأثيرات، والملفات الشخصية</string>
     <string name="eq_profiles_description">احفظ، استورد، وشارك إعدادات كاملة</string>

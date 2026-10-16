@@ -1014,7 +1014,7 @@
     <string name="playlist_suggestion_source_title">Playlist title</string>
     <string name="playlist_suggestion_source_content">Playlist content</string>
     <string name="playlist_suggestion_source_both">Playlist title and content</string>
-    <string name="music_together">LunarTune Music Together</string>
+    <string name="music_together">Yeshua Music Together</string>
     <string name="music_together_short">Music Together</string>
     <string name="together_display_name">Display name</string>
     <string name="together_display_name_placeholder">Your name</string>
@@ -1147,7 +1147,7 @@
     <string name="scheduled_backup_directory_saved">Backup directory saved</string>
     <string name="scheduled_backup_load_failed">Scheduled backup settings could not be loaded</string>
     <string name="scheduled_backup_update_failed">Scheduled backup settings could not be saved</string>
-    <string name="gatekeeper_connection_blocked">Connection blocked by Yeshua Remote. This app could not be verified as an official Yeshua build. Install an official build from https://github.com/cognitiveshadows03/LunarTune or https://t.me/LunarTuneGC.</string>
+    <string name="gatekeeper_connection_blocked">Connection blocked by Yeshua Remote. This app could not be verified as an official Yeshua build. Install an official build from https://github.com/ReCapzPhyco-420/Yeshua.</string>
     <string name="navigation_bar_style">Navigation bar style</string>
     <string name="navigation_bar_style_default">Docked</string>
     <string name="navigation_bar_style_floating">Floating</string>

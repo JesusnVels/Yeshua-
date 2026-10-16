@@ -115,7 +115,7 @@
     <string name="retry">ลองใหม่อีกครั้ง</string>
     <string name="cast">แคสต์</string>
     <string name="cast_devices">แคสต์ไปยังอุปกรณ์</string>
-    <string name="cast_sheet_subtitle">เลือกอุปกรณ์สำหรับเล่น LunarTune</string>
+    <string name="cast_sheet_subtitle">เลือกอุปกรณ์สำหรับเล่น Yeshua</string>
     <string name="cast_available_devices">อุปกรณ์ที่พร้อมใช้งาน</string>
     <string name="cast_searching_devices">กำลังค้นหาอุปกรณ์</string>
     <string name="cast_no_devices">ไม่พบอุปกรณ์สำหรับแคสต์</string>
@@ -135,7 +135,7 @@
     <string name="play">เล่น</string>
     <string name="widget_pause">หยุดชั่วคราว</string>
     <string name="widget_previous">ก่อนหน้า</string>
-    <string name="widget_tap_to_open">แตะเพื่อเปิด LunarTune</string>
+    <string name="widget_tap_to_open">แตะเพื่อเปิด Yeshua</string>
     <string name="widget_insights_title">ข้อมูลเชิงลึกเกี่ยวกับการฟัง</string>
     <string name="widget_recommendations">ข้อแนะนำ</string>
     <string name="widget_listening_time_empty">ยังไม่มีสถิติการฟัง</string>

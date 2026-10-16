@@ -1020,20 +1020,20 @@ fun PlayerMenu(
                 }
             }
         }
+    }
 
-        if (showSleepTimerDialog) {
-            SleepTimerDialog(
-                onDismiss = { showSleepTimerDialog = false },
-                onConfirm = { minutes ->
-                    showSleepTimerDialog = false
-                    playerConnection.service.sleepTimer.start(minutes)
-                },
-                onEndOfSong = {
-                    showSleepTimerDialog = false
-                    playerConnection.service.sleepTimer.start(-1)
-                },
-            )
-        }
+    if (showSleepTimerDialog) {
+        SleepTimerDialog(
+            onDismiss = { showSleepTimerDialog = false },
+            onConfirm = { minutes ->
+                showSleepTimerDialog = false
+                playerConnection.service.sleepTimer.start(minutes)
+            },
+            onEndOfSong = {
+                showSleepTimerDialog = false
+                playerConnection.service.sleepTimer.start(-1)
+            },
+        )
     }
 }
 

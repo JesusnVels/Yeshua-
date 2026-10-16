@@ -75,16 +75,22 @@ import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.navigation.NavController
 import androidx.palette.graphics.Palette
+import coil3.compose.AsyncImage
+import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
 import dev.yeshua.player.R
 import dev.yeshua.player.constants.ShowFusionUpNextKey
 import dev.yeshua.player.constants.SliderStyle
+import dev.yeshua.player.extensions.metadata
 import dev.yeshua.player.extensions.togglePlayPause
+import dev.yeshua.player.extensions.toggleRepeatMode
 import dev.yeshua.player.models.MediaMetadata
 import dev.yeshua.player.playback.PlayerConnection
-import dev.yeshua.player.ui.menu.MenuState
+import dev.yeshua.player.ui.component.BottomSheetPageState
+import dev.yeshua.player.ui.component.BottomSheetState
+import dev.yeshua.player.ui.component.MenuState
 import dev.yeshua.player.ui.menu.PlayerMenu
 import dev.yeshua.player.ui.theme.PlayerColorExtractor
 import dev.yeshua.player.ui.utils.ShowMediaInfo
@@ -190,6 +196,7 @@ fun FusionPlayer(
                         ShowMediaInfo(mediaMetadata.id)
                     }
                 },
+                onDismiss = menuState::dismiss,
             )
         }
     }
@@ -279,8 +286,10 @@ fun FusionPlayer(
                             modifier = Modifier.fillMaxSize(),
                         )
                     } else {
-                        Thumbnail(
-                            thumbnailUrl = artworkUrl,
+                        AsyncImage(
+                            model = artworkUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }
@@ -530,15 +539,17 @@ fun FusionPlayer(
                         items = upNextWindows,
                         key = { it.uid.hashCode() },
                     ) { window ->
-                        val itemMetadata = window.mediaItem?.metadata
+                        val itemMetadata = window.mediaItem.metadata
                         Column(
                             modifier =
                                 Modifier
                                     .width(96.dp)
                                     .clickable(onClick = onOpenQueue),
                         ) {
-                            Thumbnail(
-                                thumbnailUrl = itemMetadata?.artworkUri?.toString(),
+                            AsyncImage(
+                                model = itemMetadata?.thumbnailUrl,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
                                 modifier =
                                     Modifier
                                         .size(96.dp)
@@ -546,14 +557,14 @@ fun FusionPlayer(
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = itemMetadata?.title?.toString().orEmpty(),
+                                text = itemMetadata?.title.orEmpty(),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = foreground,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
                             Text(
-                                text = itemMetadata?.artist?.toString().orEmpty(),
+                                text = itemMetadata?.artists.orEmpty().joinToString { it.name },
                                 style = MaterialTheme.typography.labelSmall,
                                 color = secondaryForeground,
                                 maxLines = 1,

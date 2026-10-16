@@ -113,7 +113,14 @@ import dev.yeshua.player.constants.PureBlackKey
 import dev.yeshua.player.constants.QuickPicksDisplayMode
 import dev.yeshua.player.constants.QuickPicksDisplayModeKey
 import dev.yeshua.player.constants.RandomThemeOnStartupKey
+import dev.yeshua.player.constants.ShowFusionUpNextKey
+import dev.yeshua.player.constants.ShowHomeAccountPlaylistsKey
 import dev.yeshua.player.constants.ShowHomeCategoryChipsKey
+import dev.yeshua.player.constants.ShowHomeForgottenFavoritesKey
+import dev.yeshua.player.constants.ShowHomeKeepListeningKey
+import dev.yeshua.player.constants.ShowHomeQuickPicksKey
+import dev.yeshua.player.constants.ShowHomeSimilarRecommendationsKey
+import dev.yeshua.player.constants.ShowHomeSpeedDialKey
 import dev.yeshua.player.constants.SharedScreenHeaderImageUriKey
 import dev.yeshua.player.constants.HomeHeaderImageUriKey
 import dev.yeshua.player.constants.SettingsHeaderImageUriKey
@@ -123,6 +130,8 @@ import dev.yeshua.player.constants.ShowLibraryCardLocalKey
 import dev.yeshua.player.constants.ShowLibraryCardMyTopKey
 import dev.yeshua.player.constants.ShowLibraryCardOfflineKey
 import dev.yeshua.player.constants.ShowLibraryCardWatermarksKey
+import dev.yeshua.player.constants.ShowMiniPlayerArtworkKey
+import dev.yeshua.player.constants.ShowPlayerTimeLabelsKey
 import dev.yeshua.player.constants.ShowPlayerVolumeBarKey
 import dev.yeshua.player.constants.ShowTagsInLibraryKey
 import dev.yeshua.player.constants.SliderStyle
@@ -798,6 +807,7 @@ fun AppearanceSettings(navController: NavController) {
                                 PlayerDesignStyle.V8 -> stringResource(R.string.player_design_v8)
                                 PlayerDesignStyle.V9 -> stringResource(R.string.player_design_v9)
                                 PlayerDesignStyle.V10 -> stringResource(R.string.player_design_v10)
+                                PlayerDesignStyle.FUSION -> stringResource(R.string.player_design_fusion)
                             }
                         },
                     )

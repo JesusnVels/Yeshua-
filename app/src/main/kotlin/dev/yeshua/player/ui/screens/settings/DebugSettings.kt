@@ -86,6 +86,12 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DebugSettings(navController: NavController) {
+    val (showDevDebug, onShowDevDebugChange) =
+        rememberPreference(
+            key = booleanPreferencesKey("dev_show_discord_debug"),
+            defaultValue = false,
+        )
+
     val (showNerdStats, onShowNerdStatsChange) =
         rememberPreference(
             key = booleanPreferencesKey("dev_show_nerd_stats"),
@@ -137,6 +143,16 @@ fun DebugSettings(navController: NavController) {
             PreferenceGroup(title = stringResource(R.string.experimental_features)) {
                 item {
                     SwitchPreference(
+                        title = { Text(stringResource(R.string.show_discord_debug_ui)) },
+                        description = stringResource(R.string.enable_discord_debug_lines),
+                        icon = { Icon(painterResource(R.drawable.discord), null) },
+                        checked = showDevDebug,
+                        onCheckedChange = onShowDevDebugChange,
+                    )
+                }
+
+                item {
+                    SwitchPreference(
                         title = { Text(stringResource(R.string.show_nerd_stats)) },
                         description = stringResource(R.string.description_show_nerd_stats),
                         icon = { Icon(painterResource(R.drawable.stats), null) },
@@ -177,6 +193,20 @@ fun DebugSettings(navController: NavController) {
             }
 
             AnimatedVisibility(
+                visible = showDevDebug,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut(),
+            ) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    DiscordDebugSection()
+                }
+            }
+
+            AnimatedVisibility(
                 visible = showNerdStats && playerConnection != null,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut(),
@@ -196,6 +226,139 @@ fun DebugSettings(navController: NavController) {
 }
 
 @Composable
+private fun DiscordDebugSection() {
+    val lastStartTs: Long? by DiscordPresenceManager.lastRpcStartTimeFlow.collectAsState(initial = null)
+    val lastEndTs: Long? by DiscordPresenceManager.lastRpcEndTimeFlow.collectAsState(initial = null)
+    val lastStart: String = lastStartTs?.let { makeTimeString(it) } ?: "—"
+    val lastEnd: String = lastEndTs?.let { makeTimeString(it) } ?: "—"
+    val isRunning by DiscordPresenceManager.isRunningFlow.collectAsState(initial = DiscordPresenceManager.isRunning())
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    ) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color =
+                            if (isRunning) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.errorContainer
+                            },
+                        modifier = Modifier.size(48.dp),
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                painter = painterResource(R.drawable.discord),
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp),
+                                tint =
+                                    if (isRunning) {
+                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                    } else {
+                                        MaterialTheme.colorScheme.onErrorContainer
+                                    },
+                            )
+                        }
+                    }
+                    Column {
+                        Text(
+                            text = stringResource(R.string.discord_integration),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            text =
+                                if (isRunning) {
+                                    stringResource(R.string.presence_manager_running)
+                                } else {
+                                    stringResource(R.string.presence_manager_stopped)
+                                },
+                            style = MaterialTheme.typography.bodySmall,
+                            color =
+                                if (isRunning) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.error
+                                },
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color =
+                        if (isRunning) {
+                            Color(0xFF43B581).copy(alpha = 0.2f)
+                        } else {
+                            MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
+                        },
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .size(8.dp)
+                                    .background(
+                                        color = if (isRunning) Color(0xFF43B581) else MaterialTheme.colorScheme.error,
+                                        shape = CircleShape,
+                                    ),
+                        )
+                        Text(
+                            text = if (isRunning) stringResource(R.string.status_active) else stringResource(R.string.status_inactive),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isRunning) Color(0xFF43B581) else MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+            }
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                DebugTimestampItem(
+                    label = stringResource(R.string.last_start),
+                    value = lastStart,
+                    icon = R.drawable.play,
+                )
+                DebugTimestampItem(
+                    label = stringResource(R.string.last_end),
+                    value = lastEnd,
+                    icon = R.drawable.pause,
+                )
+            }
+        }
+    }
+}
 
 @Composable
 private fun DebugTimestampItem(

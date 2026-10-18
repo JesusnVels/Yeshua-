@@ -184,6 +184,7 @@
     <string name="quick_picks_display_mode">빠른 선곡 표시 모드</string>
     <string name="quick_picks_display_mode_card">카드</string>
     <string name="quick_picks_display_mode_list">목록</string>
+    <string name="discord">Discord</string>
     <string name="advanced_login">고급 로그인 (토큰)</string>
     <string name="token_hidden">탭하여 토큰 보기</string>
     <string name="token_shown">다시 탭하여 복사/편집</string>
@@ -452,6 +453,7 @@
     <string name="aod_shape_heart">하트</string>
     <string name="year_in_music_plays_label">총 재생 횟수</string>
     <string name="aod_position_top">상단</string>
+    <string name="about_content_desc_telegram">Telegram</string>
     <string name="android_auto_suggested_songs">추천 곡 목록</string>
     <string name="music_recognition_history_no_results_title">일치하는 인식 기록이 없습니다.</string>
     <string name="year_in_music_totals_title">당신이 채워온 음악 속 일상</string>
@@ -490,6 +492,7 @@
     <string name="aod_customize_show_time_labels">시간 정보 표시</string>
     <string name="aod_customize_sample_title">Midnight Archive</string>
     <string name="aod_shape_cookie_6">쿠키 6</string>
+    <string name="about_content_desc_discord">Discord</string>
     <string name="lyrics_share_style_frosted_light">프로스테드 라이트</string>
     <string name="aod_shape_triangle">삼각형</string>
     <string name="aod_customize_entry_desc">Always On Display 재생 화면을 취향에 맞게 설정합니다.</string>

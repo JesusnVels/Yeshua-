@@ -38,6 +38,14 @@ val apiBearerToken = System.getenv("API_BEARER_TOKEN")?.trim()
     ?: localProperties.getProperty("API_BEARER_TOKEN")?.trim()
     ?: ""
 
+val discordApplicationId =
+    (
+        localProperties.getProperty("DISCORD_APPLICATION_ID")
+            ?: System.getenv("DISCORD_APPLICATION_ID")
+            ?: "1547164645817585684"
+        ).trim()
+val discordApplicationIdLong = discordApplicationId.toLongOrNull() ?: 1547164645817585684L
+val discordRedirectScheme = "discord-$discordApplicationId"
 val releaseKeystoreFile = file("keystore/release.keystore")
 val releaseStorePassword =
     System.getenv("STORE_PASSWORD")?.takeIf { it.isNotBlank() }
@@ -108,11 +116,19 @@ android {
             isDefault = true
             buildConfigField("String", "DISTRIBUTION", "\"gms\"")
             buildConfigField("boolean", "UPDATER_AVAILABLE", "true")
+            buildConfigField("String", "DISCORD_APPLICATION_ID", "\"$discordApplicationId\"")
+            buildConfigField("long", "DISCORD_APPLICATION_ID_LONG", "${discordApplicationIdLong}L")
+            buildConfigField("String", "DISCORD_REDIRECT_SCHEME", "\"$discordRedirectScheme\"")
+            manifestPlaceholders["discordRedirectScheme"] = discordRedirectScheme
         }
         create("foss") {
             dimension = "distribution"
             buildConfigField("String", "DISTRIBUTION", "\"foss\"")
             buildConfigField("boolean", "UPDATER_AVAILABLE", "true")
+            buildConfigField("String", "DISCORD_APPLICATION_ID", "\"$discordApplicationId\"")
+            buildConfigField("long", "DISCORD_APPLICATION_ID_LONG", "${discordApplicationIdLong}L")
+            buildConfigField("String", "DISCORD_REDIRECT_SCHEME", "\"$discordRedirectScheme\"")
+            manifestPlaceholders["discordRedirectScheme"] = discordRedirectScheme
         }
         create("mobile") {
             dimension = "device"

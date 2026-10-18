@@ -55,11 +55,11 @@ private data class ReleasesNetworkResult(
 object Updater {
     private val client = HttpClient()
     private const val ReleaseCacheCheckIntervalMs: Long = 6 * 60 * 60 * 1000L
-    private const val StableReleaseBaseUrl = "https://github.com/jesusnvels721-blip/Yeshua-Player/releases"
+    private const val StableReleaseBaseUrl = "https://github.com/ReCapzPhyco-420/Yeshua/releases"
     private const val CanaryReleaseBaseUrl =
         "https://github.com/ReCapzPhyco-420/canary/releases"
     private const val CanaryWorkflowRunsUrl =
-        "https://api.github.com/repos/jesusnvels721-blip/Yeshua-Player/actions/workflows/build.yml/runs" +
+        "https://api.github.com/repos/ReCapzPhyco-420/Yeshua/actions/workflows/build.yml/runs" +
             "?branch=main&status=success&per_page=1&exclude_pull_requests=true"
     var lastCheckTime = -1L
         private set
@@ -98,7 +98,7 @@ object Updater {
 
     private fun workflowArtifactDownloadUrl(): String {
         val artifactUrl =
-            "https://nightly.link/jesusnvels721-blip/Yeshua-Player/workflows/build/main/${workflowArtifactName()}"
+            "https://nightly.link/ReCapzPhyco-420/Yeshua/workflows/build/main/${workflowArtifactName()}"
         return if (canDownloadUpdatesDirectly) "$artifactUrl.zip" else artifactUrl
     }
 
@@ -322,7 +322,7 @@ object Updater {
         cachedEtag: String?,
     ): ReleasesNetworkResult {
         val response: HttpResponse =
-            client.get("https://api.github.com/repos/jesusnvels721-blip/Yeshua-Player/releases?per_page=$perPage") {
+            client.get("https://api.github.com/repos/ReCapzPhyco-420/Yeshua/releases?per_page=$perPage") {
                 headers {
                     append("Accept", "application/vnd.github+json")
                     append("User-Agent", "Yeshua")
@@ -394,7 +394,7 @@ object Updater {
 
             val response =
                 client
-                    .get("https://api.github.com/repos/jesusnvels721-blip/Yeshua-Player/commits?sha=$branch&per_page=$count")
+                    .get("https://api.github.com/repos/ReCapzPhyco-420/Yeshua/commits?sha=$branch&per_page=$count")
                     .bodyAsText()
             val jsonArray = JSONArray(response)
             val commits = mutableListOf<GitCommit>()

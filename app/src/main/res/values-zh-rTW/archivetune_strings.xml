@@ -309,6 +309,7 @@
     <string name="quick_picks_display_mode">\"快速選擇\"顯示模式</string>
     <string name="quick_picks_display_mode_card">卡片</string>
     <string name="quick_picks_display_mode_list">清單</string>
+    <string name="discord">Discord</string>
     <string name="advanced_login">使用憑證登入</string>
     <string name="token_hidden">點擊以顯示憑證</string>
     <string name="token_shown">再次點擊以複製或編輯</string>
@@ -576,6 +577,8 @@
     <string name="about_position_zion_huang">InnerTune 創作者 · Metrolist、LunarTune 及其他衍生版本的奠基人</string>
     <string name="about_content_desc_github">GitHub</string>
     <string name="about_content_desc_website">網站</string>
+    <string name="about_content_desc_discord">Discord</string>
+    <string name="about_content_desc_telegram">Telegram</string>
     <string name="about_content_desc_donate">贊助</string>
     <string name="spotify_playlists">Spotify 播放清單</string>
     <string name="spotify_waiting_for_login">正在等待 Spotify 登入</string>

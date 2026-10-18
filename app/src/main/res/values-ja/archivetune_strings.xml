@@ -284,6 +284,7 @@
     <string name="quick_picks_display_mode">クイックピック表示モード</string>
     <string name="quick_picks_display_mode_card">カード</string>
     <string name="quick_picks_display_mode_list">リスト</string>
+    <string name="discord">Discord</string>
     <string name="advanced_login">トークンでログイン</string>
     <string name="token_hidden">タップしてトークンを表示</string>
     <string name="token_shown">もう一度タップしてコピーまたは編集</string>
@@ -568,5 +569,7 @@
     <string name="about_position_zion_huang">InnerTuneの作成者 · Metrolist、LunarTune、その他フォークの基盤</string>
     <string name="about_content_desc_github">GitHub</string>
     <string name="about_content_desc_website">ウェブサイト</string>
+    <string name="about_content_desc_discord">Discord</string>
+    <string name="about_content_desc_telegram">Telegram</string>
     <string name="about_content_desc_donate">寄付</string>
 </resources>

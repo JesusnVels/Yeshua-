@@ -38,6 +38,7 @@ import dev.yeshua.player.constants.AppLockType
 import dev.yeshua.player.constants.AppLockTypeKey
 import dev.yeshua.player.constants.DisableScreenshotKey
 import dev.yeshua.player.constants.DynamicThemeKey
+import dev.yeshua.player.constants.EnableDiscordRPCKey
 import dev.yeshua.player.constants.EnableLastFMScrobblingKey
 import dev.yeshua.player.constants.EnableTranslatorKey
 import dev.yeshua.player.constants.ExternalDownloaderEnabledKey
@@ -326,13 +327,19 @@ fun buildSettingsGroups(
             title = stringResource(R.string.integration),
             subtitle = stringResource(R.string.settings_integration_subtitle),
             accentColor = MaterialTheme.colorScheme.secondary,
-            keywords = listOf("integration", "lastfm", "last.fm", "libre.fm", "scrobble", "scrobbling", "listenbrainz", "spotify"),
+            keywords = listOf("integration", "lastfm", "last.fm", "libre.fm", "scrobble", "scrobbling", "discord", "listenbrainz", "spotify"),
             onClick = { navController.navigate("settings/integration") },
             children = listOf(
                 SettingsChild("Last.fm scrobbling", "lastfm_scrobbling", listOf("lastfm", "last.fm", "libre.fm", "scrobble", "scrobbling", "listens")) { SearchResultSwitch(EnableLastFMScrobblingKey, false) },
                 SettingsChild("Last.fm account", "lastfm_account", listOf("lastfm account", "lastfm login", "lastfm session", "lastfm username")),
                 SettingsChild("Last.fm options", "lastfm_options", listOf("lastfm options", "lastfm settings", "scrobble toggle", "now playing")),
                 SettingsChild("Last.fm scrobbling configuration", "lastfm_scrobbling_config", listOf("scrobble config", "scrobble configuration", "scrobble threshold", "scrobble percentage")),
+                SettingsChild("Discord rich presence", "discord_presence", listOf("discord", "rich presence", "rpc", "status", "now playing")) { SearchResultSwitch(EnableDiscordRPCKey, false) },
+                SettingsChild("Discord account", "discord_account", listOf("discord account", "discord login", "discord token", "discord authorization")),
+                SettingsChild("Discord options", "discord_options", listOf("discord options", "discord refresh", "refresh discord")),
+                SettingsChild("Discord connection settings", "discord_connection", listOf("discord connection", "activity status", "platform status", "discord platform")),
+                SettingsChild("Discord activity content", "discord_activity", listOf("discord activity", "activity name", "activity details", "activity state", "activity type", "discord show when paused")),
+                SettingsChild("Discord image options", "discord_images", listOf("discord image", "large image", "large text", "discord artwork", "discord cover")),
                 SettingsChild("ListenBrainz", "listenbrainz", listOf("listenbrainz", "listen brainz", "scrobble")) { SearchResultSwitch(ListenBrainzEnabledKey, false) },
                 SettingsChild("ListenBrainz token", "listenbrainz_token", listOf("listenbrainz token", "listenbrainz api key", "listenbrainz credential")),
                 SettingsChild("Spotify", "spotify", listOf("spotify", "spotify connect", "spotify playlists")) { SearchResultSwitch(ShowSpotifyPlaylistsKey, false) },
@@ -344,6 +351,11 @@ fun buildSettingsGroups(
                 SettingsChild("Qobuz tokens", "qobuz_tokens", listOf("qobuz token", "qobuz app secret", "qobuz credential")),
                 SettingsChild("Qobuz instances", "qobuz_instances", listOf("qobuz instance", "qobuz server", "qobuz url", "qobuz endpoint")),
                 SettingsChild("Deezer", "deezer", listOf("deezer", "deezer login", "deezer premium", "deezer account", "deezer session")),
+                SettingsChild("Telegram", "telegram", listOf("telegram", "telegram channel", "channel sync", "telegram music", "telegram bot")),
+                SettingsChild("Telegram login", "telegram_login", listOf("telegram login", "telegram session", "telegram account", "sign in telegram")),
+                SettingsChild("Telegram browse channels", "telegram_browse_channels", listOf("browse channels", "channels", "telegram channels", "music channels")),
+                SettingsChild("Telegram lossless only", "telegram_lossless_only", listOf("lossless", "flac", "lossless only", "high quality")),
+                SettingsChild("Telegram logout", "telegram_logout", listOf("logout", "log out", "sign out", "disconnect telegram")),
             ),
         )
     val aiIntegration =

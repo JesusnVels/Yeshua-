@@ -285,6 +285,7 @@
     <string name="quick_picks_display_mode">Modo de exibição das escolhas rápidas</string>
     <string name="quick_picks_display_mode_card">Cartão</string>
     <string name="quick_picks_display_mode_list">Lista</string>
+    <string name="discord">Discord</string>
     <string name="advanced_login">Login com token</string>
     <string name="token_hidden">Toque para mostrar o token</string>
     <string name="token_shown">Toque novamente para copiar ou editar</string>
@@ -568,6 +569,8 @@
     <string name="about_position_zion_huang">Criador do InnerTune · Fundação do Metrolist, Yeshua e outros forks</string>
     <string name="about_content_desc_github">GitHub</string>
     <string name="about_content_desc_website">Site</string>
+    <string name="about_content_desc_discord">Discord</string>
+    <string name="about_content_desc_telegram">Telegram</string>
     <string name="about_content_desc_donate">Doar</string>
     <string name="music_recognition_settings">Configurações de reconhecimento de música</string>
     <string name="music_recognition_background_title">Reconhecimento em segundo plano</string>

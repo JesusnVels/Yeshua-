@@ -82,6 +82,7 @@
     <string name="resume_autoscroll">Reprise du défilement automatique</string>
     <string name="lyrics_romanize_japanese">Romaniser les paroles japonaises</string>
     <string name="lyrics_romanize_korean">Romaniser les paroles coréennes</string>
+    <string name="discord">Discord</string>
     <string name="advanced_login">Connexion avec un jeton</string>
     <string name="token_hidden">Cliquer pour afficher le jeton</string>
     <string name="token_shown">Cliquer encore pour copier ou éditer</string>
@@ -419,6 +420,7 @@
     <string name="aod_shape_heart">Cœur</string>
     <string name="year_in_music_plays_label">Nombre total de lectures</string>
     <string name="aod_position_top">En haut</string>
+    <string name="about_content_desc_telegram">Telegram</string>
     <string name="ai_provider_none">Aucun (désactivé)</string>
     <string name="news_error_title">Impossible de charger les actualités</string>
     <string name="android_auto_suggested_songs">Suggestions de titres</string>
@@ -475,6 +477,7 @@
     <string name="aod_customize_show_time_labels">Afficher les horaires</string>
     <string name="aod_customize_sample_title">Archives de Minuit</string>
     <string name="aod_shape_cookie_6">Cookie 6</string>
+    <string name="about_content_desc_discord">Discord</string>
     <string name="lyrics_share_style_frosted_light">Lumière tamisée</string>
     <string name="aod_shape_triangle">Triangle</string>
     <string name="settings_content_subtitle">Langue, pays et paramètres de recommandation par défaut</string>

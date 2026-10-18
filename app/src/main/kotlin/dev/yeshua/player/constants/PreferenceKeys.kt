@@ -1006,7 +1006,6 @@ val RemindAfterKey = intPreferencesKey("remind_after")
 
 // Update settings
 val EnableUpdateNotificationKey = booleanPreferencesKey("enableUpdateNotification")
-val AutoCheckUpdatesKey = booleanPreferencesKey("autoCheckUpdates")
 val UpdateChannelKey = stringPreferencesKey("updateChannel")
 val LastUpdateCheckKey = longPreferencesKey("lastUpdateCheck")
 val MoriCipherManualRefreshHistoryKey = stringSetPreferencesKey("moriCipherManualRefreshHistory")

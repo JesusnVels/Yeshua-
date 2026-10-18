@@ -284,6 +284,7 @@
     <string name="quick_picks_display_mode">شكل عرض الاختيارات السريعة</string>
     <string name="quick_picks_display_mode_card">بطاقة</string>
     <string name="quick_picks_display_mode_list">قائمة</string>
+    <string name="discord">ديسكورد</string>
     <string name="advanced_login">تسجيل الدخول برمز Token</string>
     <string name="token_hidden">دوس هنا لإظهار الرمز</string>
     <string name="token_shown">دوس تاني للنسخ أو التعديل</string>
@@ -567,6 +568,8 @@
     <string name="about_position_zion_huang">مبتكر InnerTune · الأساس لـ Metrolist و Yeshua والتفرعات التانية</string>
     <string name="about_content_desc_github">GitHub</string>
     <string name="about_content_desc_website">الموقع الإلكتروني</string>
+    <string name="about_content_desc_discord">ديسكورد</string>
+    <string name="about_content_desc_telegram">تليجرام</string>
     <string name="about_content_desc_donate">تبرع</string>
     <string name="music_recognition_settings">إعدادات التعرف على المزيكا</string>
     <string name="music_recognition_background_title">التعرف في الخلفية</string>

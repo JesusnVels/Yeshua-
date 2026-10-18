@@ -109,6 +109,7 @@ private fun searchableSettingsRoute(parentKey: String, scrollKey: String?): Stri
             "backup_restore" -> "settings/backup_restore"
             "developer_options" -> "settings/misc"
             "about" -> "settings/about"
+            "discord" -> "settings/discord"
             "ai_integration" -> "settings/ai_integration"
             else -> return null
         }

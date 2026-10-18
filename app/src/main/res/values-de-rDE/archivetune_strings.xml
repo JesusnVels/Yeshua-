@@ -79,6 +79,7 @@
     <string name="lyrics_auto_scroll">Songtexte automatisch scrollen</string>
     <string name="lyrics_romanize_japanese">Japanische Texte romanisieren</string>
     <string name="lyrics_romanize_korean">Romanisieren Sie koreanische Texte</string>
+    <string name="discord">Zwietracht</string>
     <string name="advanced_login">Mit Token anmelden</string>
     <string name="token_hidden">Tippen Sie, um das Token anzuzeigen</string>
     <string name="token_shown">Tippen Sie erneut, um zu kopieren oder zu bearbeiten</string>
@@ -487,11 +488,13 @@
     <string name="local_songs_scan_included_folders_add">Ordner einschließen</string>
     <string name="spotify_playlists">Spotify-Playlist</string>
     <string name="about_content_desc_donate">Spenden</string>
+    <string name="about_content_desc_telegram">Telegram</string>
     <string name="about_position_developers">Entwickler | Team</string>
     <string name="about_license">LIZENZ</string>
     <string name="about_contributors">Beitragende</string>
     <string name="about_archive_tune_team">Team</string>
     <string name="mori_cipher_error_title">Entschlüsselung nicht verfügbar</string>
+    <string name="about_content_desc_discord">Discord</string>
     <string name="about_content_desc_github">GitHub</string>
     <string name="about_content_desc_website">Webseite</string>
     <string name="about_position_mo_agamy">Basis-Framework | Metrolist</string>

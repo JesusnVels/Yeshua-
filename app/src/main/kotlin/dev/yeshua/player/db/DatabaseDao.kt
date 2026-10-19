@@ -55,6 +55,8 @@ import dev.yeshua.player.db.entities.RelatedSongMap
 import dev.yeshua.player.db.entities.SearchHistory
 import dev.yeshua.player.db.entities.SetVideoIdEntity
 import dev.yeshua.player.db.entities.Song
+import dev.yeshua.player.db.entities.SongLastPlayed
+import dev.yeshua.player.db.entities.SongPlayCount
 import dev.yeshua.player.db.entities.SongAlbumMap
 import dev.yeshua.player.db.entities.SongArtistMap
 import dev.yeshua.player.db.entities.SongEntity

@@ -38,6 +38,7 @@ import dev.yeshua.player.db.entities.ArtistEntity
 import dev.yeshua.player.db.entities.Playlist
 import dev.yeshua.player.db.entities.PlaylistEntity
 import dev.yeshua.player.db.entities.PlaylistSongMap
+import dev.yeshua.player.db.entities.PlaylistSyncMode
 import dev.yeshua.player.db.entities.Song
 import dev.yeshua.player.db.entities.SongEntity
 import moe.rukamori.archivetune.innertube.YouTube
@@ -1035,6 +1036,18 @@ class SyncUtils
             )
         }
 
+        private suspend fun upsertSyncedSong(
+            song: MediaMetadata,
+            songId: String,
+        ) {
+            val existingSong = database.getSongByIdBlocking(songId)
+            if (existingSong == null) {
+                database.insert(song)
+            } else {
+                database.update(existingSong, song)
+            }
+        }
+
         private suspend fun syncPlaylist(
             browseId: String,
             playlistId: String,
@@ -1113,31 +1126,55 @@ class SyncUtils
 
             Timber.d("syncPlaylist: Updating local playlist (remote: ${remoteIds.size}, local: ${localIds.size})")
 
+            // Per-playlist sync mode (adapted from Stash, GPL-3.0): REFRESH mirrors
+            // the source (remove missing, add new); ACCUMULATE only adds new tracks.
+            val syncMode =
+                runCatching { database.playlist(playlistId).first()?.playlist?.syncMode }
+                    .getOrNull() ?: PlaylistSyncMode.REFRESH
+            Timber.d("syncPlaylist: Using sync mode $syncMode for playlistId=$playlistId")
+
             try {
                 onProgress(0, remoteIds.size)
                 database.withTransaction {
                     if (!isSyncStillEnabled(gen)) return@withTransaction
-                    database.clearPlaylist(playlistId)
                     var completedSongs = 0
-                    songs.forEachIndexed { idx, song ->
-                        if (!isSyncStillEnabled(gen)) return@withTransaction
-                        val songId = song.id ?: return@forEachIndexed
-                        val existingSong = getSongByIdBlocking(songId)
-                        if (existingSong == null) {
-                            database.insert(song)
-                        } else {
-                            database.update(existingSong, song)
+                    if (syncMode == PlaylistSyncMode.ACCUMULATE) {
+                        val existingIds = localIds.toSet()
+                        var position = (database.maxPlaylistSongPosition(playlistId) ?: -1) + 1
+                        songs.forEach { song ->
+                            if (!isSyncStillEnabled(gen)) return@withTransaction
+                            val songId = song.id ?: return@forEach
+                            upsertSyncedSong(song, songId)
+                            if (songId !in existingIds) {
+                                database.insert(
+                                    PlaylistSongMap(
+                                        songId = songId,
+                                        playlistId = playlistId,
+                                        position = position++,
+                                        setVideoId = song.setVideoId,
+                                    ),
+                                )
+                            }
+                            completedSongs += 1
+                            onProgress(completedSongs, remoteIds.size)
                         }
-                        database.insert(
-                            PlaylistSongMap(
-                                songId = songId,
-                                playlistId = playlistId,
-                                position = idx,
-                                setVideoId = song.setVideoId,
-                            ),
-                        )
-                        completedSongs += 1
-                        onProgress(completedSongs, remoteIds.size)
+                    } else {
+                        database.clearPlaylist(playlistId)
+                        songs.forEachIndexed { idx, song ->
+                            if (!isSyncStillEnabled(gen)) return@withTransaction
+                            val songId = song.id ?: return@forEachIndexed
+                            upsertSyncedSong(song, songId)
+                            database.insert(
+                                PlaylistSongMap(
+                                    songId = songId,
+                                    playlistId = playlistId,
+                                    position = idx,
+                                    setVideoId = song.setVideoId,
+                                ),
+                            )
+                            completedSongs += 1
+                            onProgress(completedSongs, remoteIds.size)
+                        }
                     }
                 }
                 Timber.d("syncPlaylist: Successfully synced playlist")

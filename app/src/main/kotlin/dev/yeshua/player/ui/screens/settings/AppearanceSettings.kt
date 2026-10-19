@@ -649,7 +649,8 @@ fun AppearanceSettings(navController: NavController) {
 
                 item(visible = useDarkTheme) {
                     SwitchPreference(
-                        title = { Text(stringResource(R.string.pure_black)) },
+                        title = { Text(stringResource(R.string.yeshua_black)) },
+                        description = stringResource(R.string.yeshua_black_desc),
                         icon = { Icon(painterResource(R.drawable.contrast), null) },
                         checked = pureBlack,
                         onCheckedChange = onPureBlackChange,

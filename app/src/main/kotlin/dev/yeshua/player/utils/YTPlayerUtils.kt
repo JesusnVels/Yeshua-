@@ -48,17 +48,37 @@ import dev.yeshua.player.utils.potoken.BotGuardTokenGenerator
 import dev.yeshua.player.utils.potoken.PoTokenResult
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import timber.log.Timber
+import java.util.LinkedHashMap
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
 object YTPlayerUtils {
     private const val logTag = "YTPlayerUtils"
     private const val FAILED_CLIENT_BACKOFF_MS = 10 * 60 * 1000L
     private const val DEFAULT_STREAM_EXPIRE_SECONDS = 300
     private const val MAX_PLAYBACK_DATA_CACHE_ENTRIES = 128
+    private const val MAX_STREAM_URL_CACHE_ENTRIES = 500
     private const val PLAYBACK_DATA_RESOLUTION_MUTEX_COUNT = 32
     const val STREAM_URL_EXPIRY_SAFETY_MS = 60_000L
     private val RETRYABLE_STREAM_RESPONSE_CODES = setOf(403, 404, 410, 416)
+
+    /**
+     * The player signature timestamp is global per YouTube player version (not per
+     * video), so it is cached process-wide. 12h TTL is conservative against YouTube's
+     * roughly-daily base.js pushes; a stale value fails decipher loudly and is
+     * invalidated via [clearPlaybackAuthCaches] on the bad-stream recovery path.
+     */
+    private const val SIGNATURE_TIMESTAMP_CACHE_TTL_MS = 12 * 60 * 60 * 1000L
+
+    /**
+     * Any long-lived public video id works here: it is only used to discover the
+     * global player signature timestamp during startup warmup, never played.
+     */
+    private const val SIGNATURE_TIMESTAMP_WARMUP_VIDEO_ID = "dQw4w9WgXcQ"
+
+    @Volatile private var cachedSignatureTimestamp: Int? = null
+    @Volatile private var cachedSignatureTimestampAtMs: Long = 0L
 
     private fun extractExpireTimestampMsFromUrl(url: String): Long? {
         val expireTimestamp =
@@ -191,7 +211,49 @@ object YTPlayerUtils {
         val expiresAtMs: Long,
     )
 
-    private val streamUrlCache = ConcurrentHashMap<String, CachedStreamUrl>()
+    /**
+     * Adapted from Metrolist (GPL-3.0): the stream-URL cache was an unbounded
+     * [ConcurrentHashMap] that grew with every resolved URL. This bounds it to a
+     * 500-entry access-order LRU, and writes are generation-guarded so a resolution
+     * that was already in flight when the cache was cleared/invalidated cannot
+     * repopulate it with a stale (e.g. 403-rejected) URL.
+     */
+    private class BoundedStreamUrlCache(private val maxEntries: Int) {
+        private val entries = LinkedHashMap<String, CachedStreamUrl>(32, 0.75f, true)
+        private val generation = AtomicLong(0L)
+
+        @Synchronized
+        fun get(key: String): CachedStreamUrl? = entries[key]
+
+        fun currentGeneration(): Long = generation.get()
+
+        @Synchronized
+        fun put(key: String, value: CachedStreamUrl, generation: Long) {
+            if (generation != this.generation.get()) return
+            entries[key] = value
+            while (entries.size > maxEntries) {
+                val eldestKey = entries.entries.iterator().next().key
+                entries.remove(eldestKey)
+            }
+        }
+
+        @Synchronized
+        fun removeKeysIf(predicate: (String) -> Boolean) {
+            generation.incrementAndGet()
+            val iterator = entries.keys.iterator()
+            while (iterator.hasNext()) {
+                if (predicate(iterator.next())) iterator.remove()
+            }
+        }
+
+        @Synchronized
+        fun clear() {
+            generation.incrementAndGet()
+            entries.clear()
+        }
+    }
+
+    private val streamUrlCache = BoundedStreamUrlCache(maxEntries = MAX_STREAM_URL_CACHE_ENTRIES)
     private val playbackDataCache = ConcurrentHashMap<PlaybackDataCacheKey, CachedPlaybackData>()
     private val playbackDataResolutionMutexes = Array(PLAYBACK_DATA_RESOLUTION_MUTEX_COUNT) { Mutex() }
     private val failedStreamClientsUntil = ConcurrentHashMap<String, Long>()
@@ -203,6 +265,7 @@ object YTPlayerUtils {
         playbackDataCache.clear()
         failedStreamClientsUntil.clear()
         lastSuccessfulClientKey = null
+        invalidateSignatureTimestampCache()
     }
 
     suspend fun recoverFromBadStreamPlayerResponse(videoId: String) {
@@ -434,7 +497,7 @@ object YTPlayerUtils {
 
     fun invalidateCachedStreamUrls(videoId: String) {
         val marker = ":$videoId:"
-        streamUrlCache.keys.removeIf { it.contains(marker) }
+        streamUrlCache.removeKeysIf { it.contains(marker) }
         playbackDataCache.keys.removeIf { it.videoId == videoId }
     }
 
@@ -619,11 +682,21 @@ object YTPlayerUtils {
         preferredStreamClient: PlayerStreamClient = PlayerStreamClient.WEB_REMIX,
         // if provided, this preference overrides ConnectivityManager.isActiveNetworkMetered
         networkMetered: Boolean? = null,
+        // if provided, maps the requested video id to the user's chosen override
+        // (wrong-match correction) before any resolution or caching happens
+        overrideVideoIdFor: (suspend (videoId: String) -> String?)? = null,
     ): Result<PlaybackData> {
+        // Adapted from Stash (GPL-3.0): consult the user's wrong-match override first.
+        val effectiveVideoId =
+            overrideVideoIdFor
+                ?.invoke(videoId)
+                ?.trim()
+                ?.takeIf { it.isNotBlank() && it != videoId }
+                ?: videoId
         val isMetered = networkMetered ?: connectivityManager.isActiveNetworkMetered
         val initialKey =
             buildPlaybackDataCacheKey(
-                videoId = videoId,
+                videoId = effectiveVideoId,
                 audioQuality = audioQuality,
                 networkMetered = isMetered,
                 authFingerprint = YouTube.currentPlaybackAuthState().fingerprint,
@@ -634,14 +707,14 @@ object YTPlayerUtils {
         return resolutionMutex.withLock {
             val currentKey =
                 buildPlaybackDataCacheKey(
-                    videoId = videoId,
+                    videoId = effectiveVideoId,
                     audioQuality = audioQuality,
                     networkMetered = isMetered,
                     authFingerprint = YouTube.currentPlaybackAuthState().fingerprint,
                 )
             getCachedPlaybackData(currentKey)?.let { return@withLock Result.success(it) }
             resolvePlaybackData(
-                videoId = videoId,
+                videoId = effectiveVideoId,
                 playlistId = playlistId,
                 audioQuality = audioQuality,
                 connectivityManager = connectivityManager,
@@ -884,6 +957,9 @@ object YTPlayerUtils {
         networkMetered: Boolean?,
     ): PlaybackData {
         Timber.tag(logTag).i("Fetching player response for videoId: $videoId, playlistId: $playlistId")
+        // Generation guard: if the stream-URL cache is cleared/invalidated while
+        // this resolution is in flight, the write below must not repopulate it.
+        val streamUrlCacheGeneration = streamUrlCache.currentGeneration()
         val signatureTimestamp = getSignatureTimestampOrNull(videoId)
         Timber.tag(logTag).v("Signature timestamp: $signatureTimestamp")
 
@@ -1250,7 +1326,7 @@ object YTPlayerUtils {
                 if (canUseLoggedInPlayback && expectedDurationMs != null && isLikelyPreview(candidate, expectedDurationMs)) continue
                 if (shouldSkipCipheredWebCandidate(client, candidate, videoId, authState)) continue
                 val cacheKey = buildStreamCacheKey(videoId, candidate.itag, client, authState.fingerprint)
-                val cached = streamUrlCache[cacheKey]
+                val cached = streamUrlCache.get(cacheKey)
                 val candidateResult =
                     if (cached != null && cached.expiresAtMs > System.currentTimeMillis() + STREAM_URL_EXPIRY_SAFETY_MS) {
                         Result.success(cached.url)
@@ -1386,12 +1462,16 @@ object YTPlayerUtils {
                 "No resolved stream client for validated playback URL"
             }
 
-        streamUrlCache[buildStreamCacheKey(videoId, format.itag, resolvedStreamClient, authState.fingerprint)] =
-            CachedStreamUrl(
-                url = streamUrl,
-                expiresAtMs = System.currentTimeMillis() + (streamExpiresInSeconds * 1000L),
-                authFingerprint = authState.fingerprint,
-            )
+        streamUrlCache.put(
+            key = buildStreamCacheKey(videoId, format.itag, resolvedStreamClient, authState.fingerprint),
+            value =
+                CachedStreamUrl(
+                    url = streamUrl,
+                    expiresAtMs = System.currentTimeMillis() + (streamExpiresInSeconds * 1000L),
+                    authFingerprint = authState.fingerprint,
+                ),
+            generation = streamUrlCacheGeneration,
+        )
 
         return PlaybackData(
             metadataPlayerResponse.playerConfig?.audioConfig,
@@ -1581,14 +1661,49 @@ object YTPlayerUtils {
      * Wrapper around the [NewPipeUtils.getSignatureTimestamp] function which reports exceptions
      */
     private suspend fun getSignatureTimestampOrNull(videoId: String): Int? {
+        val now = System.currentTimeMillis()
+        cachedSignatureTimestamp
+            ?.takeIf { now - cachedSignatureTimestampAtMs < SIGNATURE_TIMESTAMP_CACHE_TTL_MS }
+            ?.let { return it }
         Timber.tag(logTag).i("Getting signature timestamp for videoId: $videoId")
         return NewPipeUtils
             .getSignatureTimestamp(videoId)
-            .onSuccess { Timber.tag(logTag).i("Signature timestamp obtained: $it") }
+            .onSuccess { sts ->
+                Timber.tag(logTag).i("Signature timestamp obtained: $sts")
+                cachedSignatureTimestamp = sts
+                cachedSignatureTimestampAtMs = System.currentTimeMillis()
+            }
             .onFailure {
                 Timber.tag(logTag).e(it, "Failed to get signature timestamp")
                 reportException(it)
             }.getOrNull()
+    }
+
+    /**
+     * Best-effort warmup of playback prerequisites, intended to run once on a
+     * background thread at service startup so the first tap of a session does not
+     * pay for signature-timestamp discovery and visitor-data bootstrap.
+     * Safe to call repeatedly; never throws.
+     */
+    suspend fun warmupPlaybackPrerequisites() {
+        runCatching {
+            getSignatureTimestampOrNull(SIGNATURE_TIMESTAMP_WARMUP_VIDEO_ID)
+        }
+        runCatching {
+            val authState = YouTube.currentPlaybackAuthState()
+            if (authState.visitorData.isNullOrBlank()) {
+                YouTube
+                    .visitorData()
+                    .getOrNull()
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { YouTube.visitorData = it }
+            }
+        }
+    }
+
+    private fun invalidateSignatureTimestampCache() {
+        cachedSignatureTimestamp = null
+        cachedSignatureTimestampAtMs = 0L
     }
 
     /**

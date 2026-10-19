@@ -31,6 +31,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import android.content.Context
 import android.net.Uri
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.yeshua.player.R
 import dev.yeshua.player.constants.StatPeriod
 import dev.yeshua.player.constants.statToPeriod
@@ -46,14 +49,15 @@ import dev.yeshua.player.db.entities.Song
 import dev.yeshua.player.db.entities.SongWithStats
 import moe.rukamori.archivetune.innertube.YouTube
 import dev.yeshua.player.ui.screens.OptionStats
-import dev.yeshua.player.utils.TempoHistoryImporter
 import dev.yeshua.player.utils.TempoImportResult
+import dev.yeshua.player.utils.TempoImportWorker
 import dev.yeshua.player.utils.reportException
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
+import java.util.UUID
 import javax.inject.Inject
 
 sealed interface StatsScreenState {
@@ -139,6 +143,7 @@ class StatsViewModel
     @Inject
     constructor(
         private val database: MusicDatabase,
+        @ApplicationContext private val appContext: Context,
     ) : ViewModel() {
         private val selectedOption = MutableStateFlow(OptionStats.CONTINUOUS)
         private val indexChips = MutableStateFlow(0)
@@ -196,26 +201,41 @@ class StatsViewModel
 
         private val tempoImportState = MutableStateFlow(TempoImportUiState())
         val tempoImportDialogState: StateFlow<TempoImportUiState> = tempoImportState.asStateFlow()
+        private var tempoImportObserveJob: kotlinx.coroutines.Job? = null
 
         fun openTempoImportDialog() {
             tempoImportState.value = TempoImportUiState(isDialogOpen = true)
+            // Re-attach to an already-running background import (e.g. the user left
+            // the screen mid-import and came back).
+            viewModelScope.launch(Dispatchers.IO) {
+                val running =
+                    runCatching {
+                        WorkManager
+                            .getInstance(appContext)
+                            .getWorkInfosForUniqueWork(TempoImportWorker.UNIQUE_WORK_NAME)
+                            .get()
+                            .firstOrNull {
+                                it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED
+                            }
+                    }.getOrNull()
+                if (running != null) {
+                    tempoImportState.update { it.copy(isImporting = true) }
+                    observeTempoImportWork(running.id)
+                }
+            }
         }
 
         fun closeTempoImportDialog() {
-            // Don't allow dismissing mid-import; the dialog hides its close button then.
-            if (!tempoImportState.value.isImporting) {
-                tempoImportState.value = TempoImportUiState()
-            }
+            // Safe to dismiss any time now: the import keeps running in WorkManager.
+            tempoImportObserveJob?.cancel()
+            tempoImportState.value = TempoImportUiState()
         }
 
         fun setTempoImportSearchMissing(enabled: Boolean) {
             tempoImportState.update { it.copy(searchMissing = enabled) }
         }
 
-        fun importTempoBackup(
-            uri: Uri,
-            context: Context,
-        ) {
+        fun importTempoBackup(uri: Uri) {
             val searchMissing = tempoImportState.value.searchMissing
             tempoImportState.update {
                 it.copy(
@@ -226,29 +246,69 @@ class StatsViewModel
                     errorMessage = null,
                 )
             }
-            viewModelScope.launch(Dispatchers.IO) {
-                try {
-                    val result =
-                        TempoHistoryImporter.importTempoBackup(
-                            zipUri = uri,
-                            context = context.applicationContext,
-                            database = database,
-                            searchMissing = searchMissing,
-                            onProgress = { done, total ->
-                                tempoImportState.update { it.copy(progressDone = done, progressTotal = total) }
-                            },
-                        )
-                    tempoImportState.update { it.copy(isImporting = false, result = result) }
-                    retry()
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    reportException(e)
-                    tempoImportState.update {
-                        it.copy(isImporting = false, errorMessage = e.message)
-                    }
+            val workId = TempoImportWorker.enqueue(appContext, uri, searchMissing)
+            observeTempoImportWork(workId)
+        }
+
+        private fun observeTempoImportWork(workId: UUID) {
+            tempoImportObserveJob?.cancel()
+            tempoImportObserveJob =
+                viewModelScope.launch {
+                    WorkManager
+                        .getInstance(appContext)
+                        .getWorkInfoByIdFlow(workId)
+                        .collect { workInfo ->
+                            when (workInfo?.state) {
+                                WorkInfo.State.RUNNING -> {
+                                    val done =
+                                        workInfo.progress.getInt(TempoImportWorker.PROGRESS_DONE, 0)
+                                    val total =
+                                        workInfo.progress.getInt(TempoImportWorker.PROGRESS_TOTAL, 0)
+                                    tempoImportState.update {
+                                        it.copy(
+                                            isImporting = true,
+                                            progressDone = done,
+                                            progressTotal = total,
+                                        )
+                                    }
+                                }
+
+                                WorkInfo.State.SUCCEEDED -> {
+                                    val out = workInfo.outputData
+                                    tempoImportState.update {
+                                        it.copy(
+                                            isImporting = false,
+                                            result =
+                                                TempoImportResult(
+                                                    importedCount = out.getInt(TempoImportWorker.OUTPUT_IMPORTED, 0),
+                                                    matchedLocalCount = out.getInt(TempoImportWorker.OUTPUT_MATCHED_LOCAL, 0),
+                                                    matchedSearchCount = out.getInt(TempoImportWorker.OUTPUT_MATCHED_SEARCH, 0),
+                                                    skippedCount = out.getInt(TempoImportWorker.OUTPUT_SKIPPED, 0),
+                                                    failedCount = out.getInt(TempoImportWorker.OUTPUT_FAILED, 0),
+                                                ),
+                                        )
+                                    }
+                                    retry()
+                                }
+
+                                WorkInfo.State.FAILED -> {
+                                    tempoImportState.update {
+                                        it.copy(
+                                            isImporting = false,
+                                            errorMessage =
+                                                workInfo.outputData.getString(TempoImportWorker.OUTPUT_ERROR),
+                                        )
+                                    }
+                                }
+
+                                WorkInfo.State.CANCELLED -> {
+                                    tempoImportState.update { it.copy(isImporting = false) }
+                                }
+
+                                else -> Unit
+                            }
+                        }
                 }
-            }
         }
 
         private fun periodPair() = combine(selectedOption, indexChips) { opt, idx -> Pair(opt, idx) }

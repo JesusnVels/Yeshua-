@@ -13,7 +13,6 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
@@ -25,8 +24,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
@@ -37,7 +34,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -71,17 +67,20 @@ import dev.yeshua.player.constants.ShowHomeForgottenFavoritesKey
 import dev.yeshua.player.constants.ShowHomeSimilarRecommendationsKey
 import dev.yeshua.player.constants.ShowHomeAccountPlaylistsKey
 
+import dev.yeshua.player.db.entities.Song
+import dev.yeshua.player.extensions.toMediaItem
 import dev.yeshua.player.home.HomeAction
 import dev.yeshua.player.home.HomeScreenState
 import dev.yeshua.player.home.HomeUiState
 import dev.yeshua.player.models.MediaMetadata
+import dev.yeshua.player.models.SongItem
 import dev.yeshua.player.playback.PlayerConnection
+import dev.yeshua.player.playback.queues.ListQueue
 import dev.yeshua.player.ui.component.ExpressivePullToRefreshBox
 import dev.yeshua.player.ui.component.LocalMenuState
 import dev.yeshua.player.ui.component.MenuState
 import dev.yeshua.player.ui.component.ScreenImageHeader
 import dev.yeshua.player.utils.rememberPreference
-import dev.yeshua.player.ui.utils.SnapLayoutInfoProvider
 import dev.yeshua.player.viewmodels.HomeViewModel
 import moe.rukamori.archivetune.innertube.pages.HomePage
 
@@ -104,7 +103,6 @@ fun HomeScreen(
     val mediaMetadata by playerConnection.mediaMetadata.collectAsStateWithLifecycle()
 
     val lazyListState = rememberLazyListState()
-    val forgottenFavoritesGridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop =
@@ -134,12 +132,6 @@ fun HomeScreen(
             if (shouldLoadMore) {
                 viewModel.onAction(HomeAction.LoadMore(continuation))
             }
-        }
-    }
-
-    LaunchedEffect(uiState?.forgottenFavorites) {
-        if (uiState != null) {
-            forgottenFavoritesGridState.scrollToItem(0)
         }
     }
 
@@ -216,12 +208,29 @@ fun HomeScreen(
                     haptic = haptic,
                     scope = scope,
                     lazyListState = lazyListState,
-                    forgottenFavoritesGridState = forgottenFavoritesGridState,
                     onAction = viewModel::onAction,
                 )
             }
         }
     }
+}
+
+/**
+ * "Play all" for a home section: plays every song in the section as one queue,
+ * mirroring how individual section items are played (ListQueue of MediaItems).
+ */
+private fun playAllSectionSongs(
+    playerConnection: PlayerConnection,
+    songs: List<Song>,
+) {
+    val distinct = songs.distinctBy { it.id }
+    if (distinct.isEmpty()) return
+    playerConnection.playQueue(
+        ListQueue(
+            title = "",
+            items = distinct.map { it.toMediaItem() },
+        ),
+    )
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -290,7 +299,6 @@ private fun HomeContent(
     haptic: HapticFeedback,
     scope: CoroutineScope,
     lazyListState: androidx.compose.foundation.lazy.LazyListState,
-    forgottenFavoritesGridState: LazyGridState,
     onAction: (HomeAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -353,19 +361,7 @@ private fun HomeContent(
             onRefresh = { onAction(HomeAction.Refresh) },
             modifier = Modifier.fillMaxSize(),
         ) {
-            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                val forgottenItemWidthFactor = if (maxWidth * 0.475f >= 320.dp) 0.475f else 0.9f
-                val forgottenItemWidth = maxWidth.coerceAtMost(HomeFeedMaxWidth) * forgottenItemWidthFactor
-                val forgottenSnapLayoutInfoProvider =
-                    remember(forgottenFavoritesGridState, forgottenItemWidthFactor) {
-                        SnapLayoutInfoProvider(
-                            lazyGridState = forgottenFavoritesGridState,
-                            positionInLayout = { layoutSize, itemSize ->
-                                layoutSize * forgottenItemWidthFactor / 2f - itemSize / 2f
-                            },
-                        )
-                    }
-
+            Box(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(
                     state = lazyListState,
                     contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
@@ -389,6 +385,15 @@ private fun HomeContent(
                     }
 
                     val chipSelected = uiState.selectedChip != null
+                    if (!chipSelected) {
+                        item(
+                            key = "home_context_strip",
+                            contentType = "context_strip",
+                        ) {
+                            HomeContextStrip()
+                            Spacer(Modifier.height(HomeSectionSpacing))
+                        }
+                    }
                     if (chipSelected) {
                         // A category replaces the personalised feed: only its own
                         // shelves are shown, right under the chip row.
@@ -440,6 +445,22 @@ private fun HomeContent(
                                 HomeSectionHeader(
                                     title = stringResource(R.string.quick_picks),
                                     dimAlpha = headerDimAlpha,
+                                    onPlayAll = {
+                                        remoteQuickPicks?.let { section ->
+                                            val items =
+                                                section.items
+                                                    .filterIsInstance<SongItem>()
+                                                    .distinctBy { it.id }
+                                            if (items.isNotEmpty()) {
+                                                playerConnection.playQueue(
+                                                    ListQueue(
+                                                        title = "",
+                                                        items = items.map { it.toMediaItem() },
+                                                    ),
+                                                )
+                                            }
+                                        }
+                                    },
                                 )
                             }
                             item(
@@ -469,6 +490,12 @@ private fun HomeContent(
                                 HomeSectionHeader(
                                     title = stringResource(R.string.quick_picks),
                                     dimAlpha = headerDimAlpha,
+                                    onPlayAll = {
+                                        playAllSectionSongs(
+                                            playerConnection,
+                                            uiState.quickPicks,
+                                        )
+                                    },
                                 )
                             }
                             item(
@@ -496,13 +523,19 @@ private fun HomeContent(
                             ) {
                                 HomeSectionHeader(
                                     title = stringResource(R.string.speed_dial),
+                                    onPlayAll = {
+                                        playAllSectionSongs(
+                                            playerConnection,
+                                            uiState.speedDialItems.filterIsInstance<Song>(),
+                                        )
+                                    },
                                 )
                             }
                             item(
                                 key = "home_speed_dial",
                                 contentType = "speed_dial",
                             ) {
-                                SpeedDialSection(
+                                SpeedDialChipsSection(
                                     speedDialItems = uiState.speedDialItems,
                                     mediaMetadata = mediaMetadata,
                                     isPlaying = isPlaying,
@@ -523,13 +556,19 @@ private fun HomeContent(
                             ) {
                                 HomeSectionHeader(
                                     title = stringResource(R.string.keep_listening),
+                                    onPlayAll = {
+                                        playAllSectionSongs(
+                                            playerConnection,
+                                            uiState.keepListening.filterIsInstance<Song>(),
+                                        )
+                                    },
                                 )
                             }
                             item(
                                 key = "home_keep_listening",
                                 contentType = "media_shelf",
                             ) {
-                                KeepListeningSection(
+                                KeepListeningRingSection(
                                     keepListening = uiState.keepListening,
                                     mediaMetadata = mediaMetadata,
                                     isPlaying = isPlaying,
@@ -576,19 +615,22 @@ private fun HomeContent(
                             ) {
                                 HomeSectionHeader(
                                     title = stringResource(R.string.forgotten_favorites),
+                                    onPlayAll = {
+                                        playAllSectionSongs(
+                                            playerConnection,
+                                            uiState.forgottenFavorites,
+                                        )
+                                    },
                                 )
                             }
                             item(
                                 key = "home_forgotten_favorites",
                                 contentType = "song_shelf",
                             ) {
-                                ForgottenFavoritesSection(
+                                ForgottenRediscoverSection(
                                     forgottenFavorites = uiState.forgottenFavorites,
                                     mediaMetadata = mediaMetadata,
                                     isPlaying = isPlaying,
-                                    horizontalLazyGridItemWidth = forgottenItemWidth,
-                                    lazyGridState = forgottenFavoritesGridState,
-                                    snapLayoutInfoProvider = forgottenSnapLayoutInfoProvider,
                                     navController = navController,
                                     playerConnection = playerConnection,
                                     menuState = menuState,

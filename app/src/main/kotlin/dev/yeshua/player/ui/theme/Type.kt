@@ -141,6 +141,13 @@ private fun buildTypography(fontFamily: FontFamily) =
 
 val AppFontFamily = FontFamily(Font(R.font.poppins))
 val LyricsFontFamily = FontFamily(Font(R.font.sfprodisplaybold))
+
+/**
+ * Fixed display typeface for section headers and other Yeshua identity surfaces.
+ * Characterful and constant: body text keeps following the user's font preference,
+ * but headers always speak in Yeshua's voice.
+ */
+val YeshuaDisplayFontFamily = FontFamily(Font(R.font.sfprodisplaybold))
 val AppTypography = buildTypography(AppFontFamily)
 val SystemTypography = buildTypography(FontFamily.Default)
 

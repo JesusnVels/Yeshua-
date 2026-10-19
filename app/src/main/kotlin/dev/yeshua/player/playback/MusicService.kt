@@ -75,6 +75,7 @@ import androidx.media3.datasource.TransferListener
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR
+import androidx.media3.datasource.cache.CacheWriter
 import androidx.media3.datasource.cache.ContentMetadata
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
@@ -330,6 +331,7 @@ class MusicService :
     private var lastDeviceMutePlaybackNoticeAtElapsedMs = 0L
     private var hasAudioFocus = false
     private var autoStartOnBluetoothEnabled = false
+    private var wasPausedByBluetoothDisconnect = false
     private var bluetoothReceiverRegistered = false
     private var wakeLock: PowerManager.WakeLock? = null
     private var wakelockEnabled = false
@@ -353,7 +355,21 @@ class MusicService :
             }
 
             override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
-                if (removedDevices.any { it.isSink }) onAudioOutputDeviceChanged()
+                if (removedDevices.any { it.isSink }) {
+                    if (
+                        ::player.isInitialized &&
+                            player.playWhenReady &&
+                            removedDevices.any {
+                                it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+                                    it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+                            }
+                    ) {
+                        // Remember that playback was interrupted by the BT disconnect so a
+                        // reconnect can resume it. A manual pause never sets this flag.
+                        wasPausedByBluetoothDisconnect = true
+                    }
+                    onAudioOutputDeviceChanged()
+                }
             }
         }
 
@@ -435,6 +451,8 @@ class MusicService :
     private var hideMusicVideos = false
     private var infiniteQueueJob: Job? = null
     private var infiniteQueueGeneration = 0L
+    private val echoBrain by lazy { EchoBrain(database, dataStore) }
+    private var echoBrainArmed = true
     private val persistentStateLock = Any()
     private val persistentSaveGeneration = AtomicLong(0L)
 
@@ -1099,6 +1117,13 @@ class MusicService :
         equalizerPlaybackController.attach(this)
         ensureScopesActive()
 
+        // Best-effort warmup of playback prerequisites (signature timestamp +
+        // visitor data) so the first tap of a session resolves its stream faster.
+        // Never throws; resolution falls back to per-tap fetching on failure.
+        ioScope.launch(SilentHandler) {
+            YTPlayerUtils.warmupPlaybackPrerequisites()
+        }
+
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val nm = getSystemService(NotificationManager::class.java)
@@ -1397,11 +1422,10 @@ class MusicService :
             .distinctUntilChanged()
             .collectLatest(scope) { enabled ->
                 autoStartOnBluetoothEnabled = enabled
-                if (enabled) {
-                    registerBluetoothReceiver()
-                } else {
-                    unregisterBluetoothReceiver()
-                }
+                // The receiver is always registered: it also handles resume-on-reconnect
+                // after a Bluetooth disconnect, which is independent of the auto-start setting.
+                registerBluetoothReceiver()
+            }
             }
 
         combine(
@@ -3657,10 +3681,29 @@ class MusicService :
 
                 scope.launch {
                     delay(1500)
-                    handleBluetoothAutoStart()
+                    if (wasPausedByBluetoothDisconnect) {
+                        // Resume only when the pause was caused by the disconnect;
+                        // a manual pause never sets the flag, so it is left alone.
+                        wasPausedByBluetoothDisconnect = false
+                        resumeAfterBluetoothReconnect()
+                    } else if (autoStartOnBluetoothEnabled) {
+                        handleBluetoothAutoStart()
+                    }
                 }
             }
         }
+
+    private fun resumeAfterBluetoothReconnect() {
+        if (isTogetherGuestSession()) return
+        if (
+            player.currentMediaItem != null &&
+                player.playbackState != Player.STATE_IDLE &&
+                player.playbackState != Player.STATE_ENDED &&
+                !player.playWhenReady
+        ) {
+            player.play()
+        }
+    }
 
     private fun handleBluetoothAutoStart() {
         if (isTogetherGuestSession()) return
@@ -6872,6 +6915,39 @@ class MusicService :
             onInfiniteQueueEnabled()
         }
 
+        // Echo Brain: momentum auto-injection when the queue runs low.
+        val echoRemaining = player.mediaItemCount - player.currentMediaItemIndex
+        if (echoRemaining > EchoBrain.REARM_THRESHOLD) {
+            echoBrainArmed = true
+        }
+        val echoJoined =
+            togetherSessionState.value as? dev.yeshua.player.together.TogetherSessionState.Joined
+        val echoIsGuest = echoJoined?.role is dev.yeshua.player.together.TogetherRole.Guest
+        if (echoBrainArmed &&
+            !suppressAutoPlayback &&
+            !timelineEmpty &&
+            !echoIsGuest &&
+            reason != Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT &&
+            player.repeatMode == REPEAT_MODE_OFF &&
+            echoRemaining <= EchoBrain.LOW_QUEUE_THRESHOLD
+        ) {
+            echoBrainArmed = false
+            scope.launch(SilentHandler) {
+                val queueMediaIds =
+                    (0 until player.mediaItemCount).mapTo(mutableSetOf()) { index ->
+                        player.getMediaItemAt(index).mediaId
+                    }
+                val injections =
+                    echoBrain.collectMomentumInjections(
+                        queueMediaIds = queueMediaIds,
+                        currentMediaId = player.currentMediaItem?.mediaId,
+                    )
+                if (injections.isNotEmpty() && player.playbackState != STATE_IDLE) {
+                    player.addMediaItems(injections)
+                }
+            }
+        }
+
         if (player.playWhenReady && player.playbackState == Player.STATE_READY) {
             scrobbleManager?.onSongStart(player.currentMetadata, duration = player.duration)
         }
@@ -6890,8 +6966,15 @@ class MusicService :
     }
 
     /**
-     * Resolve the next queue item's YouTube stream URL in the background so skip/next
-     * can hit [playbackUrlCache] instead of waiting on Innertube.
+     * Resolve the next queue items' YouTube stream URLs in the background so
+     * skip/next can hit [playbackUrlCache] instead of waiting on Innertube, and
+     * warm their bytes into the player cache (adapted from ViTune's
+     * PrecacheService.scheduleCache, GPL-3.0) so skipping ahead never waits on
+     * the network either.
+     *
+     * Gated on [isLowDataModeActive]: the data-saver preference already implies
+     * a metered/cellular connection, so there is no separate wifi-only pref to
+     * consult — precaching simply does not run in low-data mode.
      */
     private fun prefetchNextMediaItemStream() {
         nextMediaItemPrefetchJob?.cancel()
@@ -6905,36 +6988,98 @@ class MusicService :
         if (playbackUrlCache[mediaId]?.isValidFor(authFingerprint) == true) return
         if (isLowDataModeActive()) return
 
+        val upcomingMediaIds =
+            buildList {
+                add(nextIndex)
+                val following = nextIndex + 1
+                if (following in 0 until player.mediaItemCount) add(following)
+            }.mapNotNull { index ->
+                player.getMediaItemAt(index).mediaId.trim().takeIf { it.isNotBlank() }
+            }
+
         nextMediaItemPrefetchJob =
             scope.launch(Dispatchers.IO + SilentHandler) {
-                runCatching {
-                    val lowData = isLowDataModeActive()
-                    val result =
-                        retryWithoutPlaybackLoginContext {
-                            YTPlayerUtils.playerResponseForPlayback(
-                                mediaId,
-                                audioQuality = if (lowData) AudioQuality.LOW else audioQuality,
-                                connectivityManager = connectivityManager,
-                                preferredStreamClient = preferredStreamClient,
-                                networkMetered = lowData,
-                            )
-                        }
-                    result.onSuccess { playbackData ->
-                        if (lowData) return@onSuccess
-                        persistResolvedPlaybackFormat(mediaId, playbackData)
-                        playbackUrlCache[mediaId] =
-                            AuthScopedCacheValue(
-                                url = playbackData.streamUrl,
-                                expiresAtMs =
-                                    System.currentTimeMillis() +
-                                        (playbackData.streamExpiresInSeconds.coerceAtLeast(1) * 1000L),
-                                authFingerprint = playbackData.authFingerprint,
-                            )
+                upcomingMediaIds.forEach { mediaId ->
+                    runCatching {
+                        precacheUpcomingQueueItem(mediaId)
+                    }.onFailure { error ->
+                        if (error is CancellationException) throw error
+                        Timber.tag(TAG).d(error, "Precaching failed for %s", mediaId)
                     }
                 }.onFailure { error ->
                     if (error is CancellationException) throw error
                     Timber.tag(TAG).d(error, "Prefetch failed for %s", mediaId)
                 }
+            }
+    }
+
+    private suspend fun precacheUpcomingQueueItem(mediaId: String) {
+        if (mediaId.isLocalMediaId()) return
+        val authFingerprint = YouTube.currentPlaybackAuthState().fingerprint
+        val cachedUrl = playbackUrlCache[mediaId]?.takeIf { it.isValidFor(authFingerprint) }?.url
+
+        val streamUrl: String
+        val contentLength: Long?
+        if (cachedUrl != null) {
+            streamUrl = cachedUrl
+            contentLength = contentLengthCache[mediaId]?.takeIf { it > 0L }
+        } else {
+            val lowData = isLowDataModeActive()
+            val playbackData =
+                retryWithoutPlaybackLoginContext {
+                    YTPlayerUtils.playerResponseForPlayback(
+                        mediaId,
+                        audioQuality = if (lowData) AudioQuality.LOW else audioQuality,
+                        connectivityManager = connectivityManager,
+                        preferredStreamClient = preferredStreamClient,
+                        networkMetered = lowData,
+                        overrideVideoIdFor = { id -> database.getSetVideoId(id)?.setVideoId },
+                    )
+                }.getOrThrow()
+            if (lowData) return
+            persistResolvedPlaybackFormat(mediaId, playbackData)
+            playbackUrlCache[mediaId] =
+                AuthScopedCacheValue(
+                    url = playbackData.streamUrl,
+                    expiresAtMs =
+                        System.currentTimeMillis() +
+                            (playbackData.streamExpiresInSeconds.coerceAtLeast(1) * 1000L),
+                    authFingerprint = playbackData.authFingerprint,
+                )
+            streamUrl = playbackData.streamUrl
+            contentLength = playbackData.format.contentLength
+        }
+
+        warmPlayerCacheBytes(mediaId, streamUrl, contentLength)
+    }
+
+    /**
+     * Writes an upcoming queue item's bytes into the player cache ahead of time.
+     * Reuses the playback cache data-source factory (cache write enabled) so the
+     * bytes land exactly where normal playback would have put them; items already
+     * fully cached are skipped.
+     */
+    private fun warmPlayerCacheBytes(mediaId: String, streamUrl: String, contentLength: Long?) {
+        val knownLength = contentLength?.takeIf { it > 0L }
+        if (knownLength != null &&
+            runCatching { playerCache.isCached(mediaId, 0, knownLength) }.getOrDefault(false)
+        ) {
+            return
+        }
+        val dataSpec =
+            DataSpec
+                .Builder()
+                .setUri(streamUrl.toUri())
+                .setKey(mediaId)
+                .build()
+        // CacheWriter requires a CacheDataSource; the factory always builds one.
+        val dataSource =
+            createPlayerCacheDataSourceFactory(cacheWriteEnabled = true).createDataSource() as CacheDataSource
+        // CacheWriter reads to completion and closes the data source; the
+        // CacheDataSource persists what it reads into the player cache.
+        runCatching { CacheWriter(dataSource, dataSpec, null, null).cache() }
+            .onFailure { error ->
+                Timber.tag(TAG).d(error, "Player-cache warm failed for %s", mediaId)
             }
     }
 
@@ -6985,6 +7130,10 @@ class MusicService :
         reason: Int,
     ) {
         super.onPlayWhenReadyChanged(playWhenReady, reason)
+        if (!playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST) {
+            // A manual pause cancels any pending resume-on-reconnect: the user took over.
+            wasPausedByBluetoothDisconnect = false
+        }
         secondaryCrossfadePlayer?.let { secondaryPlayer ->
             if (isCrossfading) {
                 val isEndOfOutgoingItemPause =
@@ -7159,6 +7308,7 @@ class MusicService :
                         connectivityManager = connectivityManager,
                         preferredStreamClient = preferredStreamClient,
                         networkMetered = false,
+                        overrideVideoIdFor = { id -> database.getSetVideoId(id)?.setVideoId },
                     )
                 }.getOrThrow()
             currentCoroutineContext().ensureActive()
@@ -7933,6 +8083,7 @@ class MusicService :
                         connectivityManager = connectivityManager,
                         preferredStreamClient = preferredStreamClient,
                         networkMetered = lowDataModeActive,
+                        overrideVideoIdFor = { id -> database.getSetVideoId(id)?.setVideoId },
                     )
                 }.recoverCatching { youtubeFailure ->
                     if (youtubeFailure !is YTPlayerUtils.BotDetectionPlaybackException) throw youtubeFailure
@@ -9032,6 +9183,7 @@ class MusicService :
         const val RECENT = "recent"
         const val LIKED = "liked"
         const val DOWNLOADED = "downloaded"
+        const val UP_NEXT = "up_next"
         const val SONG = "song"
         const val ARTIST = "artist"
         const val ALBUM = "album"

@@ -38,6 +38,7 @@ val PlayerDesignStyleKey = stringPreferencesKey("playerDesignStyle")
 val PlayerDesignStyleOverridesKey = stringPreferencesKey("playerDesignStyleOverrides")
 val PerSongAlbumArtOverridesKey = stringPreferencesKey("perSongAlbumArtOverrides")
 val PerSongTagsKey = stringPreferencesKey("perSongTags")
+val LyricsSyncOffsetsKey = stringPreferencesKey("lyricsSyncOffsets")
 val NeverRecommendSongIdsKey = stringPreferencesKey("neverRecommendSongIds")
 val NavidromeEnabledKey = booleanPreferencesKey("navidromeEnabled")
 val NavidromeServerUrlKey = stringPreferencesKey("navidromeServerUrl")
@@ -385,6 +386,7 @@ enum class CrossfadeCurve {
         }
 }
 val AutoLoadMoreKey = booleanPreferencesKey("autoLoadMore")
+val EchoBrainEnabledKey = booleanPreferencesKey("echoBrainEnabled")
 val AutoDownloadOnLikeKey = booleanPreferencesKey("autoDownloadOnLike")
 val AutoSkipNextOnErrorKey = booleanPreferencesKey("autoSkipNextOnError")
 val PauseOnDeviceMuteKey = booleanPreferencesKey("pauseOnDeviceMute")
@@ -1137,6 +1139,7 @@ enum class TabTransitionStyle {
 val TabTransitionKey = stringPreferencesKey("tabTransition")
 
 // ── Yeshua additions ──────────────────────────────────────────────────────
+val AssistantEnabledKey = booleanPreferencesKey("assistantEnabled")
 val DiscordConnectedKey = booleanPreferencesKey("discordConnected")
 val ThemePresetIdKey = stringPreferencesKey("themePresetId")
 val LosslessSkipSilenceDisabledKey = booleanPreferencesKey("losslessSkipSilenceDisabled")

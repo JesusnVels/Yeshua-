@@ -15,9 +15,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -41,11 +38,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -87,14 +88,13 @@ import dev.yeshua.player.ui.component.ExpressivePullToRefreshBox
 import dev.yeshua.player.ui.component.ItemThumbnail
 import dev.yeshua.player.ui.component.LocalMenuState
 import dev.yeshua.player.ui.menu.SongMenu
-import dev.yeshua.player.ui.screens.library.rememberArtworkGradient
 import dev.yeshua.player.ui.utils.ItemWrapper
 import dev.yeshua.player.utils.makeTimeString
 import dev.yeshua.player.utils.rememberEnumPreference
 import dev.yeshua.player.utils.rememberPreference
 import dev.yeshua.player.viewmodels.LibrarySongsViewModel
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun LibrarySongsScreen(
     topContentPadding: Dp,
@@ -440,6 +440,37 @@ fun LibrarySongsScreen(
                     val cornerRadius = if (isActive) 36.dp else 24.dp
                     val topPadding = if (index == 0 || showDivider) 0.dp else 8.dp
 
+                    // Swipe right: play next. Swipe left: add to queue.
+                    // confirmValueChange returns false so the row snaps back
+                    // after the action fires (mirrors LocalPlaylistScreen).
+                    val swipeDismissState =
+                        rememberSwipeToDismissBoxState(
+                            confirmValueChange = { value ->
+                                when (value) {
+                                    SwipeToDismissBoxValue.StartToEnd -> {
+                                        playerConnection.playNext(song.toMediaItem())
+                                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                        false
+                                    }
+
+                                    SwipeToDismissBoxValue.EndToStart -> {
+                                        playerConnection.addToQueue(song.toMediaItem())
+                                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                        false
+                                    }
+
+                                    SwipeToDismissBoxValue.Settled -> false
+                                }
+                            },
+                            positionalThreshold = { distance -> distance * 0.4f },
+                        )
+                    SwipeToDismissBox(
+                        state = swipeDismissState,
+                        backgroundContent = {
+                            LibrarySongSwipeBackground(swipeDismissState.dismissDirection)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
                     Row(
                         modifier =
                             Modifier
@@ -579,8 +610,59 @@ fun LibrarySongsScreen(
                             }
                         }
                     }
+                    }
                 }
             }
+    }
+}
+
+@Composable
+private fun LibrarySongSwipeBackground(direction: SwipeToDismissBoxValue) {
+    if (direction == SwipeToDismissBoxValue.Settled) return
+    val isPlayNext = direction == SwipeToDismissBoxValue.StartToEnd
+    val containerColor =
+        if (isPlayNext) {
+            MaterialTheme.colorScheme.tertiaryContainer
+        } else {
+            MaterialTheme.colorScheme.secondaryContainer
+        }
+    val contentColor =
+        if (isPlayNext) {
+            MaterialTheme.colorScheme.onTertiaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        }
+    Box(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(24.dp))
+                .background(containerColor)
+                .padding(horizontal = 20.dp),
+        contentAlignment = if (isPlayNext) Alignment.CenterStart else Alignment.CenterEnd,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(
+                painter =
+                    painterResource(
+                        id = if (isPlayNext) R.drawable.play else R.drawable.queue_music,
+                    ),
+                contentDescription = null,
+                tint = contentColor,
+                modifier = Modifier.size(20.dp),
+            )
+            Text(
+                text =
+                    stringResource(
+                        if (isPlayNext) R.string.play_next else R.string.add_to_queue,
+                    ),
+                style = MaterialTheme.typography.labelLarge,
+                color = contentColor,
+            )
+        }
     }
 }
 

@@ -502,6 +502,11 @@ fun SettingsRow(
                 }
             }
 
+            item.switchControl?.let { switchControl ->
+                Spacer(modifier = Modifier.width(8.dp))
+                switchControl()
+            }
+
             Spacer(modifier = Modifier.width(4.dp))
 
             Icon(

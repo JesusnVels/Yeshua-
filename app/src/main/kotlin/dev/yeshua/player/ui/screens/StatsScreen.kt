@@ -7,6 +7,8 @@
 
 package dev.yeshua.player.ui.screens
 
+import android.content.Intent
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
@@ -115,6 +117,7 @@ import coil3.request.allowHardware
 import coil3.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.flowOf
 import dev.yeshua.player.LocalPlayerAwareWindowInsets
@@ -143,7 +146,12 @@ import dev.yeshua.player.ui.menu.ArtistMenu
 import dev.yeshua.player.ui.menu.SongMenu
 import dev.yeshua.player.ui.utils.backToMain
 import dev.yeshua.player.utils.joinByBullet
+import dev.yeshua.player.utils.ListeningReceipt
+import dev.yeshua.player.utils.ListeningReceiptData
 import dev.yeshua.player.utils.makeTimeString
+import dev.yeshua.player.utils.ReceiptArtist
+import dev.yeshua.player.utils.ReceiptTrack
+import dev.yeshua.player.utils.reportException
 import dev.yeshua.player.viewmodels.ListeningCalendarData
 import dev.yeshua.player.viewmodels.ListeningPatternSlot
 import dev.yeshua.player.viewmodels.StatsScreenState
@@ -189,8 +197,18 @@ fun StatsScreen(
     val isYearPickerOpen by viewModel.yearPickerOpen.collectAsStateWithLifecycle()
     val tempoImportState by viewModel.tempoImportDialogState.collectAsStateWithLifecycle()
     val tempoFilePicker =
-        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            uri?.let { viewModel.importTempoBackup(it, context) }
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            uri?.let {
+                // Persistable read permission lets the background worker open the
+                // backup even after the app is closed and reopened.
+                runCatching {
+                    context.contentResolver.takePersistableUriPermission(
+                        it,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                    )
+                }
+                viewModel.importTempoBackup(it)
+            }
         }
 
     val data =
@@ -287,6 +305,23 @@ fun StatsScreen(
 
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
+    val unknownArtistText = stringResource(R.string.unknown)
+    val receiptPeriodLabel =
+        when (selectedOption) {
+            OptionStats.WEEKS -> weeklyDates.firstOrNull { it.first == indexChips }?.second
+            OptionStats.MONTHS -> monthlyDates.firstOrNull { it.first == indexChips }?.second
+            OptionStats.YEARS -> yearlyDates.firstOrNull { it.first == indexChips }?.second
+            OptionStats.CONTINUOUS ->
+                when (indexChips) {
+                    StatPeriod.WEEK_1.ordinal -> pluralStringResource(R.plurals.n_week, 1, 1)
+                    StatPeriod.MONTH_1.ordinal -> pluralStringResource(R.plurals.n_month, 1, 1)
+                    StatPeriod.MONTH_3.ordinal -> pluralStringResource(R.plurals.n_month, 3, 3)
+                    StatPeriod.MONTH_6.ordinal -> pluralStringResource(R.plurals.n_month, 6, 6)
+                    StatPeriod.YEAR_1.ordinal -> pluralStringResource(R.plurals.n_year, 1, 1)
+                    else -> stringResource(R.string.filter_all)
+                }
+        } ?: stringResource(R.string.filter_all)
+
     Scaffold(
         modifier =
             Modifier
@@ -333,6 +368,53 @@ fun StatsScreen(
                         Icon(
                             painterResource(R.drawable.auto_awesome),
                             contentDescription = stringResource(R.string.year_in_music),
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                val playsById = mostPlayedSongsStats.associate { it.id to it.songCountListened }
+                                val receiptData =
+                                    ListeningReceiptData(
+                                        periodLabel = receiptPeriodLabel,
+                                        totalPlays = listeningSummary.totalPlayCount,
+                                        totalTimeMs = listeningSummary.totalTimeListened,
+                                        uniqueSongs = listeningSummary.uniqueSongsCount,
+                                        uniqueArtists = listeningSummary.uniqueArtistsCount,
+                                        topTracks =
+                                            mostPlayedSongs.take(10).map { song ->
+                                                ReceiptTrack(
+                                                    title = song.title,
+                                                    artist =
+                                                        song.artists
+                                                            .joinToString { it.name }
+                                                            .ifBlank { unknownArtistText },
+                                                    plays = playsById[song.id] ?: 0,
+                                                )
+                                            },
+                                        topArtists =
+                                            mostPlayedArtists.take(5).map { artist ->
+                                                ReceiptArtist(
+                                                    name = artist.artist.name,
+                                                    detail = artist.timeListened?.let { "${it / 60_000} min" },
+                                                )
+                                            },
+                                    )
+                                runCatching {
+                                    ListeningReceipt.share(context, receiptData)
+                                }.onFailure { error ->
+                                    reportException(error)
+                                    Toast
+                                        .makeText(context, R.string.receipt_share_failed, Toast.LENGTH_SHORT)
+                                        .show()
+                                }
+                            }
+                        },
+                        onLongClick = {},
+                    ) {
+                        Icon(
+                            painterResource(R.drawable.share),
+                            contentDescription = stringResource(R.string.share_receipt),
                         )
                     }
                 },
@@ -689,7 +771,7 @@ fun StatsScreen(
                     state = tempoImportState,
                     onDismiss = viewModel::closeTempoImportDialog,
                     onSearchMissingChange = viewModel::setTempoImportSearchMissing,
-                    onChooseFile = { tempoFilePicker.launch("application/zip") },
+                    onChooseFile = { tempoFilePicker.launch(arrayOf("application/zip")) },
                 )
             }
         }
@@ -713,6 +795,11 @@ private fun TempoImportDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(text = stringResource(R.string.tempo_import_description))
+                Text(
+                    text = stringResource(R.string.tempo_import_background_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -790,10 +877,8 @@ private fun TempoImportDialog(
             }
         },
         dismissButton = {
-            if (!state.isImporting) {
-                TextButton(onClick = onDismiss) {
-                    Text(text = stringResource(R.string.tempo_import_close))
-                }
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.tempo_import_close))
             }
         },
     )

@@ -417,6 +417,13 @@ class MediaLibrarySessionCallback
                                     drawableUri(R.drawable.download),
                                     MediaMetadata.MEDIA_TYPE_PLAYLIST,
                                 ),
+                                queueMediaItem(
+                                    MusicService.UP_NEXT,
+                                    context.getString(R.string.android_auto_up_next),
+                                    null,
+                                    drawableUri(R.drawable.queue_music),
+                                    MediaMetadata.MEDIA_TYPE_PLAYLIST,
+                                ),
                                 browsableMediaItem(
                                     MusicService.SONG,
                                     context.getString(R.string.songs),
@@ -521,32 +528,96 @@ class MediaLibrarySessionCallback
                         }
 
                         MusicService.QUICK_PICKS -> {
-                            database
-                                .quickPicks()
-                                .first()
-                                .map { it.toMediaItem(parentId) }
+                            val songs = database.quickPicks().first()
+                            if (songs.isEmpty()) {
+                                listOf(
+                                    placeholderMediaItem(
+                                        "${MusicService.QUICK_PICKS}/empty",
+                                        context.getString(R.string.android_auto_empty_quick_picks),
+                                        drawableUri(R.drawable.playlist_play),
+                                    ),
+                                )
+                            } else {
+                                listOf(shuffleActionItem(parentId)) +
+                                    songs.map { it.toMediaItem(parentId) }
+                            }
                         }
 
                         MusicService.RECENT -> {
-                            database
-                                .recentSongs(AUTO_BROWSE_LIMIT)
-                                .first()
-                                .map { it.toMediaItem(parentId) }
+                            val songs = database.recentSongs(AUTO_BROWSE_LIMIT).first()
+                            if (songs.isEmpty()) {
+                                listOf(
+                                    placeholderMediaItem(
+                                        "${MusicService.RECENT}/empty",
+                                        context.getString(R.string.android_auto_empty_history),
+                                        drawableUri(R.drawable.history),
+                                    ),
+                                )
+                            } else {
+                                listOf(shuffleActionItem(parentId)) +
+                                    songs.map { it.toMediaItem(parentId) }
+                            }
                         }
 
                         MusicService.LIKED -> {
-                            database
-                                .likedSongs(
-                                    SongSortType.CREATE_DATE,
-                                    descending = true,
-                                ).first()
-                                .map { it.toMediaItem(parentId) }
+                            val songs =
+                                database
+                                    .likedSongs(
+                                        SongSortType.CREATE_DATE,
+                                        descending = true,
+                                    ).first()
+                            if (songs.isEmpty()) {
+                                listOf(
+                                    placeholderMediaItem(
+                                        "${MusicService.LIKED}/empty",
+                                        context.getString(R.string.android_auto_empty_liked),
+                                        drawableUri(R.drawable.favorite),
+                                    ),
+                                )
+                            } else {
+                                listOf(shuffleActionItem(parentId)) +
+                                    songs.map { it.toMediaItem(parentId) }
+                            }
                         }
 
                         MusicService.DOWNLOADED -> {
-                            downloadedSongs()
-                                .first()
-                                .map { it.toMediaItem(parentId) }
+                            val songs = downloadedSongs().first()
+                            if (songs.isEmpty()) {
+                                listOf(
+                                    placeholderMediaItem(
+                                        "${MusicService.DOWNLOADED}/empty",
+                                        context.getString(R.string.android_auto_empty_downloaded),
+                                        drawableUri(R.drawable.download),
+                                    ),
+                                )
+                            } else {
+                                listOf(shuffleActionItem(parentId)) +
+                                    songs.map { it.toMediaItem(parentId) }
+                            }
+                        }
+
+                        MusicService.UP_NEXT -> {
+                            withContext(Dispatchers.Main.immediate) {
+                                val player = session.player
+                                val count = player.mediaItemCount
+                                if (count == 0) {
+                                    listOf(
+                                        placeholderMediaItem(
+                                            "${MusicService.UP_NEXT}/empty",
+                                            context.getString(R.string.android_auto_empty_up_next),
+                                            drawableUri(R.drawable.queue_music),
+                                        ),
+                                    )
+                                } else {
+                                    List(count) { index ->
+                                        player
+                                            .getMediaItemAt(index)
+                                            .buildUpon()
+                                            .setMediaId("${MusicService.UP_NEXT}/$index")
+                                            .build()
+                                    }
+                                }
+                            }
                         }
 
                         MusicService.SONG -> {
@@ -1012,12 +1083,32 @@ class MediaLibrarySessionCallback
 
                     MusicService.QUICK_PICKS -> {
                         val songs = database.quickPicks().first()
-                        songs.toMediaItemsWithStartPosition(path.getOrNull(1), startPositionMs)
+                        val isShuffle = path.getOrNull(1) == PLAYLIST_ACTION_SHUFFLE
+                        val ordered = if (isShuffle) songs.shuffled() else songs
+                        if (isShuffle) {
+                            withContext(Dispatchers.Main.immediate) {
+                                mediaSession.player.shuffleModeEnabled = true
+                            }
+                        }
+                        ordered.toMediaItemsWithStartPosition(
+                            path.getOrNull(1).takeUnless { it == PLAYLIST_ACTION_SHUFFLE },
+                            startPositionMs,
+                        )
                     }
 
                     MusicService.RECENT -> {
                         val songs = database.recentSongs(AUTO_BROWSE_LIMIT).first()
-                        songs.toMediaItemsWithStartPosition(path.getOrNull(1), startPositionMs)
+                        val isShuffle = path.getOrNull(1) == PLAYLIST_ACTION_SHUFFLE
+                        val ordered = if (isShuffle) songs.shuffled() else songs
+                        if (isShuffle) {
+                            withContext(Dispatchers.Main.immediate) {
+                                mediaSession.player.shuffleModeEnabled = true
+                            }
+                        }
+                        ordered.toMediaItemsWithStartPosition(
+                            path.getOrNull(1).takeUnless { it == PLAYLIST_ACTION_SHUFFLE },
+                            startPositionMs,
+                        )
                     }
 
                     MusicService.LIKED -> {
@@ -1027,12 +1118,50 @@ class MediaLibrarySessionCallback
                                     SongSortType.CREATE_DATE,
                                     descending = true,
                                 ).first()
-                        songs.toMediaItemsWithStartPosition(path.getOrNull(1), startPositionMs)
+                        val isShuffle = path.getOrNull(1) == PLAYLIST_ACTION_SHUFFLE
+                        val ordered = if (isShuffle) songs.shuffled() else songs
+                        if (isShuffle) {
+                            withContext(Dispatchers.Main.immediate) {
+                                mediaSession.player.shuffleModeEnabled = true
+                            }
+                        }
+                        ordered.toMediaItemsWithStartPosition(
+                            path.getOrNull(1).takeUnless { it == PLAYLIST_ACTION_SHUFFLE },
+                            startPositionMs,
+                        )
                     }
 
                     MusicService.DOWNLOADED -> {
                         val songs = downloadedSongs().first()
-                        songs.toMediaItemsWithStartPosition(path.getOrNull(1), startPositionMs)
+                        val isShuffle = path.getOrNull(1) == PLAYLIST_ACTION_SHUFFLE
+                        val ordered = if (isShuffle) songs.shuffled() else songs
+                        if (isShuffle) {
+                            withContext(Dispatchers.Main.immediate) {
+                                mediaSession.player.shuffleModeEnabled = true
+                            }
+                        }
+                        ordered.toMediaItemsWithStartPosition(
+                            path.getOrNull(1).takeUnless { it == PLAYLIST_ACTION_SHUFFLE },
+                            startPositionMs,
+                        )
+                    }
+
+                    MusicService.UP_NEXT -> {
+                        withContext(Dispatchers.Main.immediate) {
+                            val player = mediaSession.player
+                            val items = List(player.mediaItemCount) { index -> player.getMediaItemAt(index) }
+                            if (items.isEmpty()) {
+                                MediaSession.MediaItemsWithStartPosition(emptyList(), 0, startPositionMs)
+                            } else {
+                                val index =
+                                    path
+                                        .getOrNull(1)
+                                        ?.toIntOrNull()
+                                        ?.coerceIn(0, items.size - 1)
+                                        ?: player.currentMediaItemIndex.coerceIn(0, items.size - 1)
+                                MediaSession.MediaItemsWithStartPosition(items, index, startPositionMs)
+                            }
+                        }
                     }
 
                     MusicService.SONG -> {
@@ -1853,6 +1982,38 @@ class MediaLibrarySessionCallback
                     .setExtras(browsableExtras())
                     .build(),
             ).build()
+
+        /**
+         * Non-playable, non-browsable row for empty Auto roots (e.g. no downloads yet).
+         * Renders as a disabled hint instead of a dead blank screen.
+         */
+        private fun placeholderMediaItem(
+            id: String,
+            title: String,
+            iconUri: Uri?,
+        ) = MediaItem
+            .Builder()
+            .setMediaId(id)
+            .setMediaMetadata(
+                MediaMetadata
+                    .Builder()
+                    .setTitle(title)
+                    .setArtworkUri(iconUri)
+                    .setIsPlayable(false)
+                    .setIsBrowsable(false)
+                    .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
+                    .build(),
+            ).build()
+
+        /** Shuffle action row prepended to the main Auto roots (mirrors the playlist pattern). */
+        private fun shuffleActionItem(parentId: String) =
+            queueMediaItem(
+                "$parentId/$PLAYLIST_ACTION_SHUFFLE",
+                context.getString(R.string.shuffle),
+                null,
+                drawableUri(R.drawable.shuffle),
+                MediaMetadata.MEDIA_TYPE_PLAYLIST,
+            )
 
         private fun Song.toMediaItem(path: String) =
             MediaItem

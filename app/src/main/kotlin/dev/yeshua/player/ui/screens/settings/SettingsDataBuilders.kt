@@ -32,6 +32,7 @@ import dev.yeshua.player.constants.CrossfadeEnabledKey
 import dev.yeshua.player.constants.CrossfadeGaplessKey
 import dev.yeshua.player.constants.DisableAnimationsKey
 import dev.yeshua.player.constants.DisableBlurKey
+import dev.yeshua.player.constants.AssistantEnabledKey
 import dev.yeshua.player.constants.AppLockEnabledKey
 import dev.yeshua.player.constants.AppLockPinHashKey
 import dev.yeshua.player.constants.AppLockType
@@ -158,7 +159,7 @@ fun buildSettingsGroups(
                 SettingsChild("Dynamic theme", "dynamic_theme", listOf("dynamic theme", "material you", "dynamic color")) { SearchResultSwitch(DynamicThemeKey, false) },
                 SettingsChild("Random theme on startup", "random_theme_on_startup", listOf("random theme", "random color", "shuffle theme")) { SearchResultSwitch(RandomThemeOnStartupKey, false) },
                 SettingsChild("Dark theme", "dark_theme", listOf("dark", "dark theme", "night", "amoled")),
-                SettingsChild("Pure black", "pure_black", listOf("pure black", "amoled", "oled", "black background")) { SearchResultSwitch(PureBlackKey, false) },
+                SettingsChild("Yeshua Black", "pure_black", listOf("yeshua black", "pure black", "amoled", "oled", "black background")) { SearchResultSwitch(PureBlackKey, false) },
                 SettingsChild("Color palette", "color_palette", listOf("color palette", "accent color", "theme color", "color")),
                 SettingsChild("Color source", "color_source", listOf("color source", "color", "dynamic color", "material you")),
                 SettingsChild("App icon", "app_icon", listOf("icon", "app icon", "icon pack", "launcher icon")),
@@ -376,6 +377,17 @@ fun buildSettingsGroups(
                 SettingsChild("Hide AI mix", "hide_ai_mix", listOf("hide ai", "ai mix", "smart mix", "hide mix")),
             ),
         )
+    val aiAssistant =
+        SettingsItem(
+            key = "ai_assistant",
+            icon = painterResource(R.drawable.ai),
+            title = stringResource(R.string.assistant_title),
+            subtitle = stringResource(R.string.assistant_subtitle),
+            accentColor = MaterialTheme.colorScheme.secondary,
+            keywords = listOf("assistant", "ai assistant", "chat", "chatbot", "song finder", "music helper", "ask ai"),
+            onClick = { navController.navigate("assistant") },
+            switchControl = { SearchResultSwitch(AssistantEnabledKey, true) },
+        )
     val internet =
         SettingsItem(
             key = "internet",
@@ -587,7 +599,7 @@ fun buildSettingsGroups(
         ),
         SettingsGroup(
             title = stringResource(R.string.integration),
-            items = listOf(integration, aiIntegration, internet),
+            items = listOf(integration, aiIntegration, aiAssistant, internet),
         ),
         SettingsGroup(
             title = stringResource(R.string.storage),

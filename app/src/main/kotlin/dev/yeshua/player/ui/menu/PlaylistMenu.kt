@@ -69,6 +69,7 @@ import dev.yeshua.player.R
 import dev.yeshua.player.constants.SpeedDialSongIdsKey
 import dev.yeshua.player.db.entities.Playlist
 import dev.yeshua.player.db.entities.PlaylistSong
+import dev.yeshua.player.db.entities.PlaylistSyncMode
 import dev.yeshua.player.db.entities.Song
 import dev.yeshua.player.extensions.isSyncEnabled
 import dev.yeshua.player.extensions.isUserLoggedIn
@@ -922,6 +923,52 @@ public fun PlaylistMenu(
                             Modifier.clickable {
                                 if (syncProgress == null) {
                                     syncPlaylistToYouTube()
+                                }
+                            },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    )
+
+                    HorizontalDivider(
+                        modifier = dividerModifier,
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
+
+                    // Per-playlist sync mode (adapted from Stash, GPL-3.0).
+                    val syncMode = dbPlaylist?.playlist?.syncMode ?: PlaylistSyncMode.REFRESH
+                    ListItem(
+                        headlineContent = { Text(text = stringResource(R.string.sync_mode)) },
+                        supportingContent = {
+                            Text(
+                                text =
+                                    stringResource(
+                                        if (syncMode == PlaylistSyncMode.ACCUMULATE) {
+                                            R.string.sync_mode_accumulate
+                                        } else {
+                                            R.string.sync_mode_refresh
+                                        },
+                                    ),
+                            )
+                        },
+                        leadingContent = {
+                            Icon(
+                                painter = painterResource(R.drawable.sync),
+                                contentDescription = null,
+                            )
+                        },
+                        modifier =
+                            Modifier.clickable {
+                                val entity = dbPlaylist?.playlist ?: return@clickable
+                                database.query {
+                                    update(
+                                        entity.copy(
+                                            syncMode =
+                                                if (syncMode == PlaylistSyncMode.ACCUMULATE) {
+                                                    PlaylistSyncMode.REFRESH
+                                                } else {
+                                                    PlaylistSyncMode.ACCUMULATE
+                                                },
+                                        ),
+                                    )
                                 }
                             },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),

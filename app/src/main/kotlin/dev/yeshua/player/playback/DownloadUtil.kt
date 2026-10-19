@@ -344,6 +344,14 @@ class DownloadUtil
                     autoRetriedSongIds.remove(songId)
                     sessionFailedSongIds.remove(songId)
                     cacheDownloadedArtwork(songId)
+                    // Adapted from Metrolist (GPL-3.0): a completed download already
+                    // lives in the download cache, so drop its duplicate bytes from
+                    // the player cache instead of storing every song twice.
+                    runCatching { playerCache.removeResource(songId) }
+                        .onFailure { error ->
+                            Timber.w(error, "Failed to evict %s from player cache", songId)
+                        }
+                    stampDownloadDate(songId)
                 }
 
                 Download.STATE_DOWNLOADING -> {
@@ -352,6 +360,24 @@ class DownloadUtil
                     if (!autoRetriedSongIds.remove(songId)) {
                         downloadAttempts.remove(songId)
                     }
+                }
+            }
+        }
+
+        /**
+         * Adapted from Metrolist (GPL-3.0): the download date must reflect when bytes
+         * actually landed on disk, not when the stream URL was resolved — a queued,
+         * retried or failed download could otherwise look "downloaded" forever.
+         */
+        private fun stampDownloadDate(songId: String) {
+            downloadScope.launch {
+                runCatching {
+                    database.query {
+                        val existing = getSongByIdBlocking(songId)?.song ?: return@query
+                        upsert(existing.copy(dateDownload = LocalDateTime.now()))
+                    }
+                }.onFailure { error ->
+                    Timber.w(error, "Failed to stamp download date for %s", songId)
                 }
             }
         }
@@ -561,11 +587,13 @@ class DownloadUtil
                                 ?.url
                                 ?.takeIf { it.isNotBlank() }
 
+                        // dateDownload is stamped on STATE_COMPLETED (see
+                        // stampDownloadDate), not here: at resolve time no byte
+                        // has been written yet.
                         val updatedSong =
                             if (existing != null) {
                                 existing.copy(
                                     thumbnailUrl = existing.thumbnailUrl?.takeIf { it.isNotBlank() } ?: resolvedThumbnailUrl,
-                                    dateDownload = existing.dateDownload ?: now,
                                 )
                             } else {
                                 SongEntity(
@@ -573,7 +601,7 @@ class DownloadUtil
                                     title = playbackData.videoDetails?.title ?: "Unknown",
                                     duration = playbackData.videoDetails?.lengthSeconds?.toIntOrNull() ?: 0,
                                     thumbnailUrl = resolvedThumbnailUrl,
-                                    dateDownload = now,
+                                    dateDownload = null,
                                 )
                             }
 

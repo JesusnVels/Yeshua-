@@ -8,6 +8,7 @@
 package dev.yeshua.player.db
 
 import androidx.room.TypeConverter
+import dev.yeshua.player.db.entities.PlaylistSyncMode
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -23,4 +24,11 @@ class Converters {
 
     @TypeConverter
     fun dateToTimestamp(date: LocalDateTime?): Long? = date?.atZone(ZoneOffset.UTC)?.toInstant()?.toEpochMilli()
+
+    @TypeConverter
+    fun playlistSyncModeToString(value: PlaylistSyncMode?): String? = value?.name
+
+    @TypeConverter
+    fun stringToPlaylistSyncMode(value: String?): PlaylistSyncMode? =
+        value?.let { runCatching { PlaylistSyncMode.valueOf(it) }.getOrNull() }
 }

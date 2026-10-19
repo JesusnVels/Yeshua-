@@ -338,6 +338,11 @@ fun LibraryScreen(
                     .windowInsetsPadding(WindowInsets.statusBars)
                     .padding(top = AppBarHeight),
         ) {
+            // Smart shelves ride the header above the filter tabs; only on the
+            // main Library page so the Songs/Artists/Albums tabs stay clean.
+            if (currentFilter == LibraryFilter.LIBRARY) {
+                LibrarySmartShelves(navController = navController)
+            }
             LazyRow(
                 state = tabListState,
                 modifier =

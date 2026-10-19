@@ -422,6 +422,14 @@ fun ShowMediaInfo(videoId: String) {
                                     },
                                 )
                             }
+
+                            MusicDnaBackstoryCard(
+                                artistName =
+                                    song?.artists?.firstOrNull()?.name
+                                        ?: info?.author
+                                        ?: "",
+                                trackTitle = song?.title ?: info?.title ?: "",
+                            )
                         }
 
                         MediaInfoTab.Details -> {

@@ -7,8 +7,6 @@
 
 package dev.yeshua.player.ui.screens
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -16,7 +14,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -25,11 +22,9 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,14 +36,10 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PageSize
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,15 +47,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -83,7 +75,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
@@ -94,14 +85,12 @@ import coil3.size.Size
 import dev.yeshua.player.ui.utils.displayArtworkUrl
 import kotlinx.coroutines.CoroutineScope
 import dev.yeshua.player.R
-import dev.yeshua.player.constants.GridThumbnailHeight
 import dev.yeshua.player.constants.ListItemHeight
 import dev.yeshua.player.constants.ListThumbnailSize
 import dev.yeshua.player.constants.QuickPicksDisplayMode
 import dev.yeshua.player.constants.ThumbnailCornerRadius
 import dev.yeshua.player.db.entities.Album
 import dev.yeshua.player.db.entities.Artist
-import dev.yeshua.player.db.entities.LocalItem
 import dev.yeshua.player.db.entities.Playlist
 import dev.yeshua.player.db.entities.Song
 import dev.yeshua.player.extensions.toMediaItem
@@ -118,25 +107,17 @@ import dev.yeshua.player.models.toMediaMetadata
 import dev.yeshua.player.playback.PlayerConnection
 import dev.yeshua.player.playback.queues.ListQueue
 import dev.yeshua.player.playback.queues.YouTubeQueue
-import dev.yeshua.player.ui.component.AlbumGridItem
-import dev.yeshua.player.ui.component.ArtistGridItem
 import dev.yeshua.player.ui.component.MenuState
-import dev.yeshua.player.ui.component.SongGridItem
 import dev.yeshua.player.ui.component.SongListItem
-import dev.yeshua.player.ui.component.SpeedDialGridItem
 import dev.yeshua.player.ui.component.YouTubeGridItem
 import dev.yeshua.player.ui.component.YouTubeListItem
-import dev.yeshua.player.ui.menu.AlbumMenu
-import dev.yeshua.player.ui.menu.ArtistMenu
-import dev.yeshua.player.ui.menu.PlaylistMenu
+import dev.yeshua.player.ui.theme.YeshuaDisplayFontFamily
 import dev.yeshua.player.ui.menu.SongMenu
 import dev.yeshua.player.ui.menu.YouTubeAlbumMenu
 import dev.yeshua.player.ui.menu.YouTubeArtistMenu
 import dev.yeshua.player.ui.menu.YouTubePlaylistMenu
 import dev.yeshua.player.ui.menu.YouTubeSongMenu
 import kotlin.math.min
-import kotlin.math.roundToInt
-import kotlin.random.Random
 import dev.yeshua.player.ui.utils.SnapLayoutInfoProvider as buildSnapLayoutInfoProvider
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -204,6 +185,7 @@ fun HomeSectionHeader(
     dimAlpha: Float = 0f,
     thumbnail: (@Composable () -> Unit)? = null,
     onClick: (() -> Unit)? = null,
+    onPlayAll: (() -> Unit)? = null,
 ) {
     val shadowBlurPx = with(LocalDensity.current) { 8.dp.toPx() }
     // scrim is black in both themes; derive the shadow polarity from the text
@@ -238,6 +220,9 @@ fun HomeSectionHeader(
                 text = title,
                 style =
                     MaterialTheme.typography.titleLargeEmphasized.copy(
+                        // Yeshua identity: headers speak in the fixed display
+                        // typeface and carry the palette's tertiary tint.
+                        fontFamily = YeshuaDisplayFontFamily,
                         // Legibility over artwork with no backdrop blob: a
                         // shadow that hugs the glyphs and fades with the art.
                         shadow =
@@ -250,11 +235,28 @@ fun HomeSectionHeader(
                                 null
                             },
                     ),
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.tertiary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+        }
+        if (onPlayAll != null) {
+            FilledTonalIconButton(
+                onClick = onPlayAll,
+                colors =
+                    IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                    ),
+                modifier = Modifier.size(40.dp),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.play),
+                    contentDescription = stringResource(R.string.play_all),
+                    modifier = Modifier.size(18.dp),
+                )
+            }
         }
         if (onClick != null) {
             Icon(
@@ -533,547 +535,6 @@ fun QuickPicksSection(
     }
 }
 
-private const val SpeedDialGridRows = 3
-private const val SpeedDialGridColumns = 3
-private const val SpeedDialItemsPerPage = SpeedDialGridRows * SpeedDialGridColumns
-
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-fun SpeedDialSection(
-    speedDialItems: List<LocalItem>,
-    mediaMetadata: MediaMetadata?,
-    isPlaying: Boolean,
-    navController: NavController,
-    playerConnection: PlayerConnection,
-    menuState: MenuState,
-    haptic: HapticFeedback,
-    scope: CoroutineScope,
-    modifier: Modifier = Modifier,
-) {
-    val context = LocalContext.current
-
-    data class SpeedDialTile(
-        val key: String,
-        val localItem: LocalItem?,
-        val ytItem: YTItem?,
-    )
-
-    val distinctSpeedDial =
-        remember(speedDialItems) {
-            speedDialItems
-                .distinctBy {
-                    when (it) {
-                        is Song -> "song_${it.id}"
-                        is Album -> "album_${it.id}"
-                        is Artist -> "artist_${it.id}"
-                        is Playlist -> "playlist_${it.id}"
-                    }
-                }.take(24)
-        }
-    val speedDialSongs = remember(distinctSpeedDial) { distinctSpeedDial.filterIsInstance<Song>() }
-    val speedDialSongIndexById =
-        remember(speedDialSongs) {
-            speedDialSongs.mapIndexed { index, song -> song.id to index }.toMap()
-        }
-    val spacing = 10.dp
-
-    val tiles =
-        remember(distinctSpeedDial) {
-            buildList {
-                distinctSpeedDial.forEach { localItem ->
-                    val key =
-                        when (localItem) {
-                            is Song -> "song_${localItem.id}"
-                            is Album -> "album_${localItem.id}"
-                            is Artist -> "artist_${localItem.id}"
-                            is Playlist -> "playlist_${localItem.id}"
-                        }
-                    val ytItem =
-                        when (localItem) {
-                            is Song -> {
-                                SongItem(
-                                    id = localItem.id,
-                                    title = localItem.title,
-                                    artists =
-                                        localItem.artists.map {
-                                            moe.rukamori.archivetune.innertube.models
-                                                .Artist(name = it.name, id = it.id)
-                                        },
-                                    thumbnail = localItem.song.thumbnailUrl.orEmpty(),
-                                    explicit = localItem.song.explicit,
-                                )
-                            }
-
-                            is Album -> {
-                                AlbumItem(
-                                    browseId = localItem.id,
-                                    playlistId = localItem.album.playlistId.orEmpty(),
-                                    title = localItem.title,
-                                    artists =
-                                        localItem.artists.map {
-                                            moe.rukamori.archivetune.innertube.models
-                                                .Artist(name = it.name, id = it.id)
-                                        },
-                                    year = localItem.album.year,
-                                    thumbnail = localItem.album.thumbnailUrl.orEmpty(),
-                                )
-                            }
-
-                            is Artist -> {
-                                ArtistItem(
-                                    id = localItem.id,
-                                    title = localItem.title,
-                                    thumbnail = localItem.artist.thumbnailUrl,
-                                    channelId = localItem.artist.channelId,
-                                    playEndpoint = null,
-                                    shuffleEndpoint = null,
-                                    radioEndpoint = null,
-                                )
-                            }
-
-                            is Playlist -> {
-                                PlaylistItem(
-                                    id = localItem.id,
-                                    title = localItem.title,
-                                    author = null,
-                                    songCountText = localItem.songCount.toString(),
-                                    thumbnail = localItem.thumbnails.firstOrNull(),
-                                    playEndpoint = null,
-                                    shuffleEndpoint = null,
-                                    radioEndpoint = null,
-                                    isEditable = localItem.playlist.isEditable,
-                                )
-                            }
-                        }
-                    add(SpeedDialTile(key = key, localItem = localItem, ytItem = ytItem))
-                }
-                add(SpeedDialTile(key = "random", localItem = null, ytItem = null))
-            }
-        }
-    val tilePages =
-        remember(tiles) {
-            tiles.chunked(SpeedDialItemsPerPage)
-        }
-    val visibleGridRows =
-        remember(tilePages) {
-            if (tilePages.size == 1) {
-                ((tilePages.first().size + SpeedDialGridColumns - 1) / SpeedDialGridColumns)
-                    .coerceIn(1, SpeedDialGridRows)
-            } else {
-                SpeedDialGridRows
-            }
-        }
-    val pagerState =
-        rememberPagerState(
-            pageCount = { tilePages.size },
-        )
-
-    fun playSpeedDialQueue(startIndex: Int) {
-        if (speedDialSongs.isEmpty()) return
-        playerConnection.playQueue(
-            ListQueue(
-                title = context.getString(R.string.speed_dial),
-                items = speedDialSongs.map { it.toMediaItem() },
-                startIndex = startIndex,
-            ),
-        )
-    }
-
-    val selectedDotIndex by
-        remember(pagerState, tilePages) {
-            derivedStateOf {
-                (pagerState.currentPage + pagerState.currentPageOffsetFraction)
-                    .roundToInt()
-                    .coerceIn(0, (tilePages.size - 1).coerceAtLeast(0))
-            }
-        }
-    val motionScheme = MaterialTheme.motionScheme
-
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        shape = MaterialTheme.shapes.large,
-        tonalElevation = 1.dp,
-        modifier =
-            modifier
-                .padding(horizontal = 12.dp)
-                .fillMaxWidth(),
-    ) {
-        Column(modifier = Modifier.padding(vertical = 12.dp)) {
-            BoxWithConstraints(
-                modifier =
-                    Modifier
-                        .padding(horizontal = 12.dp)
-                        .fillMaxWidth(),
-            ) {
-                val tileSize = (maxWidth - spacing * (SpeedDialGridColumns - 1)) / SpeedDialGridColumns
-                val gridHeight = (tileSize * visibleGridRows) + (spacing * (visibleGridRows - 1))
-
-                HorizontalPager(
-                    state = pagerState,
-                    pageSize = PageSize.Fill,
-                    pageSpacing = spacing,
-                    key = { page -> tilePages[page].firstOrNull()?.key ?: "speed_dial_page_$page" },
-                    verticalAlignment = Alignment.Top,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .height(gridHeight),
-                ) { page ->
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(spacing),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        tilePages[page]
-                            .chunked(SpeedDialGridColumns)
-                            .forEach { rowTiles ->
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(spacing),
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) {
-                                    rowTiles.forEach { tile ->
-                                        val localItem = tile.localItem
-                                        val ytItem = tile.ytItem
-                                        if (localItem == null || ytItem == null) {
-                                            SpeedDialRandomTile(
-                                                onClick = {
-                                                    if (speedDialSongs.isNotEmpty()) {
-                                                        playSpeedDialQueue(Random.nextInt(speedDialSongs.size))
-                                                    }
-                                                },
-                                                modifier = Modifier.size(tileSize),
-                                            )
-                                        } else {
-                                            val isActive =
-                                                when (localItem) {
-                                                    is Song -> localItem.id == mediaMetadata?.id
-                                                    is Album -> localItem.id == mediaMetadata?.album?.id
-                                                    is Artist -> false
-                                                    is Playlist -> false
-                                                }
-                                            val songIndex =
-                                                if (localItem is Song) speedDialSongIndexById[localItem.id] ?: 0 else 0
-
-                                            Box(
-                                                modifier =
-                                                    Modifier
-                                                        .size(tileSize)
-                                                        .clip(MaterialTheme.shapes.large)
-                                                        .focusable()
-                                                        .combinedClickable(
-                                                            onClick = {
-                                                                when (localItem) {
-                                                                    is Song -> {
-                                                                        if (isActive) {
-                                                                            playerConnection.player.togglePlayPause()
-                                                                        } else {
-                                                                            playSpeedDialQueue(songIndex)
-                                                                        }
-                                                                    }
-
-                                                                    is Album -> {
-                                                                        navController.navigate("album/${localItem.id}")
-                                                                    }
-
-                                                                    is Artist -> {
-                                                                        navController.navigate("artist/${localItem.id}")
-                                                                    }
-
-                                                                    is Playlist -> {
-                                                                        navController.navigate("local_playlist/${localItem.id}")
-                                                                    }
-                                                                }
-                                                            },
-                                                            onLongClick = {
-                                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                                menuState.show {
-                                                                    when (localItem) {
-                                                                        is Song -> {
-                                                                            SongMenu(
-                                                                                originalSong = localItem,
-                                                                                navController = navController,
-                                                                                onDismiss = menuState::dismiss,
-                                                                            )
-                                                                        }
-
-                                                                        is Album -> {
-                                                                            AlbumMenu(
-                                                                                originalAlbum = localItem,
-                                                                                navController = navController,
-                                                                                onDismiss = menuState::dismiss,
-                                                                            )
-                                                                        }
-
-                                                                        is Artist -> {
-                                                                            ArtistMenu(
-                                                                                originalArtist = localItem,
-                                                                                coroutineScope = scope,
-                                                                                onDismiss = menuState::dismiss,
-                                                                            )
-                                                                        }
-
-                                                                        is Playlist -> {
-                                                                            PlaylistMenu(
-                                                                                playlist = localItem,
-                                                                                coroutineScope = scope,
-                                                                                onDismiss = menuState::dismiss,
-                                                                            )
-                                                                        }
-                                                                    }
-                                                                }
-                                                            },
-                                                        ),
-                                            ) {
-                                                SpeedDialGridItem(
-                                                    item = ytItem,
-                                                    isPinned = true,
-                                                    isActive = isActive,
-                                                    isPlaying = isPlaying,
-                                                )
-                                            }
-                                        }
-                                    }
-                                    repeat(SpeedDialGridColumns - rowTiles.size) {
-                                        Spacer(modifier = Modifier.size(tileSize))
-                                    }
-                                }
-                            }
-                    }
-                }
-            }
-
-            if (tilePages.size > 1) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                ) {
-                    repeat(tilePages.size) { index ->
-                        val isSelected = index == selectedDotIndex
-                        val dotColor by animateColorAsState(
-                            targetValue =
-                                if (isSelected) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceContainerHighest
-                                },
-                            animationSpec = motionScheme.defaultEffectsSpec(),
-                            label = "speedDialDotColor",
-                        )
-                        val dotWidth by animateDpAsState(
-                            targetValue = if (isSelected) 22.dp else 8.dp,
-                            animationSpec = motionScheme.defaultSpatialSpec(),
-                            label = "speedDialDotWidth",
-                        )
-                        Surface(
-                            color = dotColor,
-                            shape = MaterialTheme.shapes.extraLarge,
-                            modifier =
-                                Modifier
-                                    .width(dotWidth)
-                                    .height(8.dp),
-                        ) {}
-                    }
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun SpeedDialRandomTile(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerHighest,
-        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        shape = MaterialTheme.shapes.large,
-        tonalElevation = 2.dp,
-        modifier =
-            modifier
-                .aspectRatio(1f)
-                .combinedClickable(onClick = onClick),
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                repeat(2) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-                        repeat(2) {
-                            Surface(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = CircleShape,
-                                modifier = Modifier.size(16.dp),
-                            ) {}
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Keep Listening section - horizontal grid of local items
- */
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun KeepListeningSection(
-    keepListening: List<LocalItem>,
-    mediaMetadata: MediaMetadata?,
-    isPlaying: Boolean,
-    navController: NavController,
-    playerConnection: PlayerConnection,
-    menuState: MenuState,
-    haptic: HapticFeedback,
-    scope: CoroutineScope,
-    modifier: Modifier = Modifier,
-) {
-    val rows = if (keepListening.size > 6) 2 else 1
-    val gridHeight =
-        (
-            GridThumbnailHeight +
-                with(LocalDensity.current) {
-                    MaterialTheme.typography.bodyLarge.lineHeight
-                        .toDp() * 2 +
-                        MaterialTheme.typography.bodyMedium.lineHeight
-                            .toDp() * 2
-                }
-        ) * rows
-
-    LazyHorizontalGrid(
-        state = rememberLazyGridState(),
-        rows = GridCells.Fixed(rows),
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .height(gridHeight),
-    ) {
-        items(
-            items = keepListening,
-            key = { item ->
-                when (item) {
-                    is Song -> "song_${item.id}"
-                    is Album -> "album_${item.id}"
-                    is Artist -> "artist_${item.id}"
-                    is Playlist -> "playlist_${item.id}"
-                }
-            },
-            contentType = { item -> item::class },
-        ) { item ->
-            LocalGridItem(
-                item = item,
-                mediaMetadata = mediaMetadata,
-                isPlaying = isPlaying,
-                navController = navController,
-                playerConnection = playerConnection,
-                menuState = menuState,
-                haptic = haptic,
-                scope = scope,
-            )
-        }
-    }
-}
-
-/**
- * Forgotten Favorites section - horizontal grid of songs
- */
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun ForgottenFavoritesSection(
-    forgottenFavorites: List<Song>,
-    mediaMetadata: MediaMetadata?,
-    isPlaying: Boolean,
-    horizontalLazyGridItemWidth: Dp,
-    lazyGridState: LazyGridState,
-    snapLayoutInfoProvider: SnapLayoutInfoProvider,
-    navController: NavController,
-    playerConnection: PlayerConnection,
-    menuState: MenuState,
-    haptic: HapticFeedback,
-    modifier: Modifier = Modifier,
-) {
-    val rows = min(4, forgottenFavorites.size)
-    val distinctForgottenFavorites = remember(forgottenFavorites) { forgottenFavorites.distinctBy { it.id } }
-
-    LazyHorizontalGrid(
-        state = lazyGridState,
-        rows = GridCells.Fixed(rows),
-        flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider),
-        contentPadding =
-            WindowInsets.systemBars
-                .only(WindowInsetsSides.Horizontal)
-                .asPaddingValues(),
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .height(ListItemHeight * rows),
-    ) {
-        items(
-            items = distinctForgottenFavorites,
-            key = { it.id },
-            contentType = { "forgotten_favorite_song" },
-        ) { song ->
-            SongListItem(
-                song = song,
-                showInLibraryIcon = true,
-                isActive = song.id == mediaMetadata?.id,
-                isPlaying = isPlaying,
-                isSwipeable = false,
-                trailingContent = {
-                    IconButton(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            menuState.show {
-                                SongMenu(
-                                    originalSong = song,
-                                    navController = navController,
-                                    onDismiss = menuState::dismiss,
-                                )
-                            }
-                        },
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.more_vert),
-                            contentDescription = null,
-                        )
-                    }
-                },
-                modifier =
-                    Modifier
-                        .width(horizontalLazyGridItemWidth)
-                        .focusable()
-                        .combinedClickable(
-                            onClick = {
-                                if (song.id == mediaMetadata?.id) {
-                                    playerConnection.player.togglePlayPause()
-                                } else {
-                                    playerConnection.playQueue(
-                                        if (song.song.isLocal) {
-                                            ListQueue(items = listOf(song.toMediaItem()))
-                                        } else {
-                                            YouTubeQueue.radio(song.toMediaMetadata())
-                                        },
-                                    )
-                                }
-                            },
-                            onLongClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                menuState.show {
-                                    SongMenu(
-                                        originalSong = song,
-                                        navController = navController,
-                                        onDismiss = menuState::dismiss,
-                                    )
-                                }
-                            },
-                        ),
-            )
-        }
-    }
-}
-
 /**
  * Account Playlists section - horizontal row of YouTube playlists
  */
@@ -1289,107 +750,6 @@ private fun YouTubeGridItemWrapper(
                     },
                 ),
     )
-}
-
-/**
- * Local item grid item for songs, albums, artists
- */
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun LocalGridItem(
-    item: LocalItem,
-    mediaMetadata: MediaMetadata?,
-    isPlaying: Boolean,
-    navController: NavController,
-    playerConnection: PlayerConnection,
-    menuState: MenuState,
-    haptic: HapticFeedback,
-    scope: CoroutineScope,
-    modifier: Modifier = Modifier,
-) {
-    when (item) {
-        is Song -> {
-            SongGridItem(
-                song = item,
-                modifier =
-                    modifier
-                        .fillMaxWidth()
-                        .focusable()
-                        .combinedClickable(
-                            onClick = {
-                                if (item.id == mediaMetadata?.id) {
-                                    playerConnection.player.togglePlayPause()
-                                } else {
-                                    playerConnection.playQueue(YouTubeQueue.radio(item.toMediaMetadata()))
-                                }
-                            },
-                            onLongClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                menuState.show {
-                                    SongMenu(
-                                        originalSong = item,
-                                        navController = navController,
-                                        onDismiss = menuState::dismiss,
-                                    )
-                                }
-                            },
-                        ),
-                isActive = item.id == mediaMetadata?.id,
-                isPlaying = isPlaying,
-            )
-        }
-
-        is Album -> {
-            AlbumGridItem(
-                album = item,
-                isActive = item.id == mediaMetadata?.album?.id,
-                isPlaying = isPlaying,
-                coroutineScope = scope,
-                modifier =
-                    modifier
-                        .fillMaxWidth()
-                        .focusable()
-                        .combinedClickable(
-                            onClick = { navController.navigate("album/${item.id}") },
-                            onLongClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                menuState.show {
-                                    AlbumMenu(
-                                        originalAlbum = item,
-                                        navController = navController,
-                                        onDismiss = menuState::dismiss,
-                                    )
-                                }
-                            },
-                        ),
-            )
-        }
-
-        is Artist -> {
-            ArtistGridItem(
-                artist = item,
-                modifier =
-                    modifier
-                        .fillMaxWidth()
-                        .focusable()
-                        .combinedClickable(
-                            onClick = { navController.navigate("artist/${item.id}") },
-                            onLongClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                menuState.show {
-                                    ArtistMenu(
-                                        originalArtist = item,
-                                        coroutineScope = scope,
-                                        onDismiss = menuState::dismiss,
-                                    )
-                                }
-                            },
-                        ),
-            )
-        }
-
-        is Playlist -> { /* Not displayed */ }
-    }
 }
 
 /**

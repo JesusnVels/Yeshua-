@@ -448,6 +448,34 @@ fun PlayerMenu(
 
     Spacer(modifier = Modifier.height(16.dp))
 
+    var showAudioOutputDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+    if (showAudioOutputDialog) {
+        AudioOutputDialog(
+            onDismiss = { showAudioOutputDialog = false },
+        )
+    }
+    MenuSurfaceSection(modifier = Modifier.padding(vertical = 6.dp)) {
+        ListItem(
+            headlineContent = { Text(text = stringResource(R.string.audio_output)) },
+            supportingContent = { Text(text = stringResource(R.string.audio_output_desc)) },
+            leadingContent = {
+                Icon(
+                    painter = painterResource(R.drawable.volume_up),
+                    contentDescription = null,
+                )
+            },
+            modifier =
+                Modifier.clickable {
+                    showAudioOutputDialog = true
+                },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        )
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding =
@@ -1014,6 +1042,37 @@ fun PlayerMenu(
                                 }
                             },
                             modifier = Modifier.clickable { showSleepTimerDialog = true },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(start = 56.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                        )
+
+                        ListItem(
+                            headlineContent = { Text(text = stringResource(R.string.sleep_timer_finish_song)) },
+                            leadingContent = {
+                                Icon(
+                                    painter = painterResource(R.drawable.timer),
+                                    contentDescription = null,
+                                )
+                            },
+                            supportingContent = {
+                                val sleepEndsSong = playerConnection.service.sleepTimer.pauseWhenSongEnd
+                                if (sleepEndsSong) {
+                                    Text(
+                                        text = stringResource(R.string.sleep_timer_active),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            },
+                            modifier =
+                                Modifier.clickable {
+                                    playerConnection.service.sleepTimer.start(-1)
+                                    onDismiss()
+                                },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )
                     }

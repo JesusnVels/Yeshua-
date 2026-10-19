@@ -173,6 +173,7 @@ import dev.yeshua.player.constants.DisableBlurKey
 import dev.yeshua.player.constants.EnableHapticFeedbackKey
 import dev.yeshua.player.constants.InnerTubeCookieKey
 import dev.yeshua.player.constants.MaxCanvasCacheSizeKey
+import dev.yeshua.player.constants.LyricsSyncOffsetsKey
 import dev.yeshua.player.constants.PlayerBackgroundStyle
 import dev.yeshua.player.constants.PlayerBackgroundStyleKey
 import dev.yeshua.player.constants.PlayerButtonsStyle
@@ -215,6 +216,7 @@ import dev.yeshua.player.utils.ImageBlurUtils
 import dev.yeshua.player.utils.LyricsArtBlurCache
 import dev.yeshua.player.utils.makeTimeString
 import dev.yeshua.player.utils.parseTabMap
+import dev.yeshua.player.utils.setTabMapValue
 import dev.yeshua.player.utils.rememberEnumPreference
 import dev.yeshua.player.utils.rememberLowDataModeActive
 import dev.yeshua.player.utils.rememberPreference
@@ -510,8 +512,18 @@ fun BottomSheetPlayer(
     var duration by rememberSaveable(mediaMetadata?.id) {
         mutableLongStateOf(playerConnection.player.duration)
     }
-    var lyricsSyncOffset by rememberSaveable(mediaMetadata?.id) {
-        mutableIntStateOf(0)
+    val (lyricsSyncOffsetsRaw, setLyricsSyncOffsetsRaw) = rememberPreference(LyricsSyncOffsetsKey, "")
+    var lyricsSyncOffset by remember(mediaMetadata?.id, lyricsSyncOffsetsRaw) {
+        mutableIntStateOf(parseTabMap(lyricsSyncOffsetsRaw)[mediaMetadata?.id]?.toIntOrNull() ?: 0)
+    }
+    // Manual sync offset is persisted per song (DataStore) so it survives app restarts.
+    // An offset of 0 removes the entry to keep the stored map small.
+    val persistLyricsSyncOffset: (Int) -> Unit = { offset ->
+        lyricsSyncOffset = offset
+        val songId = mediaMetadata?.id
+        if (songId != null) {
+            setLyricsSyncOffsetsRaw(setTabMapValue(lyricsSyncOffsetsRaw, songId, offset.takeIf { it != 0 }?.toString()))
+        }
     }
     var sliderPosition by remember(mediaMetadata?.id) {
         mutableStateOf<Long?>(null)
@@ -1958,7 +1970,7 @@ fun BottomSheetPlayer(
                                 // page was being built, so the page's opening animation was dropped.
                                 appleMusicLyricsOpen = playerDesignStyle == PlayerDesignStyle.V10 && isLyricsScreenVisible,
                                 lyricsSyncOffset = lyricsSyncOffset,
-                                onLyricsSyncOffsetChange = { lyricsSyncOffset = it },
+                                onLyricsSyncOffsetChange = persistLyricsSyncOffset,
                                 onCloseLyrics = { isLyricsScreenVisible = false },
                                 appleMusicQueueOpen = playerDesignStyle == PlayerDesignStyle.V10 && isAppleQueueOpen,
                                 onCloseAppleMusicQueue = { isAppleQueueOpen = false },
@@ -2100,7 +2112,7 @@ fun BottomSheetPlayer(
                 mediaMetadata = metadata,
                 navController = navController,
                 lyricsSyncOffset = lyricsSyncOffset,
-                onLyricsSyncOffsetChange = { lyricsSyncOffset = it },
+                onLyricsSyncOffsetChange = persistLyricsSyncOffset,
                 onDismiss = { isLyricsScreenVisible = false },
                 onQueueClick = openQueue,
             )
@@ -2117,7 +2129,7 @@ fun BottomSheetPlayer(
                 mediaMetadata = metadata,
                 navController = navController,
                 lyricsSyncOffset = lyricsSyncOffset,
-                onLyricsSyncOffsetChange = { lyricsSyncOffset = it },
+                onLyricsSyncOffsetChange = persistLyricsSyncOffset,
                 onDismiss = { isLyricsScreenVisible = false },
                 onQueueClick = openQueue,
             )

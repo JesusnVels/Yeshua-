@@ -131,6 +131,9 @@ fun NavGraphBuilder.navigationBuilder(
     composable("stats") {
         StatsScreen(navController)
     }
+    composable("assistant") {
+        AssistantScreen(navController)
+    }
     composable("news") {
         NewsScreen(navController)
     }

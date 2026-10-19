@@ -327,6 +327,17 @@ fun SongMenu(
         mutableStateOf(false)
     }
 
+    var showWrongMatchDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    if (showWrongMatchDialog) {
+        WrongMatchPickerDialog(
+            originalSong = song,
+            onDismiss = { showWrongMatchDialog = false },
+        )
+    }
+
     if (showSelectArtistDialog) {
         ListDialog(
             onDismiss = { showSelectArtistDialog = false },
@@ -1015,6 +1026,27 @@ fun SongMenu(
                                             }
                                         }
                                     }
+                                },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(start = 56.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                        )
+
+                        ListItem(
+                            headlineContent = { Text(text = stringResource(R.string.report_wrong_match)) },
+                            supportingContent = { Text(text = stringResource(R.string.report_wrong_match_desc)) },
+                            leadingContent = {
+                                Icon(
+                                    painter = painterResource(R.drawable.warning),
+                                    contentDescription = null,
+                                )
+                            },
+                            modifier =
+                                Modifier.clickable {
+                                    showWrongMatchDialog = true
                                 },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )

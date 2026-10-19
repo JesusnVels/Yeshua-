@@ -36,6 +36,8 @@ import dev.yeshua.player.db.entities.FormatEntity
 import dev.yeshua.player.db.entities.LibraryTopMixEntity
 import dev.yeshua.player.db.entities.LibraryTopMixSongMap
 import dev.yeshua.player.db.entities.LyricsEntity
+import dev.yeshua.player.db.entities.NamedQueueEntity
+import dev.yeshua.player.db.entities.NamedQueueItemEntity
 import dev.yeshua.player.db.entities.PlayCountEntity
 import dev.yeshua.player.db.entities.PlaylistEntity
 import dev.yeshua.player.db.entities.PlaylistSongMap
@@ -127,6 +129,8 @@ class MusicDatabase(
         PlaylistTagMap::class,
         LibraryTopMixEntity::class,
         LibraryTopMixSongMap::class,
+        NamedQueueEntity::class,
+        NamedQueueItemEntity::class,
     ],
     views = [
         SortedSongArtistMap::class,

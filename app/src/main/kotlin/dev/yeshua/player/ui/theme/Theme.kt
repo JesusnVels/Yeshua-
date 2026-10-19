@@ -450,11 +450,24 @@ fun Bitmap.extractGradientColors(): List<Color> {
         .sortedByDescending { it.luminance() }
 }
 
+/**
+ * Yeshua Black: a tuned OLED theme. Surfaces go true/near black, but the dynamic
+ * accent colors (primary/secondary/tertiary) are intentionally preserved — the
+ * theme keeps Yeshua's color identity instead of collapsing to monochrome.
+ */
 fun ColorScheme.pureBlack(apply: Boolean) =
     if (apply) {
         copy(
-            surface = Color.Black,
             background = Color.Black,
+            surface = Color.Black,
+            surfaceVariant = Color(0xFF0A0A0A),
+            surfaceDim = Color.Black,
+            surfaceBright = Color(0xFF111111),
+            surfaceContainerLowest = Color.Black,
+            surfaceContainerLow = Color(0xFF0A0A0A),
+            surfaceContainer = Color(0xFF0D0D0D),
+            surfaceContainerHigh = Color(0xFF121212),
+            surfaceContainerHighest = Color(0xFF161616),
         )
     } else {
         this

@@ -46,6 +46,8 @@ data class PlaylistEntity(
     val songSortDescending: Boolean? = null,
     @ColumnInfo(name = "isHidden", defaultValue = "0")
     val isHidden: Boolean = false,
+    @ColumnInfo(name = "syncMode", defaultValue = "'REFRESH'")
+    val syncMode: PlaylistSyncMode = PlaylistSyncMode.REFRESH,
 ) {
     companion object {
         const val LIKED_PLAYLIST_ID = "LP_LIKED"

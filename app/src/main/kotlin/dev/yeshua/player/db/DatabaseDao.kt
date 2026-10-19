@@ -42,6 +42,8 @@ import dev.yeshua.player.db.entities.ListeningByDate
 import dev.yeshua.player.db.entities.ListeningBySlot
 import dev.yeshua.player.db.entities.ListeningTotals
 import dev.yeshua.player.db.entities.LyricsEntity
+import dev.yeshua.player.db.entities.NamedQueueEntity
+import dev.yeshua.player.db.entities.NamedQueueItemEntity
 import dev.yeshua.player.db.entities.PlayCountEntity
 import dev.yeshua.player.db.entities.Playlist
 import dev.yeshua.player.db.entities.PlaylistEntity
@@ -674,6 +676,88 @@ interface DatabaseDao {
     )
     fun forgottenFavorites(now: Long = System.currentTimeMillis()): Flow<List<Song>>
 
+    /**
+     * Dominant artist by play count inside the window — powers the Home context strip.
+     * Returns the artist name, or null when there is no listening history.
+     */
+    @Query(
+        """
+        SELECT artist.name
+        FROM event
+                 JOIN song_artist_map ON event.songId = song_artist_map.songId
+                 JOIN artist ON song_artist_map.artistId = artist.id
+        WHERE event.timestamp > :fromTimeStamp
+        GROUP BY artist.id
+        ORDER BY COUNT(1) DESC
+        LIMIT 1
+        """,
+    )
+    suspend fun dominantArtistSince(fromTimeStamp: Long): String?
+
+    /** Play counts per song inside the window (for intensity rings / smart shelves). */
+    @Query(
+        """
+        SELECT songId AS songId, COUNT(1) AS playCount
+        FROM event
+        WHERE songId IN (:songIds) AND timestamp > :fromTimeStamp
+        GROUP BY songId
+        """,
+    )
+    suspend fun playCountsForSongs(
+        songIds: List<String>,
+        fromTimeStamp: Long,
+    ): List<SongPlayCount>
+
+    /** Most recent play timestamp per song (for "rediscover" stamps). Null when never played. */
+    @Query(
+        """
+        SELECT songId AS songId, MAX(timestamp) AS lastPlayed
+        FROM event
+        WHERE songId IN (:songIds)
+        GROUP BY songId
+        """,
+    )
+    suspend fun lastPlayedForSongs(songIds: List<String>): List<SongLastPlayed>
+
+    /**
+     * Songs whose most recent play is older than [beforeTimeStamp] (or that have plays
+     * at all) — the "Forgotten" smart shelf. Ordered by least-recently played first.
+     */
+    @Transaction
+    @Query(
+        """
+        SELECT song.*
+        FROM song
+        WHERE id IN (SELECT DISTINCT songId FROM event)
+          AND id NOT IN (SELECT DISTINCT songId FROM event WHERE timestamp > :beforeTimeStamp)
+        ORDER BY (SELECT MAX(timestamp) FROM event WHERE event.songId = song.id) ASC
+        LIMIT :limit
+        """,
+    )
+    fun forgottenShelfSongs(
+        beforeTimeStamp: Long,
+        limit: Int = 20,
+    ): Flow<List<Song>>
+
+    /**
+     * Songs first played inside the window — the "New discoveries" smart shelf,
+     * ordered by first-played most recent first.
+     */
+    @Transaction
+    @Query(
+        """
+        SELECT song.*
+        FROM song
+        WHERE (SELECT MIN(timestamp) FROM event WHERE event.songId = song.id) > :fromTimeStamp
+        ORDER BY (SELECT MIN(timestamp) FROM event WHERE event.songId = song.id) DESC
+        LIMIT :limit
+        """,
+    )
+    fun newDiscoveryShelfSongs(
+        fromTimeStamp: Long,
+        limit: Int = 20,
+    ): Flow<List<Song>>
+
     @Transaction
     @Query(
         """
@@ -778,6 +862,9 @@ interface DatabaseDao {
 
     @Query("SELECT * FROM set_video_id WHERE videoId = :videoId")
     suspend fun getSetVideoId(videoId: String): SetVideoIdEntity?
+
+    @Query("DELETE FROM set_video_id WHERE videoId = :videoId")
+    suspend fun deleteSetVideoId(videoId: String)
 
     @Transaction
     @Query("SELECT * FROM format WHERE id = :id")
@@ -1674,6 +1761,29 @@ interface DatabaseDao {
     @Transaction
     @Query("DELETE FROM playlist_song_map WHERE playlistId = :playlistId")
     fun clearPlaylist(playlistId: String)
+
+    // Named persistent queues (adapted from RiPlay, GPL-3.0). Items are deleted
+    // automatically via the CASCADE foreign key when their queue is deleted.
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertNamedQueue(queue: NamedQueueEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertNamedQueueItems(items: List<NamedQueueItemEntity>)
+
+    @Query("SELECT * FROM named_queue ORDER BY createdAt DESC")
+    fun namedQueues(): Flow<List<NamedQueueEntity>>
+
+    @Query("SELECT * FROM named_queue_item WHERE queueId = :queueId ORDER BY position ASC")
+    suspend fun namedQueueItems(queueId: String): List<NamedQueueItemEntity>
+
+    @Query("SELECT COUNT(*) FROM named_queue_item WHERE queueId = :queueId")
+    suspend fun namedQueueItemCount(queueId: String): Int
+
+    @Query("DELETE FROM named_queue WHERE id = :queueId")
+    suspend fun deleteNamedQueue(queueId: String)
+
+    @Query("UPDATE named_queue SET name = :name WHERE id = :queueId")
+    suspend fun renameNamedQueue(queueId: String, name: String)
 
     @Transaction
     @Query("SELECT * FROM artist WHERE name = :name")

@@ -41,8 +41,26 @@ class SleepTimer(
             sleepTimerJob =
                 scope.launch {
                     delay(minute.minutes)
-                    service.pauseFromSleepTimer()
+                    onTimerExpired()
                 }
+        }
+    }
+
+    /**
+     * Adapted from Kreate (GPL-3.0): when the fixed delay expires, don't cut the
+     * current song off mid-playback — extend the timer to the end of the current
+     * track, then stop. Falls back to an immediate pause when nothing is playing.
+     */
+    private fun onTimerExpired() {
+        triggerTime = -1L
+        val canExtendToSongEnd =
+            player.currentMediaItem != null &&
+                player.playbackState != Player.STATE_IDLE &&
+                player.playbackState != Player.STATE_ENDED
+        if (canExtendToSongEnd) {
+            pauseWhenSongEnd = true
+        } else {
+            service.pauseFromSleepTimer()
         }
     }
 

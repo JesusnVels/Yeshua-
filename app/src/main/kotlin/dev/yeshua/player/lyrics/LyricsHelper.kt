@@ -169,6 +169,12 @@ class LyricsHelper
             cache.put(cacheKey, allResult.toList())
         }
 
+        /**
+         * Fetches from all providers in parallel but returns as soon as a word-synced
+         * (karaoke-grade) result arrives — nothing ranks above it, so waiting for the
+         * remaining providers would only add latency. Otherwise collects every result
+         * and falls back to line-synced LRC, then to plain text, in provider order.
+         */
         private suspend fun fetchPriorityLyrics(
             providers: List<LyricsProvider>,
             mediaMetadata: MediaMetadata,
@@ -176,22 +182,42 @@ class LyricsHelper
             if (providers.isEmpty()) return null
 
             val artist = mediaMetadata.artists.joinToString { it.name }
-            val results =
+            val collected = mutableListOf<LyricsResult>()
+            val earlyHit: LyricsFetchResult? =
                 supervisorScope {
-                    providers
-                        .map { provider ->
-                            async(Dispatchers.IO) {
-                                fetchProviderLyrics(provider, mediaMetadata, artist)
+                    val pending =
+                        providers
+                            .map { provider ->
+                                async(Dispatchers.IO) {
+                                    fetchProviderLyrics(provider, mediaMetadata, artist)
+                                }
+                            }.toMutableList()
+                    var hit: LyricsFetchResult? = null
+                    while (pending.isNotEmpty() && hit == null) {
+                        val completed =
+                            select<IndexedValue<LyricsResult?>> {
+                                pending.forEachIndexed { index, deferred ->
+                                    deferred.onAwait { IndexedValue(index, it) }
+                                }
                             }
-                        }.mapNotNull { it.await() }
+                        pending.removeAt(completed.index)
+                        val result = completed.value ?: continue
+                        if (LyricsUtils.hasWordSyncedLyrics(result.lyrics)) {
+                            hit = LyricsFetchResult(result.providerName, result.lyrics)
+                            pending.forEach { it.cancel() }
+                        } else {
+                            collected.add(result)
+                        }
+                    }
+                    hit
                 }
 
-            if (results.isEmpty()) return null
+            if (earlyHit != null) return earlyHit
+            if (collected.isEmpty()) return null
 
             val selected =
-                results.firstOrNull { LyricsUtils.hasWordSyncedLyrics(it.lyrics) }
-                    ?: results.firstOrNull { LyricsUtils.isLineSyncedLrc(it.lyrics) }
-                    ?: results.first()
+                collected.firstOrNull { LyricsUtils.isLineSyncedLrc(it.lyrics) }
+                    ?: collected.first()
             return LyricsFetchResult(selected.providerName, selected.lyrics)
         }
 

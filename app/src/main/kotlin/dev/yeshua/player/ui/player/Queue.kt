@@ -209,6 +209,8 @@ fun Queue(
     val database = LocalDatabase.current
     var showChoosePlaylistDialog by rememberSaveable { mutableStateOf(false) }
     var showCreateQueuePlaylistDialog by rememberSaveable { mutableStateOf(false) }
+    var showSaveNamedQueueDialog by rememberSaveable { mutableStateOf(false) }
+    var showNamedQueuesDialog by rememberSaveable { mutableStateOf(false) }
 
     AddToPlaylistDialog(
         isVisible = showChoosePlaylistDialog,
@@ -310,6 +312,20 @@ fun Queue(
         remember(currentWindowIndex, queueWindows) {
             queueWindows.getOrNull(currentWindowIndex)
         }
+
+    if (showSaveNamedQueueDialog) {
+        SaveNamedQueueDialog(
+            initialName = queueTitle,
+            itemsProvider = { queueWindows.mapNotNull { it.mediaItem.metadata } },
+            onDismiss = { showSaveNamedQueueDialog = false },
+        )
+    }
+
+    if (showNamedQueuesDialog) {
+        NamedQueuesDialog(
+            onDismiss = { showNamedQueuesDialog = false },
+        )
+    }
 
     val onRemoveWithUndo: (Timeline.Window) -> Unit = { window ->
         val index = window.firstPeriodIndex
@@ -949,6 +965,12 @@ fun Queue(
                             playerConnection.service.onInfiniteQueueDisabled()
                         }
                     },
+                )
+
+                NamedQueueToolbarRow(
+                    canSave = queueWindows.isNotEmpty(),
+                    onSaveQueue = { showSaveNamedQueueDialog = true },
+                    onOpenSavedQueues = { showNamedQueuesDialog = true },
                 )
 
                 LazyColumn(

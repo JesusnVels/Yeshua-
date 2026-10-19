@@ -1425,6 +1425,13 @@ interface DatabaseDao {
         offset: Int,
     ): List<EventWithSong>
 
+    /**
+     * Epoch-millis timestamps of all recorded plays for a song. Used by history
+     * importers to skip plays that are already in the database.
+     */
+    @Query("SELECT timestamp FROM event WHERE songId = :songId")
+    suspend fun eventTimestamps(songId: String): List<Long>
+
     @Transaction
     @Query(
         """

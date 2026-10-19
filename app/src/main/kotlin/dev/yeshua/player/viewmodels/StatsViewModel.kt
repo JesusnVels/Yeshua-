@@ -13,10 +13,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
@@ -25,7 +27,10 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import android.content.Context
+import android.net.Uri
 import dev.yeshua.player.R
 import dev.yeshua.player.constants.StatPeriod
 import dev.yeshua.player.constants.statToPeriod
@@ -41,6 +46,8 @@ import dev.yeshua.player.db.entities.Song
 import dev.yeshua.player.db.entities.SongWithStats
 import moe.rukamori.archivetune.innertube.YouTube
 import dev.yeshua.player.ui.screens.OptionStats
+import dev.yeshua.player.utils.TempoHistoryImporter
+import dev.yeshua.player.utils.TempoImportResult
 import dev.yeshua.player.utils.reportException
 import java.time.Duration
 import java.time.LocalDate
@@ -171,6 +178,77 @@ class StatsViewModel
 
         fun retry() {
             refreshRequest.value += 1L
+        }
+
+        // ------------------------------------------------------------------
+        // Tempo history import
+        // ------------------------------------------------------------------
+
+        data class TempoImportUiState(
+            val isDialogOpen: Boolean = false,
+            val searchMissing: Boolean = true,
+            val isImporting: Boolean = false,
+            val progressDone: Int = 0,
+            val progressTotal: Int = 0,
+            val result: TempoImportResult? = null,
+            val errorMessage: String? = null,
+        )
+
+        private val tempoImportState = MutableStateFlow(TempoImportUiState())
+        val tempoImportDialogState: StateFlow<TempoImportUiState> = tempoImportState.asStateFlow()
+
+        fun openTempoImportDialog() {
+            tempoImportState.value = TempoImportUiState(isDialogOpen = true)
+        }
+
+        fun closeTempoImportDialog() {
+            // Don't allow dismissing mid-import; the dialog hides its close button then.
+            if (!tempoImportState.value.isImporting) {
+                tempoImportState.value = TempoImportUiState()
+            }
+        }
+
+        fun setTempoImportSearchMissing(enabled: Boolean) {
+            tempoImportState.update { it.copy(searchMissing = enabled) }
+        }
+
+        fun importTempoBackup(
+            uri: Uri,
+            context: Context,
+        ) {
+            val searchMissing = tempoImportState.value.searchMissing
+            tempoImportState.update {
+                it.copy(
+                    isImporting = true,
+                    progressDone = 0,
+                    progressTotal = 0,
+                    result = null,
+                    errorMessage = null,
+                )
+            }
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    val result =
+                        TempoHistoryImporter.importTempoBackup(
+                            zipUri = uri,
+                            context = context.applicationContext,
+                            database = database,
+                            searchMissing = searchMissing,
+                            onProgress = { done, total ->
+                                tempoImportState.update { it.copy(progressDone = done, progressTotal = total) }
+                            },
+                        )
+                    tempoImportState.update { it.copy(isImporting = false, result = result) }
+                    retry()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    reportException(e)
+                    tempoImportState.update {
+                        it.copy(isImporting = false, errorMessage = e.message)
+                    }
+                }
+            }
         }
 
         private fun periodPair() = combine(selectedOption, indexChips) { opt, idx -> Pair(opt, idx) }

@@ -7,6 +7,8 @@
 
 package dev.yeshua.player.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -52,12 +54,14 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -183,6 +187,11 @@ fun StatsScreen(
 
     val screenState by viewModel.screenState.collectAsStateWithLifecycle()
     val isYearPickerOpen by viewModel.yearPickerOpen.collectAsStateWithLifecycle()
+    val tempoImportState by viewModel.tempoImportDialogState.collectAsStateWithLifecycle()
+    val tempoFilePicker =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            uri?.let { viewModel.importTempoBackup(it, context) }
+        }
 
     val data =
         when (val state = screenState) {
@@ -308,6 +317,15 @@ fun StatsScreen(
                     }
                 },
                 actions = {
+                    IconButton(
+                        onClick = viewModel::openTempoImportDialog,
+                        onLongClick = {},
+                    ) {
+                        Icon(
+                            painterResource(R.drawable.playlist_import),
+                            contentDescription = stringResource(R.string.tempo_import),
+                        )
+                    }
                     IconButton(
                         onClick = viewModel::showYearPicker,
                         onLongClick = {},
@@ -665,8 +683,120 @@ fun StatsScreen(
                     onDismiss = viewModel::dismissYearPicker,
                 )
             }
+
+            if (tempoImportState.isDialogOpen) {
+                TempoImportDialog(
+                    state = tempoImportState,
+                    onDismiss = viewModel::closeTempoImportDialog,
+                    onSearchMissingChange = viewModel::setTempoImportSearchMissing,
+                    onChooseFile = { tempoFilePicker.launch("application/zip") },
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun TempoImportDialog(
+    state: StatsViewModel.TempoImportUiState,
+    onDismiss: () -> Unit,
+    onSearchMissingChange: (Boolean) -> Unit,
+    onChooseFile: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = stringResource(R.string.tempo_import))
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text(text = stringResource(R.string.tempo_import_description))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(text = stringResource(R.string.tempo_import_search_youtube))
+                        Text(
+                            text = stringResource(R.string.tempo_import_search_youtube_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Switch(
+                        checked = state.searchMissing,
+                        onCheckedChange = onSearchMissingChange,
+                        enabled = !state.isImporting,
+                    )
+                }
+                when {
+                    state.isImporting -> {
+                        if (state.progressTotal > 0) {
+                            LinearProgressIndicator(
+                                progress = state.progressDone.toFloat() / state.progressTotal.coerceAtLeast(1),
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            Text(
+                                text =
+                                    stringResource(
+                                        R.string.tempo_import_matching,
+                                        state.progressDone,
+                                        state.progressTotal,
+                                    ),
+                            )
+                        } else {
+                            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                            Text(text = stringResource(R.string.tempo_import_working))
+                        }
+                    }
+
+                    state.result != null -> {
+                        val result = state.result
+                        Text(
+                            text =
+                                stringResource(
+                                    R.string.tempo_import_result,
+                                    result.importedCount,
+                                    result.matchedLocalCount,
+                                    result.matchedSearchCount,
+                                    result.skippedCount,
+                                    result.failedCount,
+                                ),
+                        )
+                    }
+
+                    state.errorMessage != null -> {
+                        Text(
+                            text =
+                                stringResource(
+                                    R.string.tempo_import_failed,
+                                    state.errorMessage ?: "",
+                                ),
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            if (!state.isImporting && state.result == null && state.errorMessage == null) {
+                TextButton(onClick = onChooseFile) {
+                    Text(text = stringResource(R.string.tempo_import_choose_file))
+                }
+            }
+        },
+        dismissButton = {
+            if (!state.isImporting) {
+                TextButton(onClick = onDismiss) {
+                    Text(text = stringResource(R.string.tempo_import_close))
+                }
+            }
+        },
+    )
 }
 
 @Composable

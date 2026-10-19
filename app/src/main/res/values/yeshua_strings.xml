@@ -402,7 +402,6 @@
     <string name="quick_picks_display_mode">Quick Picks display mode</string>
     <string name="quick_picks_display_mode_card">Card</string>
     <string name="quick_picks_display_mode_list">List</string>
-    <string name="discord">Discord</string>
     <string name="advanced_login">Login with token</string>
     <string name="token_hidden">Tap to show token</string>
     <string name="token_shown">Tap again to copy or edit</string>
@@ -855,8 +854,6 @@
     <string name="about_position_zion_huang">Creator of InnerTune · Foundation for Metrolist, Yeshua, and other forks</string>
     <string name="about_content_desc_github">GitHub</string>
     <string name="about_content_desc_website">Website</string>
-    <string name="about_content_desc_discord">Discord</string>
-    <string name="about_content_desc_telegram">Telegram</string>
     <string name="about_content_desc_donate">Donate</string>
     <string name="aod_mode">AOD Mode</string>
     <string name="aod_mode_exit">Exit AOD</string>
@@ -868,4 +865,14 @@
     <string name="pinned_to_favorites_toast">Pinned to Favorites</string>
     <string name="unpinned_from_favorites_toast">Removed from Favorites</string>
     <string name="sleep_timer_active">Timer active</string>
+    <string name="tempo_import">Import from Tempo</string>
+    <string name="tempo_import_description">Import listening history from a Tempo backup file (.zip). Plays are matched to songs in your library first.</string>
+    <string name="tempo_import_search_youtube">Search YouTube for missing songs</string>
+    <string name="tempo_import_search_youtube_desc">Looks up songs not found in your library on YouTube. Slower, but nothing gets missed.</string>
+    <string name="tempo_import_choose_file">Choose backup file</string>
+    <string name="tempo_import_matching">Matching songs… %1$d of %2$d</string>
+    <string name="tempo_import_working">Importing…</string>
+    <string name="tempo_import_result">%1$d plays imported (%2$d from your library, %3$d via YouTube search). %4$d skipped, %5$d could not be matched.</string>
+    <string name="tempo_import_failed">Import failed: %1$s</string>
+    <string name="tempo_import_close">Close</string>
 </resources>

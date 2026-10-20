@@ -682,21 +682,17 @@ object YTPlayerUtils {
         preferredStreamClient: PlayerStreamClient = PlayerStreamClient.WEB_REMIX,
         // if provided, this preference overrides ConnectivityManager.isActiveNetworkMetered
         networkMetered: Boolean? = null,
-        // if provided, maps the requested video id to the user's chosen override
-        // (wrong-match correction) before any resolution or caching happens
-        overrideVideoIdFor: (suspend (videoId: String) -> String?)? = null,
     ): Result<PlaybackData> {
-        // Adapted from Stash (GPL-3.0): consult the user's wrong-match override first.
-        val effectiveVideoId =
-            overrideVideoIdFor
-                ?.invoke(videoId)
-                ?.trim()
-                ?.takeIf { it.isNotBlank() && it != videoId }
-                ?: videoId
+        // NOTE: never substitute another id for videoId here. The set_video_id
+        // table holds YouTube *playlist-entry* tokens (for playlist removal),
+        // not playable video ids — a previous wrong-match hook read it as an
+        // override store and every playlist-sourced song resolved a playlist
+        // token, which YouTube rejects as "This video is unavailable" on all
+        // clients. Playback must always resolve the song's own id.
         val isMetered = networkMetered ?: connectivityManager.isActiveNetworkMetered
         val initialKey =
             buildPlaybackDataCacheKey(
-                videoId = effectiveVideoId,
+                videoId = videoId,
                 audioQuality = audioQuality,
                 networkMetered = isMetered,
                 authFingerprint = YouTube.currentPlaybackAuthState().fingerprint,
@@ -707,14 +703,14 @@ object YTPlayerUtils {
         return resolutionMutex.withLock {
             val currentKey =
                 buildPlaybackDataCacheKey(
-                    videoId = effectiveVideoId,
+                    videoId = videoId,
                     audioQuality = audioQuality,
                     networkMetered = isMetered,
                     authFingerprint = YouTube.currentPlaybackAuthState().fingerprint,
                 )
             getCachedPlaybackData(currentKey)?.let { return@withLock Result.success(it) }
             resolvePlaybackData(
-                videoId = effectiveVideoId,
+                videoId = videoId,
                 playlistId = playlistId,
                 audioQuality = audioQuality,
                 connectivityManager = connectivityManager,

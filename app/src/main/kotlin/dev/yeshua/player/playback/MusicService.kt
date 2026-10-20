@@ -7022,7 +7022,6 @@ class MusicService :
                         connectivityManager = connectivityManager,
                         preferredStreamClient = preferredStreamClient,
                         networkMetered = lowData,
-                        overrideVideoIdFor = { id -> database.getSetVideoId(id)?.setVideoId },
                     )
                 }.getOrThrow()
             if (lowData) return
@@ -7297,7 +7296,6 @@ class MusicService :
                         connectivityManager = connectivityManager,
                         preferredStreamClient = preferredStreamClient,
                         networkMetered = false,
-                        overrideVideoIdFor = { id -> database.getSetVideoId(id)?.setVideoId },
                     )
                 }.getOrThrow()
             currentCoroutineContext().ensureActive()
@@ -8072,7 +8070,6 @@ class MusicService :
                         connectivityManager = connectivityManager,
                         preferredStreamClient = preferredStreamClient,
                         networkMetered = lowDataModeActive,
-                        overrideVideoIdFor = { id -> database.getSetVideoId(id)?.setVideoId },
                     )
                 }.recoverCatching { youtubeFailure ->
                     if (youtubeFailure !is YTPlayerUtils.BotDetectionPlaybackException) throw youtubeFailure

@@ -7005,9 +7005,6 @@ class MusicService :
                         if (error is CancellationException) throw error
                         Timber.tag(TAG).d(error, "Precaching failed for %s", mediaId)
                     }
-                }.onFailure { error ->
-                    if (error is CancellationException) throw error
-                    Timber.tag(TAG).d(error, "Prefetch failed for %s", mediaId)
                 }
             }
     }

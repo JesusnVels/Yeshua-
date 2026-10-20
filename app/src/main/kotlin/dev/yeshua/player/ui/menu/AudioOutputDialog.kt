@@ -3,6 +3,9 @@
  * © cognitiveshadows03 — github.com/cognitiveshadows03
  * GPL-3.0 License | Contributors: see git history
  * Do not remove or alter this notice. - Per GPL-3.0 Section 4 & Section 5
+ *
+ * In-player audio output picker. Uses the public framework MediaRouter2 APIs
+ * (API 30+), so it works on every build flavor with no new dependencies.
  */
 
 package dev.yeshua.player.ui.menu
@@ -11,7 +14,9 @@ import android.content.Context
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
-import android.os.Build
+import android.media.MediaRouter2
+import android.media.MediaRouter2.RouteCallback
+import android.media.MediaRoute2Info
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.foundation.clickable
@@ -45,51 +50,73 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import dev.yeshua.player.R
+import java.util.concurrent.Executors
 
 /**
- * Per-app audio output picker.
+ * Per-app audio output picker (requires API 30+; the caller gates this).
  *
- * Uses the framework [AudioManager] output-device APIs rather than
- * androidx.mediarouter (which is only packaged in the gms flavor), so this
- * works on every build with no new dependencies. [AudioManager.setPreferredDevice]
- * routes only this app's audio, leaving other apps untouched.
+ * Lists the system media routes via [MediaRouter2] and transfers this app's
+ * playback to the chosen one, leaving other apps untouched.
  */
 @Composable
 fun AudioOutputDialog(onDismiss: () -> Unit) {
     val context = LocalContext.current
-    val audioManager =
-        remember(context) {
-            context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        }
+    val router = remember(context) { MediaRouter2.getInstance(context) }
     val mainHandler = remember { Handler(Looper.getMainLooper()) }
+    val callbackExecutor = remember { Executors.newSingleThreadExecutor() }
 
-    var devices by remember { mutableStateOf(listOutputDevices(audioManager)) }
-    var selectedDeviceId by
-        remember {
-            mutableStateOf(currentPreferredDeviceId(audioManager))
-        }
+    var routes by remember { mutableStateOf(listOutputRoutes(router)) }
+    var selectedRouteId by remember { mutableStateOf(currentRouteId(router)) }
 
-    DisposableEffect(audioManager) {
-        val callback =
+    DisposableEffect(router) {
+        val audioManager =
+            context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val deviceCallback =
             object : AudioDeviceCallback() {
                 override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
-                    devices = listOutputDevices(audioManager)
+                    refresh(router) { r, s ->
+                        routes = r
+                        selectedRouteId = s
+                    }
                 }
 
                 override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
-                    devices = listOutputDevices(audioManager)
-                    if (selectedDeviceId != null && devices.none { it.id == selectedDeviceId }) {
-                        selectedDeviceId = null
+                    refresh(router) { r, s ->
+                        routes = r
+                        selectedRouteId = s
                     }
                 }
             }
-        audioManager.registerAudioDeviceCallback(callback, mainHandler)
-        onDispose { audioManager.unregisterAudioDeviceCallback(callback) }
+        val routeCallback =
+            object : RouteCallback() {
+                override fun onRoutesUpdated(updated: List<MediaRoute2Info>) {
+                    refresh(router) { r, s ->
+                        routes = r
+                        selectedRouteId = s
+                    }
+                }
+            }
+        audioManager.registerAudioDeviceCallback(deviceCallback, mainHandler)
+        router.registerRouteCallback(
+            callbackExecutor,
+            routeCallback,
+            MediaRouter2Utils.discoveryPreference(),
+        )
+        onDispose {
+            audioManager.unregisterAudioDeviceCallback(deviceCallback)
+            router.unregisterRouteCallback(routeCallback)
+            callbackExecutor.shutdown()
+        }
     }
 
-    fun select(device: AudioDeviceInfo?) {
-        audioManager.setPreferredDevice(device)
-        selectedDeviceId = device?.id
+    fun select(route: MediaRoute2Info?) {
+        val target =
+            route ?: routes.firstOrNull { it.type == MediaRoute2Info.TYPE_BUILTIN_SPEAKER }
+                ?: routes.firstOrNull()
+        if (target != null) {
+            runCatching { router.transferTo(target) }
+            selectedRouteId = target.id
+        }
         onDismiss()
     }
 
@@ -116,22 +143,29 @@ fun AudioOutputDialog(onDismiss: () -> Unit) {
                 Spacer(modifier = Modifier.height(12.dp))
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     item {
+                        val defaultRoute =
+                            routes.firstOrNull {
+                                it.type == MediaRoute2Info.TYPE_BUILTIN_SPEAKER
+                            }
                         AudioOutputRow(
                             title = stringResource(R.string.audio_output_system_default),
                             subtitle = null,
                             iconRes = R.drawable.volume_up,
-                            selected = selectedDeviceId == null,
+                            selected =
+                                selectedRouteId == null ||
+                                    selectedRouteId == defaultRoute?.id,
                             onClick = { select(null) },
                         )
                     }
-                    items(devices, key = { it.id }) { device ->
+                    items(routes, key = { it.id }) { route ->
                         val fallbackName = stringResource(R.string.audio_device_other)
                         AudioOutputRow(
-                            title = deviceDisplayName(device, fallbackName),
-                            subtitle = stringResource(deviceTypeLabelRes(device.type)),
-                            iconRes = deviceIconRes(device.type),
-                            selected = selectedDeviceId == device.id,
-                            onClick = { select(device) },
+                            title = route.name?.toString()?.trim().orEmpty()
+                                .ifBlank { fallbackName },
+                            subtitle = stringResource(routeTypeLabelRes(route.type)),
+                            iconRes = routeIconRes(route.type),
+                            selected = selectedRouteId == route.id,
+                            onClick = { select(route) },
                         )
                     }
                 }
@@ -174,68 +208,71 @@ private fun AudioOutputRow(
     )
 }
 
-private fun listOutputDevices(audioManager: AudioManager): List<AudioDeviceInfo> =
-    audioManager
-        .getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-        .filter { it.type in OUTPUT_DEVICE_TYPES }
-        .sortedBy { OUTPUT_DEVICE_TYPES.indexOf(it.type) }
-
-private fun currentPreferredDeviceId(audioManager: AudioManager): Int? =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        runCatching {
-            audioManager.getPreferredDeviceForStrategy(AudioManager.STRATEGY_MEDIA)?.id
-        }.getOrNull()
-    } else {
-        null
-    }
-
-private fun deviceDisplayName(
-    device: AudioDeviceInfo,
-    fallbackName: String,
-): String {
-    val productName = device.productName?.toString()?.trim().orEmpty()
-    return productName.ifBlank { fallbackName }
+private fun refresh(
+    router: MediaRouter2,
+    update: (List<MediaRoute2Info>, String?) -> Unit,
+) {
+    update(listOutputRoutes(router), currentRouteId(router))
 }
 
-private fun deviceTypeLabelRes(type: Int): Int =
+private fun listOutputRoutes(router: MediaRouter2): List<MediaRoute2Info> =
+    router.routes
+        .filter { it.type in OUTPUT_ROUTE_TYPES }
+        .sortedBy { OUTPUT_ROUTE_TYPES.indexOf(it.type) }
+
+private fun currentRouteId(router: MediaRouter2): String? =
+    runCatching { router.systemController.selectedRoute?.id }.getOrNull()
+
+private fun routeTypeLabelRes(type: Int): Int =
     when (type) {
-        AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> R.string.audio_device_speaker
-        AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
-        AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
-        AudioDeviceInfo.TYPE_BLE_SPEAKER,
-        AudioDeviceInfo.TYPE_BLE_HEADSET,
+        MediaRoute2Info.TYPE_BUILTIN_SPEAKER -> R.string.audio_device_speaker
+        MediaRoute2Info.TYPE_BLUETOOTH_A2DP,
+        MediaRoute2Info.TYPE_BLUETOOTH_SCO,
+        MediaRoute2Info.TYPE_BLE_SPEAKER,
+        MediaRoute2Info.TYPE_BLE_HEADSET,
         -> R.string.audio_device_bluetooth
-        AudioDeviceInfo.TYPE_WIRED_HEADSET,
-        AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+        MediaRoute2Info.TYPE_WIRED_HEADSET,
+        MediaRoute2Info.TYPE_WIRED_HEADPHONES,
         -> R.string.audio_device_wired
-        AudioDeviceInfo.TYPE_USB_DEVICE,
-        AudioDeviceInfo.TYPE_USB_HEADSET,
+        MediaRoute2Info.TYPE_USB_DEVICE,
+        MediaRoute2Info.TYPE_USB_HEADSET,
         -> R.string.audio_device_usb
         else -> R.string.audio_device_other
     }
 
-private fun deviceIconRes(type: Int): Int =
+private fun routeIconRes(type: Int): Int =
     when (type) {
-        AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
-        AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
-        AudioDeviceInfo.TYPE_BLE_SPEAKER,
-        AudioDeviceInfo.TYPE_BLE_HEADSET,
+        MediaRoute2Info.TYPE_BLUETOOTH_A2DP,
+        MediaRoute2Info.TYPE_BLUETOOTH_SCO,
+        MediaRoute2Info.TYPE_BLE_SPEAKER,
+        MediaRoute2Info.TYPE_BLE_HEADSET,
         -> R.drawable.bluetooth
         else -> R.drawable.volume_up
     }
 
-private val OUTPUT_DEVICE_TYPES =
+private val OUTPUT_ROUTE_TYPES =
     listOf(
-        AudioDeviceInfo.TYPE_BUILTIN_SPEAKER,
-        AudioDeviceInfo.TYPE_WIRED_HEADSET,
-        AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
-        AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
-        AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
-        AudioDeviceInfo.TYPE_BLE_SPEAKER,
-        AudioDeviceInfo.TYPE_BLE_HEADSET,
-        AudioDeviceInfo.TYPE_USB_DEVICE,
-        AudioDeviceInfo.TYPE_USB_HEADSET,
-        AudioDeviceInfo.TYPE_HDMI,
-        AudioDeviceInfo.TYPE_DOCK,
-        AudioDeviceInfo.TYPE_BUILTIN_EARPIECE,
+        MediaRoute2Info.TYPE_BUILTIN_SPEAKER,
+        MediaRoute2Info.TYPE_WIRED_HEADSET,
+        MediaRoute2Info.TYPE_WIRED_HEADPHONES,
+        MediaRoute2Info.TYPE_BLUETOOTH_A2DP,
+        MediaRoute2Info.TYPE_BLUETOOTH_SCO,
+        MediaRoute2Info.TYPE_BLE_SPEAKER,
+        MediaRoute2Info.TYPE_BLE_HEADSET,
+        MediaRoute2Info.TYPE_USB_DEVICE,
+        MediaRoute2Info.TYPE_USB_HEADSET,
+        MediaRoute2Info.TYPE_HDMI,
+        MediaRoute2Info.TYPE_DOCK,
+        MediaRoute2Info.TYPE_BUILTIN_EARPIECE,
     )
+
+private object MediaRouter2Utils {
+    fun discoveryPreference(): android.media.RouteDiscoveryPreference =
+        android.media.RouteDiscoveryPreference.Builder(
+            listOf(
+                android.media.RouteDiscoveryPreference
+                    .ROUTE_FEATURE_LIVE_AUDIO,
+            ),
+            false,
+        ).build()
+}

@@ -11,6 +11,7 @@ package dev.yeshua.player.ui.menu
 
 import android.content.Intent
 import android.media.audiofx.AudioEffect
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -448,30 +449,33 @@ fun PlayerMenu(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    var showAudioOutputDialog by rememberSaveable {
-        mutableStateOf(false)
-    }
-    if (showAudioOutputDialog) {
-        AudioOutputDialog(
-            onDismiss = { showAudioOutputDialog = false },
-        )
-    }
-    MenuSurfaceSection(modifier = Modifier.padding(vertical = 6.dp)) {
-        ListItem(
-            headlineContent = { Text(text = stringResource(R.string.audio_output)) },
-            supportingContent = { Text(text = stringResource(R.string.audio_output_desc)) },
-            leadingContent = {
-                Icon(
-                    painter = painterResource(R.drawable.volume_up),
-                    contentDescription = null,
-                )
-            },
-            modifier =
-                Modifier.clickable {
-                    showAudioOutputDialog = true
+    // MediaRouter2 (used by the output picker) requires API 30+.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        var showAudioOutputDialog by rememberSaveable {
+            mutableStateOf(false)
+        }
+        if (showAudioOutputDialog) {
+            AudioOutputDialog(
+                onDismiss = { showAudioOutputDialog = false },
+            )
+        }
+        MenuSurfaceSection(modifier = Modifier.padding(vertical = 6.dp)) {
+            ListItem(
+                headlineContent = { Text(text = stringResource(R.string.audio_output)) },
+                supportingContent = { Text(text = stringResource(R.string.audio_output_desc)) },
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(R.drawable.volume_up),
+                        contentDescription = null,
+                    )
                 },
-            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        )
+                modifier =
+                    Modifier.clickable {
+                        showAudioOutputDialog = true
+                    },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            )
+        }
     }
 
     Spacer(modifier = Modifier.height(16.dp))

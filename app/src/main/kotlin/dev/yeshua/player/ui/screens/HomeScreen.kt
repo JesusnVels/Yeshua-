@@ -73,7 +73,7 @@ import dev.yeshua.player.home.HomeAction
 import dev.yeshua.player.home.HomeScreenState
 import dev.yeshua.player.home.HomeUiState
 import dev.yeshua.player.models.MediaMetadata
-import dev.yeshua.player.models.SongItem
+import moe.rukamori.archivetune.innertube.models.SongItem
 import dev.yeshua.player.playback.PlayerConnection
 import dev.yeshua.player.playback.queues.ListQueue
 import dev.yeshua.player.ui.component.ExpressivePullToRefreshBox

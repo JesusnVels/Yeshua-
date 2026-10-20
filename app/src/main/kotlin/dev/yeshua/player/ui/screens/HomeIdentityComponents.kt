@@ -61,6 +61,7 @@ import dev.yeshua.player.db.entities.LocalItem
 import dev.yeshua.player.db.entities.Playlist
 import dev.yeshua.player.db.entities.Song
 import dev.yeshua.player.extensions.toMediaItem
+import dev.yeshua.player.extensions.togglePlayPause
 import dev.yeshua.player.playback.queues.ListQueue
 import dev.yeshua.player.ui.menu.SongMenu
 import dev.yeshua.player.ui.theme.YeshuaDisplayFontFamily

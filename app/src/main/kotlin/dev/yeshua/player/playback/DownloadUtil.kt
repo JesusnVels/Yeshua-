@@ -196,6 +196,9 @@ class DownloadUtil
                                     }
                                     NavidromeStreamResolver.Config(serverUrl, username, password)
                                 }
+                            // Title/artist feed the Internet Archive fallback, which
+                            // has no YouTube-ID lookup and searches by metadata.
+                            val librarySong = database.getSongByIdBlocking(mediaId)
                             withTimeout(DOWNLOAD_RESOLVE_TIMEOUT_MS) {
                                 context.retryWithoutPlaybackLoginContext {
                                     YTPlayerUtils.playerResponseForDownload(
@@ -205,6 +208,8 @@ class DownloadUtil
                                         networkMetered = lowDataModeActive,
                                         preferredStreamClient = preferredStreamClient,
                                         navidromeConfig = navidromeConfig,
+                                        songTitle = librarySong?.song?.title,
+                                        songArtist = librarySong?.artists?.firstOrNull()?.name,
                                     )
                                 }
                             }

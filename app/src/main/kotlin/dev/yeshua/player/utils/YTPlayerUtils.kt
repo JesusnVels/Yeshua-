@@ -843,13 +843,16 @@ object YTPlayerUtils {
         networkMetered: Boolean? = null,
         preferredStreamClient: PlayerStreamClient = PlayerStreamClient.WEB_REMIX,
         navidromeConfig: NavidromeStreamResolver.Config? = null,
+        songTitle: String? = null,
+        songArtist: String? = null,
     ): Result<PlaybackData> =
         runCatching {
             Timber.tag(logTag).i("Fetching download response for videoId: $videoId, playlistId: $playlistId")
 
             // NewPipe-first: upstream-maintained decipher with unthrottled URLs.
-            // Falls through to the FLOSS API resolvers (Piped, Invidious, Navidrome),
-            // then to InnerTube (which carries login context) on failure.
+            // Falls through to the FLOSS API resolvers (Piped, Invidious, Navidrome,
+            // Internet Archive), then to InnerTube (which carries login context)
+            // on failure.
             val newPipeResult = NewPipeStreamResolver.resolve(videoId, audioQuality)
             if (newPipeResult.isSuccess) return@runCatching newPipeResult.getOrThrow()
             Timber.tag(logTag).w(
@@ -881,7 +884,18 @@ object YTPlayerUtils {
             if (navidromeResult.isSuccess) return@runCatching navidromeResult.getOrThrow()
             Timber.tag(logTag).w(
                 navidromeResult.exceptionOrNull(),
-                "Navidrome resolution failed for %s, falling back to InnerTube clients",
+                "Navidrome resolution failed for %s, falling back to Internet Archive",
+                videoId,
+            )
+
+            // Internet Archive: free public lossless catalog (no key, no account,
+            // no server); matched by title/artist since it has no YouTube-ID lookup.
+            val archiveResult =
+                InternetArchiveStreamResolver.resolve(videoId, audioQuality, songTitle, songArtist)
+            if (archiveResult.isSuccess) return@runCatching archiveResult.getOrThrow()
+            Timber.tag(logTag).w(
+                archiveResult.exceptionOrNull(),
+                "Internet Archive resolution failed for %s, falling back to InnerTube clients",
                 videoId,
             )
 

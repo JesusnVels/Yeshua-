@@ -1117,13 +1117,6 @@ class MusicService :
         equalizerPlaybackController.attach(this)
         ensureScopesActive()
 
-        // Best-effort warmup of playback prerequisites (signature timestamp +
-        // visitor data) so the first tap of a session resolves its stream faster.
-        // Never throws; resolution falls back to per-tap fetching on failure.
-        ioScope.launch(SilentHandler) {
-            YTPlayerUtils.warmupPlaybackPrerequisites()
-        }
-
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val nm = getSystemService(NotificationManager::class.java)

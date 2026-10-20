@@ -1658,47 +1658,24 @@ object YTPlayerUtils {
     }
 
     /**
-     * Wrapper around the [NewPipeUtils.getSignatureTimestamp] function which reports exceptions
+     * Wrapper around the [NewPipeUtils.getSignatureTimestamp] function which reports exceptions.
+     *
+     * Fetched fresh for every playback request on purpose: a process-wide cached
+     * value (and a startup warmup that pre-seeded it plus the visitor data) made
+     * every stream come back "This video is unavailable" — the per-request fetch
+     * is the behavior that worked.
      */
     private suspend fun getSignatureTimestampOrNull(videoId: String): Int? {
-        val now = System.currentTimeMillis()
-        cachedSignatureTimestamp
-            ?.takeIf { now - cachedSignatureTimestampAtMs < SIGNATURE_TIMESTAMP_CACHE_TTL_MS }
-            ?.let { return it }
         Timber.tag(logTag).i("Getting signature timestamp for videoId: $videoId")
         return NewPipeUtils
             .getSignatureTimestamp(videoId)
             .onSuccess { sts ->
                 Timber.tag(logTag).i("Signature timestamp obtained: $sts")
-                cachedSignatureTimestamp = sts
-                cachedSignatureTimestampAtMs = System.currentTimeMillis()
             }
             .onFailure {
                 Timber.tag(logTag).e(it, "Failed to get signature timestamp")
                 reportException(it)
             }.getOrNull()
-    }
-
-    /**
-     * Best-effort warmup of playback prerequisites, intended to run once on a
-     * background thread at service startup so the first tap of a session does not
-     * pay for signature-timestamp discovery and visitor-data bootstrap.
-     * Safe to call repeatedly; never throws.
-     */
-    suspend fun warmupPlaybackPrerequisites() {
-        runCatching {
-            getSignatureTimestampOrNull(SIGNATURE_TIMESTAMP_WARMUP_VIDEO_ID)
-        }
-        runCatching {
-            val authState = YouTube.currentPlaybackAuthState()
-            if (authState.visitorData.isNullOrBlank()) {
-                YouTube
-                    .visitorData()
-                    .getOrNull()
-                    ?.takeIf { it.isNotBlank() }
-                    ?.let { YouTube.visitorData = it }
-            }
-        }
     }
 
     private fun invalidateSignatureTimestampCache() {

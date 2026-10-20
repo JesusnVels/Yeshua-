@@ -1426,7 +1426,6 @@ class MusicService :
                 // after a Bluetooth disconnect, which is independent of the auto-start setting.
                 registerBluetoothReceiver()
             }
-            }
 
         combine(
             dataStore.data.map { it[AudioOffload] ?: false },

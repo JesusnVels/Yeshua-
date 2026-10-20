@@ -390,7 +390,7 @@ internal object InternetArchiveStreamResolver {
                     bitrateBps > 0 -> "AUDIO_QUALITY_LOW"
                     else -> null
                 },
-            approxDurationMs = durationSeconds?.takeIf { it > 0 }?.let { it * 1000L },
+            approxDurationMs = durationSeconds?.takeIf { it > 0 }?.let { (it * 1000L).toString() },
             audioSampleRate = null,
             audioChannels = null,
             loudnessDb = null,

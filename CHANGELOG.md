@@ -3,6 +3,20 @@
 All notable changes to Yeshua, newest first. Each entry matches one
 pushed update so the GitHub history reads cleanly.
 
+## 2026-10-21 — Tempo import from Google Drive + live progress notification
+- **Tempo import can now pull backups straight from Google Drive**:
+  sign in with Google once in the import dialog, pick a backup from
+  the "Tempo Backups" folder (newest first), and the import runs on
+  it — no manual export. Needs a one-time Google Cloud setup (see
+  release notes); Drive access is read-only. If the same unchanged
+  backup is picked again, it returns instantly as already imported.
+  Downloads stream straight into the import with no extra copies.
+- **Live progress notification for every Tempo import** (file or
+  Drive): imports now run as a foreground service with a notification
+  showing real progress (download %, then plays processed), so the
+  import keeps running even with the app closed. Completion and
+  failure notifications remain.
+
 ## 2026-10-21 — Bluetooth silent-playback fix
 - **Fixed earbuds playing silently**: when the Audio Offload setting
   was on, tracks could be handed to the hardware offload path even

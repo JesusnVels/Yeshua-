@@ -96,6 +96,15 @@ android {
 
         buildConfigField("String", "DATA_SERVER_URL", dataServerUrl.asBuildConfigString())
         buildConfigField("String", "API_BEARER_TOKEN", apiBearerToken.asBuildConfigString())
+        // OAuth Web client ID used by the Tempo Google Drive import (Credential
+        // Manager sign-in + Drive authorization). Configure via GOOGLE_WEB_CLIENT_ID
+        // in local.properties or the environment; empty disables Drive sign-in.
+        val googleWebClientId =
+            localProperties.getProperty("GOOGLE_WEB_CLIENT_ID")
+                ?: System.getenv("GOOGLE_WEB_CLIENT_ID")
+                ?: ""
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+
         buildConfigField("boolean", "GATEKEEPER_ENABLED", "false")
 
         val nightlyBuildHash =
@@ -319,6 +328,21 @@ dependencies {
     implementation("androidx.media3:media3-ui-compose:${libs.versions.media3.get()}")
     add("gmsImplementation", libs.media3.cast)
     add("gmsImplementation", libs.mediarouter)
+    // Tempo Google Drive import (gms flavor only; the foss flavor ships a stub
+    // gateway with the same API, so no Drive/Google classes are referenced there).
+    add("gmsImplementation", libs.credentials)
+    add("gmsImplementation", libs.credentials.play.services.auth)
+    add("gmsImplementation", libs.googleid)
+    add("gmsImplementation", libs.play.services.auth)
+    add("gmsImplementation", libs.google.api.client.android) {
+        exclude(group = "org.apache.httpcomponents")
+    }
+    add("gmsImplementation", libs.google.api.services.drive) {
+        exclude(group = "org.apache.httpcomponents")
+    }
+    add("gmsImplementation", libs.google.http.client.gson)
+    add("gmsImplementation", libs.security.crypto)
+
     implementation(libs.squigglyslider)
 
 

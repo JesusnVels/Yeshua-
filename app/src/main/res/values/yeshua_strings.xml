@@ -1001,4 +1001,37 @@
     <string name="source_preferred">Preferred source</string>
     <string name="qobuz_use_this_account">Use this account</string>
     <string name="qobuz_checking_account">Checking your Qobuz account…</string>
+
+
+    <string name="tempo_import_notification_running_title">Importing Tempo history</string>
+
+    <string name="tempo_import_notification_failed_title">Tempo import failed</string>
+
+    <string name="tempo_import_downloading">Downloading backup from Google Drive…</string>
+
+    <string name="tempo_import_source_drive">Google Drive (Tempo backups)</string>
+
+    <string name="tempo_import_drive_description">Import the newest backup Tempo saved to your Google Drive — no file to export by hand.</string>
+
+    <string name="tempo_import_drive_unavailable">Google Drive import needs the Google Play services build of Yeshua. Use a backup file in this build.</string>
+
+    <string name="tempo_import_drive_sign_in">Sign in with Google</string>
+
+    <string name="tempo_import_drive_signing_in">Signing in…</string>
+
+    <string name="tempo_import_drive_consent">Allow Drive access</string>
+
+    <string name="tempo_import_drive_signed_in_as">Signed in as %1$s</string>
+
+    <string name="tempo_import_drive_loading">Loading backups…</string>
+
+    <string name="tempo_import_drive_no_backups">No Tempo backups found in Google Drive. In Tempo, turn on Google Drive backup and run one first.</string>
+
+    <string name="tempo_import_drive_import">Import selected backup</string>
+
+    <string name="tempo_import_drive_denied">Drive access denied or expired — sign in again, or use a backup file</string>
+
+    <string name="tempo_import_drive_not_configured">Google sign-in is not configured in this build. Use a backup file instead.</string>
+
+    <string name="tempo_import_drive_already_imported">This backup was already imported — it has not changed since, so there is nothing new to import.</string>
 </resources>

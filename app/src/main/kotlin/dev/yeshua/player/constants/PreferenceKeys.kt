@@ -1180,3 +1180,16 @@ val AssistantEnabledKey = booleanPreferencesKey("assistantEnabled")
 val DiscordConnectedKey = booleanPreferencesKey("discordConnected")
 val ThemePresetIdKey = stringPreferencesKey("themePresetId")
 val LosslessSkipSilenceDisabledKey = booleanPreferencesKey("losslessSkipSilenceDisabled")
+
+
+// Tempo Google Drive import: account identity only — never tokens (those stay
+// inside the auth layer's encrypted storage).
+val TempoDriveAccountEmailKey = stringPreferencesKey("tempoDriveAccountEmail")
+val TempoDriveAuthorizedKey = booleanPreferencesKey("tempoDriveAuthorized")
+
+// Short-circuit for the Drive import: identity of the last backup whose import
+// ran to completion, so re-picking the same unchanged file returns instantly.
+// The importer's content-hash checkpoint stays the authority whenever these
+// don't match exactly.
+val TempoDriveLastImportedIdKey = stringPreferencesKey("tempoDriveLastImportedId")
+val TempoDriveLastImportedModifiedKey = longPreferencesKey("tempoDriveLastImportedModified")

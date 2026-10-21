@@ -48,6 +48,14 @@ accompanist-core = "0.4.7"
 androidsvg = "1.4"
 aboutLibraries = "15.0.3"
 haze = "2.0.0"
+credentials = "1.6.0"
+googleid = "1.2.0"
+playServicesAuth = "21.6.0"
+googleApiClient = "2.2.0"
+googleDriveApi = "v3-rev20231128-2.0.0"
+googleHttpClient = "1.44.1"
+securityCrypto = "1.1.0-alpha06"
+
 
 
 [libraries]
@@ -157,6 +165,15 @@ androidsvg = { module = "com.caverock:androidsvg-aar", version.ref = "androidsvg
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
 haze-core = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 haze-blur = { module = "dev.chrisbanes.haze:haze-blur", version.ref = "haze" }
+credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
+credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
+googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+google-api-client-android = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClient" }
+google-api-services-drive = { module = "com.google.apis:google-api-services-drive", version.ref = "googleDriveApi" }
+google-http-client-gson = { module = "com.google.http-client:google-http-client-gson", version.ref = "googleHttpClient" }
+security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
+
 
 
 

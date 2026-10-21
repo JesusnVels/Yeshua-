@@ -197,6 +197,15 @@ class StatsViewModel
             val progressTotal: Int = 0,
             val result: TempoImportResult? = null,
             val errorMessage: String? = null,
+            // Google Drive source (Tempo backups)
+            val driveAvailable: Boolean = false,
+            val driveEmail: String? = null,
+            val driveBackups: List<dev.yeshua.player.utils.drive.TempoDriveBackup> = emptyList(),
+            val selectedDriveBackupId: String? = null,
+            val driveLoading: Boolean = false,
+            val driveNeedsConsent: Boolean = false,
+            val driveErrorMessage: String? = null,
+            val alreadyImported: Boolean = false,
         )
 
         private val tempoImportState = MutableStateFlow(TempoImportUiState())
@@ -205,6 +214,7 @@ class StatsViewModel
 
         fun openTempoImportDialog() {
             tempoImportState.value = TempoImportUiState(isDialogOpen = true)
+            onTempoDriveSourceOpened()
             // Re-attach to an already-running background import (e.g. the user left
             // the screen mid-import and came back).
             viewModelScope.launch(Dispatchers.IO) {
@@ -221,6 +231,25 @@ class StatsViewModel
                 if (running != null) {
                     tempoImportState.update { it.copy(isImporting = true) }
                     observeTempoImportWork(running.id)
+                } else {
+                    // No live work, but a previous import may have been interrupted
+                    // mid-run: surface its durable checkpoint so the dialog shows
+                    // where it stopped (re-picking the same file resumes there).
+                    val checkpoint =
+                        runCatching {
+                            dev.yeshua.player.utils.TempoHistoryImporter.readCheckpoint(appContext)
+                        }.getOrNull()
+                    if (checkpoint != null &&
+                        checkpoint.processedPlays > 0 &&
+                        checkpoint.processedPlays < checkpoint.totalPlays
+                    ) {
+                        tempoImportState.update {
+                            it.copy(
+                                progressDone = checkpoint.processedPlays,
+                                progressTotal = checkpoint.totalPlays,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -234,6 +263,203 @@ class StatsViewModel
         fun setTempoImportSearchMissing(enabled: Boolean) {
             tempoImportState.update { it.copy(searchMissing = enabled) }
         }
+
+        // ------------------------------------------------------------------
+        // Tempo import — Google Drive source
+        // ------------------------------------------------------------------
+
+        private val driveGateway
+            get() = dev.yeshua.player.utils.drive.TempoDriveGatewayLocator.get(appContext)
+
+        /** Called when the import dialog opens: reflects flavor support and any existing authorization. */
+        fun onTempoDriveSourceOpened() {
+            val available = driveGateway.isAvailable()
+            tempoImportState.update { it.copy(driveAvailable = available) }
+            if (!available) return
+            viewModelScope.launch {
+                val email =
+                    runCatching { driveGateway.authorizedAccountEmail(appContext) }.getOrNull()
+                tempoImportState.update { it.copy(driveEmail = email) }
+                if (email != null) loadDriveBackups()
+            }
+        }
+
+        fun signInToDrive(activity: android.app.Activity) {
+            tempoImportState.update {
+                it.copy(driveLoading = true, driveErrorMessage = null)
+            }
+            viewModelScope.launch {
+                when (val result = runCatching { driveGateway.signIn(activity) }) {
+                    else ->
+                        when (val auth = result.getOrNull()) {
+                            is dev.yeshua.player.utils.drive.TempoDriveAuthResult.Authorized -> {
+                                val email =
+                                    runCatching {
+                                        driveGateway.authorizedAccountEmail(appContext)
+                                    }.getOrNull()
+                                tempoImportState.update {
+                                    it.copy(driveLoading = false, driveEmail = email)
+                                }
+                                loadDriveBackups()
+                            }
+
+                            is dev.yeshua.player.utils.drive.TempoDriveAuthResult.NeedsConsent -> {
+                                tempoImportState.update {
+                                    it.copy(driveLoading = false, driveNeedsConsent = true)
+                                }
+                            }
+
+                            is dev.yeshua.player.utils.drive.TempoDriveAuthResult.Cancelled -> {
+                                tempoImportState.update { it.copy(driveLoading = false) }
+                            }
+
+                            is dev.yeshua.player.utils.drive.TempoDriveAuthResult.Failed -> {
+                                tempoImportState.update {
+                                    it.copy(
+                                        driveLoading = false,
+                                        driveErrorMessage = driveErrorText(auth.kind, auth.message),
+                                    )
+                                }
+                            }
+
+                            null -> {
+                                tempoImportState.update {
+                                    it.copy(
+                                        driveLoading = false,
+                                        driveErrorMessage =
+                                            result.exceptionOrNull()?.message,
+                                    )
+                                }
+                            }
+                        }
+                }
+            }
+        }
+
+        /** The screen has launched the consent intent; clear the flag so it isn't relaunched. */
+        fun onDriveConsentLaunched() {
+            tempoImportState.update { it.copy(driveNeedsConsent = false, driveLoading = true) }
+        }
+
+        /** Called when the consent screen returns (any result): re-check authorization. */
+        fun onDriveConsentFinished() {
+            viewModelScope.launch {
+                when (val auth = runCatching { driveGateway.completeConsent() }.getOrNull()) {
+                    is dev.yeshua.player.utils.drive.TempoDriveAuthResult.Authorized -> {
+                        val email =
+                            runCatching { driveGateway.authorizedAccountEmail(appContext) }
+                                .getOrNull()
+                        tempoImportState.update {
+                            it.copy(driveLoading = false, driveEmail = email)
+                        }
+                        loadDriveBackups()
+                    }
+
+                    else -> {
+                        tempoImportState.update {
+                            it.copy(
+                                driveLoading = false,
+                                driveErrorMessage =
+                                    appContext.getString(R.string.tempo_import_drive_denied),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        fun loadDriveBackups() {
+            tempoImportState.update { it.copy(driveLoading = true, driveErrorMessage = null) }
+            viewModelScope.launch {
+                runCatching { driveGateway.listBackups(appContext) }
+                    .onSuccess { backups ->
+                        tempoImportState.update {
+                            it.copy(
+                                driveLoading = false,
+                                driveBackups = backups,
+                                selectedDriveBackupId =
+                                    it.selectedDriveBackupId
+                                        ?.takeIf { id -> backups.any { b -> b.id == id } }
+                                        ?: backups.firstOrNull()?.id,
+                            )
+                        }
+                    }.onFailure { e ->
+                        val kind =
+                            (e as? dev.yeshua.player.utils.drive.TempoDriveException)?.kind
+                        tempoImportState.update {
+                            it.copy(
+                                driveLoading = false,
+                                driveEmail =
+                                    if (kind ==
+                                        dev.yeshua.player.utils.drive.TempoDriveErrorKind.ACCESS_DENIED ||
+                                        kind ==
+                                        dev.yeshua.player.utils.drive.TempoDriveErrorKind.NOT_AUTHORIZED
+                                    ) {
+                                        null
+                                    } else {
+                                        it.driveEmail
+                                    },
+                                driveErrorMessage =
+                                    if (kind != null) {
+                                        driveErrorText(kind, e.message)
+                                    } else {
+                                        e.message
+                                    },
+                            )
+                        }
+                    }
+            }
+        }
+
+        fun selectDriveBackup(id: String) {
+            tempoImportState.update { it.copy(selectedDriveBackupId = id) }
+        }
+
+        fun importFromDrive() {
+            val state = tempoImportState.value
+            val backup =
+                state.driveBackups.firstOrNull { it.id == state.selectedDriveBackupId }
+                    ?: return
+            tempoImportState.update {
+                it.copy(
+                    isImporting = true,
+                    progressDone = 0,
+                    progressTotal = 0,
+                    result = null,
+                    errorMessage = null,
+                    alreadyImported = false,
+                )
+            }
+            val workId =
+                TempoImportWorker.enqueueDrive(
+                    appContext,
+                    backup.id,
+                    backup.name,
+                    backup.modifiedTimeMillis,
+                    state.searchMissing,
+                )
+            observeTempoImportWork(workId)
+        }
+
+        private fun driveErrorText(
+            kind: dev.yeshua.player.utils.drive.TempoDriveErrorKind,
+            message: String?,
+        ): String =
+            when (kind) {
+                dev.yeshua.player.utils.drive.TempoDriveErrorKind.ACCESS_DENIED,
+                dev.yeshua.player.utils.drive.TempoDriveErrorKind.NOT_AUTHORIZED,
+                ->
+                    appContext.getString(R.string.tempo_import_drive_denied)
+
+                dev.yeshua.player.utils.drive.TempoDriveErrorKind.NOT_CONFIGURED ->
+                    appContext.getString(R.string.tempo_import_drive_not_configured)
+
+                dev.yeshua.player.utils.drive.TempoDriveErrorKind.UNAVAILABLE ->
+                    appContext.getString(R.string.tempo_import_drive_unavailable)
+
+                dev.yeshua.player.utils.drive.TempoDriveErrorKind.FAILED ->
+                    message ?: appContext.getString(R.string.tempo_import_drive_denied)
+            }
 
         fun importTempoBackup(uri: Uri) {
             val searchMissing = tempoImportState.value.searchMissing
@@ -278,6 +504,11 @@ class StatsViewModel
                                     tempoImportState.update {
                                         it.copy(
                                             isImporting = false,
+                                            alreadyImported =
+                                                out.getBoolean(
+                                                    TempoImportWorker.OUTPUT_ALREADY_IMPORTED,
+                                                    false,
+                                                ),
                                             result =
                                                 TempoImportResult(
                                                     importedCount = out.getInt(TempoImportWorker.OUTPUT_IMPORTED, 0),

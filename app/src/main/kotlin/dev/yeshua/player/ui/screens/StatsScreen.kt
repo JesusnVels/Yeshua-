@@ -7,9 +7,12 @@
 
 package dev.yeshua.player.ui.screens
 
+import android.app.Activity
 import android.content.Intent
+import android.text.format.Formatter
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
@@ -63,6 +66,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Surface
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -156,11 +160,14 @@ import dev.yeshua.player.viewmodels.ListeningCalendarData
 import dev.yeshua.player.viewmodels.ListeningPatternSlot
 import dev.yeshua.player.viewmodels.StatsScreenState
 import dev.yeshua.player.viewmodels.StatsViewModel
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.YearMonth
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.Locale
 import kotlin.math.PI
 import kotlin.math.abs
@@ -210,6 +217,30 @@ fun StatsScreen(
                 viewModel.importTempoBackup(it)
             }
         }
+
+    val activity = context as? Activity
+    val driveConsentLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
+            viewModel.onDriveConsentFinished()
+        }
+    LaunchedEffect(tempoImportState.driveNeedsConsent) {
+        if (tempoImportState.driveNeedsConsent) {
+            val pendingIntent =
+                dev.yeshua.player.utils.drive.TempoDriveGatewayLocator
+                    .get(context)
+                    .pendingConsentIntent()
+            if (pendingIntent != null) {
+                viewModel.onDriveConsentLaunched()
+                runCatching {
+                    driveConsentLauncher.launch(
+                        IntentSenderRequest.Builder(pendingIntent.intentSender).build(),
+                    )
+                }.onFailure { viewModel.onDriveConsentFinished() }
+            } else {
+                viewModel.onDriveConsentFinished()
+            }
+        }
+    }
 
     val data =
         when (val state = screenState) {
@@ -772,6 +803,9 @@ fun StatsScreen(
                     onDismiss = viewModel::closeTempoImportDialog,
                     onSearchMissingChange = viewModel::setTempoImportSearchMissing,
                     onChooseFile = { tempoFilePicker.launch(arrayOf("application/zip")) },
+                    onDriveSignIn = { activity?.let { viewModel.signInToDrive(it) } },
+                    onDriveSelectBackup = viewModel::selectDriveBackup,
+                    onDriveImport = viewModel::importFromDrive,
                 )
             }
         }
@@ -784,6 +818,9 @@ private fun TempoImportDialog(
     onDismiss: () -> Unit,
     onSearchMissingChange: (Boolean) -> Unit,
     onChooseFile: () -> Unit,
+    onDriveSignIn: () -> Unit,
+    onDriveSelectBackup: (String) -> Unit,
+    onDriveImport: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -821,6 +858,105 @@ private fun TempoImportDialog(
                         enabled = !state.isImporting,
                     )
                 }
+                if (!state.isImporting && state.result == null && state.errorMessage == null) {
+                    HorizontalDivider()
+                    Text(
+                        text = stringResource(R.string.tempo_import_source_drive),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Text(
+                        text = stringResource(R.string.tempo_import_drive_description),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    when {
+                        !state.driveAvailable -> {
+                            Text(
+                                text = stringResource(R.string.tempo_import_drive_unavailable),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+
+                        state.driveEmail == null -> {
+                            if (state.driveLoading) {
+                                Text(text = stringResource(R.string.tempo_import_drive_signing_in))
+                            } else {
+                                TextButton(onClick = onDriveSignIn) {
+                                    Text(text = stringResource(R.string.tempo_import_drive_sign_in))
+                                }
+                            }
+                        }
+
+                        else -> {
+                            Text(
+                                text =
+                                    stringResource(
+                                        R.string.tempo_import_drive_signed_in_as,
+                                        state.driveEmail.orEmpty(),
+                                    ),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            when {
+                                state.driveLoading -> {
+                                    Text(text = stringResource(R.string.tempo_import_drive_loading))
+                                }
+
+                                state.driveBackups.isEmpty() -> {
+                                    Text(
+                                        text = stringResource(R.string.tempo_import_drive_no_backups),
+                                        style = MaterialTheme.typography.bodySmall,
+                                    )
+                                }
+
+                                else -> {
+                                    state.driveBackups.take(5).forEach { backup ->
+                                        Row(
+                                            modifier =
+                                                Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable { onDriveSelectBackup(backup.id) },
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            RadioButton(
+                                                selected = backup.id == state.selectedDriveBackupId,
+                                                onClick = { onDriveSelectBackup(backup.id) },
+                                            )
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = backup.name,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                )
+                                                Text(
+                                                    text =
+                                                        "${formatDriveBackupDate(backup.modifiedTimeMillis)} • " +
+                                                            Formatter.formatShortFileSize(
+                                                                LocalContext.current,
+                                                                backup.sizeBytes,
+                                                            ),
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                )
+                                            }
+                                        }
+                                    }
+                                    if (state.selectedDriveBackupId != null) {
+                                        TextButton(onClick = onDriveImport) {
+                                            Text(text = stringResource(R.string.tempo_import_drive_import))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (state.driveErrorMessage != null) {
+                        Text(
+                            text = state.driveErrorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
                 when {
                     state.isImporting -> {
                         if (state.progressTotal > 0) {
@@ -844,17 +980,21 @@ private fun TempoImportDialog(
 
                     state.result != null -> {
                         val result = state.result
-                        Text(
-                            text =
-                                stringResource(
-                                    R.string.tempo_import_result,
-                                    result.importedCount,
-                                    result.matchedLocalCount,
-                                    result.matchedSearchCount,
-                                    result.skippedCount,
-                                    result.failedCount,
-                                ),
-                        )
+                        if (state.alreadyImported) {
+                            Text(text = stringResource(R.string.tempo_import_drive_already_imported))
+                        } else {
+                            Text(
+                                text =
+                                    stringResource(
+                                        R.string.tempo_import_result,
+                                        result.importedCount,
+                                        result.matchedLocalCount,
+                                        result.matchedSearchCount,
+                                        result.skippedCount,
+                                        result.failedCount,
+                                    ),
+                            )
+                        }
                     }
 
                     state.errorMessage != null -> {
@@ -863,6 +1003,24 @@ private fun TempoImportDialog(
                                 stringResource(
                                     R.string.tempo_import_failed,
                                     state.errorMessage ?: "",
+                                ),
+                        )
+                    }
+
+                    state.progressTotal > 0 -> {
+                        // Saved progress from an interrupted import (durable
+                        // checkpoint). Choosing the same file again resumes
+                        // from exactly this point.
+                        LinearProgressIndicator(
+                            progress = state.progressDone.toFloat() / state.progressTotal.coerceAtLeast(1),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Text(
+                            text =
+                                stringResource(
+                                    R.string.tempo_import_matching,
+                                    state.progressDone,
+                                    state.progressTotal,
                                 ),
                         )
                     }
@@ -882,6 +1040,16 @@ private fun TempoImportDialog(
             }
         },
     )
+}
+
+/** Medium-style local date for a Drive backup's modifiedTime, or "" when unknown. */
+private fun formatDriveBackupDate(epochMillis: Long): String {
+    if (epochMillis <= 0L) return ""
+    return Instant
+        .ofEpochMilli(epochMillis)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+        .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(Locale.getDefault()))
 }
 
 @Composable

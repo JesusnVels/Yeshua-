@@ -255,6 +255,7 @@ import dev.yeshua.player.lyrics.LyricsPreloadManager
 import dev.yeshua.player.models.MediaMetadata
 import dev.yeshua.player.models.PersistPlayerState
 import dev.yeshua.player.models.PersistQueue
+import dev.yeshua.player.models.PlayerOutputDevice
 import dev.yeshua.player.models.toMediaMetadata
 import dev.yeshua.player.playback.queues.EmptyQueue
 import dev.yeshua.player.playback.queues.ListQueue
@@ -356,6 +357,14 @@ class MusicService :
     private var audioDeviceCallbackRegistered = false
     private var audioRouteRecoveryJob: Job? = null
     private var audiblePlaybackRecoveryJob: Job? = null
+
+    // Last value handed to updateAudioOffload (the user's offload intent
+    // before device gating) and the value actually applied to the player
+    // after the Bluetooth gate inside updateAudioOffload. Tracked so route
+    // changes and playback starts can re-evaluate the gate without
+    // re-reading preferences.
+    private var lastAudioOffloadRequest = false
+    private var audioOffloadApplied = false
     private var lastAudioOutputDeviceSignature: String? = null
     private var lastAudioRouteRecoveryRealtimeMs = 0L
     private var aodScreenOffReceiver: BroadcastReceiver? = null
@@ -2526,6 +2535,12 @@ class MusicService :
         audioOutputResolver.refresh()
         cancelCrossfade(resetVolume = true, resetPauseAtEnd = true)
         player.setAudioAttributes(playbackAudioAttributes(), false)
+        // Re-run the offload gate for the new output before the debounced
+        // rebuild below recreates the stream: Bluetooth becoming active
+        // must switch offload off (and leaving Bluetooth may restore it),
+        // so the rebuilt stream is configured for the device it will
+        // actually play on.
+        updateAudioOffload(lastAudioOffloadRequest)
         audioRouteRecoveryJob?.cancel()
         audioRouteRecoveryJob =
             scope.launch {
@@ -7539,6 +7554,14 @@ class MusicService :
             if (player.playWhenReady && shouldKeepAudioEffectSessionOpen()) {
                 ensureAudioFocusForActivePlayback()
             }
+            if (player.playWhenReady) {
+                // Playback (re)starting is the last chance to escape the
+                // Bluetooth offload trap for an already-loaded stream:
+                // device changes are re-gated in
+                // onAudioOutputDeviceChanged, but a stream loaded while
+                // paused sees no further device event.
+                recoverFromBluetoothOffloadIfNeeded()
+            }
             updateWakeLock()
             if (hasResumablePlaybackNotification()) {
                 cancelIdleStop()
@@ -9288,7 +9311,25 @@ class MusicService :
     }
 
     private fun updateAudioOffload(enabled: Boolean) {
-        val effectiveEnabled = enabled && !crossfadeEnabled
+        lastAudioOffloadRequest = enabled
+        // Never engage offload while the routed output is Bluetooth.
+        // Offload support is reported for the format/attributes without
+        // regard to the routed device, and on many devices an offloaded
+        // track routed to Bluetooth A2DP then advances in the DSP while
+        // producing no audible output — for every track, until the sink
+        // is rebuilt (the classic "playing but silent on earbuds" state
+        // that skipping tracks cannot cure). The gate is re-evaluated on
+        // every output-device change and at playback start, so offload
+        // still applies automatically on the built-in/wired outputs it
+        // is meant for, and an already-offloaded stream recovers in
+        // place when Bluetooth takes over (see
+        // recoverFromBluetoothOffloadIfNeeded).
+        val blockedByBluetooth = enabled && isBluetoothAudioOutputActive()
+        if (blockedByBluetooth) {
+            Timber.tag(TAG).i("Audio offload requested but suppressed: Bluetooth is the active output")
+        }
+        val effectiveEnabled = enabled && !crossfadeEnabled && !blockedByBluetooth
+        audioOffloadApplied = effectiveEnabled
         runCatching {
             val builder = localPlayer.trackSelectionParameters.buildUpon()
             val audioOffloadPrefsClass = Class.forName("androidx.media3.common.AudioOffloadPreferences")
@@ -9311,6 +9352,40 @@ class MusicService :
             }
         }
         localPlayer.setOffloadEnabled(effectiveEnabled)
+    }
+
+    /**
+     * Whether the currently routed audio output is a Bluetooth device
+     * (A2DP / SCO / BLE / hearing aid, per [PlayerOutputDevice.from]).
+     * Uses the same resolver the in-player output UI reads, refreshed on
+     * the spot so the answer reflects the route as of this call.
+     */
+    private fun isBluetoothAudioOutputActive(): Boolean {
+        if (!::audioOutputResolver.isInitialized) return false
+        audioOutputResolver.refresh()
+        return audioOutputResolver.activeAudioDevice.value.type == PlayerOutputDevice.Bluetooth
+    }
+
+    /**
+     * Safety net for the Bluetooth offload trap described in
+     * [updateAudioOffload]: if offload is currently applied while
+     * Bluetooth is (now) the active output — e.g. the earbuds connected
+     * while a track was already loaded and paused, so no stream was
+     * rebuilt since — switch offload off and rebuild the current stream
+     * so the already-configured offload sink is dropped. Recovers in
+     * place: no app restart, no track change. No-op in every other
+     * state, and self-terminating because the gate flip clears
+     * [audioOffloadApplied] before the rebuild's own events re-enter.
+     */
+    private fun recoverFromBluetoothOffloadIfNeeded() {
+        if (!audioOffloadApplied) return
+        if (!isBluetoothAudioOutputActive()) return
+        updateAudioOffload(lastAudioOffloadRequest)
+        audioRouteRecoveryJob?.cancel()
+        audioRouteRecoveryJob =
+            scope.launch {
+                recoverAudioRouteAfterDeviceChange()
+            }
     }
 
     private fun updateWakeLock() {

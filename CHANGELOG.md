@@ -3,6 +3,17 @@
 All notable changes to Yeshua, newest first. Each entry matches one
 pushed update so the GitHub history reads cleanly.
 
+## 2026-10-21 — Bluetooth silent-playback fix
+- **Fixed earbuds playing silently**: when the Audio Offload setting
+  was on, tracks could be handed to the hardware offload path even
+  while the output was Bluetooth — the song "played" (progress moved)
+  but no sound reached the earbuds, and skipping tracks never cured
+  it. Offload is now disabled automatically whenever the active
+  output is Bluetooth, re-checked whenever the output device
+  changes, and an already-offloaded stream recovers in place when
+  playback starts — no app restart needed. Offload still applies on
+  the phone speaker / wired outputs as before.
+
 ## 2026-10-21 — Qobuz web (Google) sign-in
 - **Qobuz sign-in is now a web login**: Settings → Stream sources →
   Qobuz opens Qobuz's own login page inside the app, so "Continue with

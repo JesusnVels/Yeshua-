@@ -44,7 +44,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -77,10 +76,8 @@ import dev.yeshua.player.ui.component.PreferenceEntry
 import dev.yeshua.player.ui.component.PreferenceGroup
 import dev.yeshua.player.ui.component.SwitchPreference
 import dev.yeshua.player.ui.utils.backToMain
-import dev.yeshua.player.utils.QobuzStreamResolver
 import dev.yeshua.player.utils.rememberEnumPreference
 import dev.yeshua.player.utils.rememberPreference
-import kotlinx.coroutines.launch
 
 @Composable
 fun StreamSourcesSettings(navController: NavController) {
@@ -109,14 +106,7 @@ fun StreamSourcesSettings(navController: NavController) {
         rememberPreference(QobuzDisplayNameKey, defaultValue = "")
     val (qobuzSubscriptionLabel, onQobuzSubscriptionLabelChange) =
         rememberPreference(QobuzSubscriptionLabelKey, defaultValue = "")
-    var showQobuzDialog by remember { mutableStateOf(false) }
-    var qobuzEmailDraft by remember { mutableStateOf(qobuzEmail) }
-    // Transient UI state only — the password is never persisted; sign-in
-    // exchanges it for the user_auth_token that QobuzAuthTokenKey stores.
-    var qobuzPasswordDraft by remember { mutableStateOf("") }
-    var qobuzSigningIn by remember { mutableStateOf(false) }
-    var qobuzError by remember { mutableStateOf<String?>(null) }
-    val coroutineScope = rememberCoroutineScope()
+    var showQobuzWebLogin by remember { mutableStateOf(false) }
     var showInstanceDialog by remember { mutableStateOf(false) }
     var instanceDraft by remember { mutableStateOf(monochromeInstance) }
     var showNavidromeDialog by remember { mutableStateOf(false) }
@@ -358,10 +348,7 @@ fun StreamSourcesSettings(navController: NavController) {
                             },
                         onClick = {
                             if (qobuzAuthToken.isBlank()) {
-                                qobuzEmailDraft = qobuzEmail
-                                qobuzPasswordDraft = ""
-                                qobuzError = null
-                                showQobuzDialog = true
+                                showQobuzWebLogin = true
                             }
                         },
                     )
@@ -375,18 +362,7 @@ fun StreamSourcesSettings(navController: NavController) {
                                 onQobuzAuthTokenChange("")
                                 onQobuzDisplayNameChange("")
                                 onQobuzSubscriptionLabelChange("")
-                                qobuzError = null
                             },
-                        )
-                    }
-                }
-                qobuzError?.let { error ->
-                    item {
-                        Text(
-                            text = error,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
                         )
                     }
                 }
@@ -441,95 +417,17 @@ fun StreamSourcesSettings(navController: NavController) {
         }
     }
 
-    if (showQobuzDialog) {
-        val qobuzSignInFailedText = stringResource(R.string.qobuz_sign_in_failed)
-        BasicAlertDialog(onDismissRequest = { if (!qobuzSigningIn) showQobuzDialog = false }) {
-            Surface(
-                shape = RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            ) {
-                Column(modifier = Modifier.padding(24.dp)) {
-                    Text(
-                        text = stringResource(R.string.qobuz_dialog_title),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    OutlinedTextField(
-                        value = qobuzEmailDraft,
-                        onValueChange = { qobuzEmailDraft = it },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text(stringResource(R.string.qobuz_email_hint)) },
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    OutlinedTextField(
-                        value = qobuzPasswordDraft,
-                        onValueChange = { qobuzPasswordDraft = it },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = PasswordVisualTransformation(),
-                        placeholder = { Text(stringResource(R.string.qobuz_password_hint)) },
-                    )
-                    qobuzError?.let { error ->
-                        Spacer(Modifier.height(12.dp))
-                        Text(
-                            text = error,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
-                    Spacer(Modifier.height(20.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        TextButton(
-                            enabled = !qobuzSigningIn,
-                            onClick = { showQobuzDialog = false },
-                        ) {
-                            Text(stringResource(android.R.string.cancel))
-                        }
-                        TextButton(
-                            enabled = !qobuzSigningIn,
-                            onClick = {
-                                qobuzSigningIn = true
-                                qobuzError = null
-                                val email = qobuzEmailDraft.trim()
-                                val password = qobuzPasswordDraft
-                                coroutineScope.launch {
-                                    QobuzStreamResolver
-                                        .loginWithProfile(email, password)
-                                        .onSuccess { result ->
-                                            onQobuzAuthTokenChange(result.userAuthToken)
-                                            result.email?.let { onQobuzEmailChange(it) }
-                                            onQobuzDisplayNameChange(result.displayName.orEmpty())
-                                            onQobuzSubscriptionLabelChange(result.subscriptionLabel.orEmpty())
-                                            qobuzPasswordDraft = ""
-                                            showQobuzDialog = false
-                                        }
-                                        .onFailure { error ->
-                                            qobuzError =
-                                                error.message
-                                                    ?: qobuzSignInFailedText
-                                        }
-                                    qobuzSigningIn = false
-                                }
-                            },
-                        ) {
-                            Text(
-                                stringResource(
-                                    if (qobuzSigningIn) {
-                                        R.string.qobuz_signing_in
-                                    } else {
-                                        R.string.qobuz_sign_in
-                                    },
-                                ),
-                            )
-                        }
-                    }
-                }
-            }
-        }
+    if (showQobuzWebLogin) {
+        QobuzWebLoginDialog(
+            onDismiss = { showQobuzWebLogin = false },
+            onTokenCaptured = { account ->
+                showQobuzWebLogin = false
+                onQobuzAuthTokenChange(account.userAuthToken)
+                account.email?.let { onQobuzEmailChange(it) }
+                account.displayName?.let { onQobuzDisplayNameChange(it) }
+                onQobuzSubscriptionLabelChange(account.subscriptionLabel.orEmpty())
+            },
+        )
     }
 
     if (showNavidromeDialog) {

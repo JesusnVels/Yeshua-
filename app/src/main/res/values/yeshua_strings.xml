@@ -969,6 +969,7 @@
     <string name="qobuz_signing_in">Signing in…</string>
     <string name="qobuz_sign_out">Sign out</string>
     <string name="qobuz_sign_in_failed">Qobuz sign-in failed</string>
+    <string name="qobuz_sign_in_hint">Qobuz rejected the sign-in. If your account was created with Google sign-in, it has no Qobuz password yet — set one at qobuz.com (Sign in → Forgot password), then sign in here with it.</string>
     <string name="tidal_source">Tidal</string>
     <string name="tidal_link_account">Link Tidal account</string>
     <string name="tidal_link_description">Stream lossless FLAC from your own Tidal account (HiFi or trial)</string>
@@ -998,4 +999,6 @@
     <string name="source_not_signed_in">Not signed in</string>
     <string name="source_now_playing">Now playing</string>
     <string name="source_preferred">Preferred source</string>
+    <string name="qobuz_use_this_account">Use this account</string>
+    <string name="qobuz_checking_account">Checking your Qobuz account…</string>
 </resources>

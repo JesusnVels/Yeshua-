@@ -3,6 +3,13 @@
 All notable changes to Yeshua, newest first. Each entry matches one
 pushed update so the GitHub history reads cleanly.
 
+## 2026-10-21 — README refresh
+- **README is now Yeshua's own**: rewritten around this fork (its
+  features, its badges, its links) with a dated Updates list matching
+  this changelog, replacing the upstream LunarTune README. Updater
+  verified against the current code: releases, build runs, commits,
+  and nightly links all already target ReCapzPhyco-420/Yeshua.
+
 ## 2026-10-21 — Tempo import from Google Drive + live progress notification
 - **Tempo import can now pull backups straight from Google Drive**:
   sign in with Google once in the import dialog, pick a backup from

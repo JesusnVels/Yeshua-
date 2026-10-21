@@ -79,6 +79,7 @@ jobs:
           LASTFM_API_KEY:   ${{ secrets.LASTFM_API_KEY }}
           LASTFM_SECRET:    ${{ secrets.LASTFM_SECRET }}
           DISCORD_APPLICATION_ID: ${{ secrets.DISCORD_APPLICATION_ID || '1547164645817585684' }}
+          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
         run: |
           chmod +x gradlew
           ./gradlew \

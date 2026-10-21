@@ -3,6 +3,17 @@
 All notable changes to Yeshua, newest first. Each entry matches one
 pushed update so the GitHub history reads cleanly.
 
+## 2026-10-21 — Notification + Drive wiring fixes
+- **Import progress notification hardened**: the running notification
+  is now posted directly at import start, not only through the
+  foreground-service promotion (which Android can refuse silently) —
+  so progress is visible on every import either way.
+- **Drive sign-in wiring completed for universal builds**: the
+  "Build Universal APK" workflow now passes the GOOGLE_WEB_CLIENT_ID
+  secret into the build (the multi-variant workflow already did);
+  without it, universal builds had an empty client ID and Drive
+  sign-in reported "not configured".
+
 ## 2026-10-21 — README refresh
 - **README is now Yeshua's own**: rewritten around this fork (its
   features, its badges, its links) with a dated Updates list matching

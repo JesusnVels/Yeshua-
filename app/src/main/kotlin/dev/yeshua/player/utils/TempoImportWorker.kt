@@ -294,8 +294,18 @@ class TempoImportWorker(
 
     private suspend fun startForegroundNotification(text: String) {
         createNotificationChannel(applicationContext)
+        val notification = buildProgressNotification(text, done = 0, total = 0)
+        // Post the running notification directly as well as promoting to
+        // foreground: promotion can be refused (background-start limits) and
+        // that refusal must not make the import invisible. The per-chunk
+        // updates reuse this same notification id either way.
         runCatching {
-            setForeground(createForegroundInfo(buildProgressNotification(text, done = 0, total = 0)))
+            applicationContext
+                .getSystemService(NotificationManager::class.java)
+                ?.notify(NOTIFICATION_ID, notification)
+        }
+        runCatching {
+            setForeground(createForegroundInfo(notification))
         }
     }
 

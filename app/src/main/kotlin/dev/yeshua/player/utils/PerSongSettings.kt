@@ -65,6 +65,32 @@ fun toggleIdSet(
 
 fun neverRecommendIds(): Set<String> = parseIdSet(PreferenceStore.get(NeverRecommendSongIdsKey).orEmpty())
 
+/**
+ * Canonical ids for the lossless sources a per-song upgrade can pin.
+ * Stored as the value side of the `LosslessUpgradeSourceKey` tab map
+ * (song id -> source id, see [parseTabMap]); MusicService's playback path
+ * and the player's quality/source chooser share these constants so the
+ * stored values can never drift between writer and reader.
+ */
+const val LOSSLESS_SOURCE_MONOCHROME = "monochrome"
+const val LOSSLESS_SOURCE_QOBUZ = "qobuz"
+const val LOSSLESS_SOURCE_TIDAL = "tidal"
+const val LOSSLESS_SOURCE_DEEZER = "deezer"
+const val LOSSLESS_SOURCE_ARCHIVE = "archive"
+
+/** Value recorded for a song whose current stream came from YouTube Music itself. */
+const val PLAYBACK_SOURCE_YOUTUBE = "youtube"
+
+/** Fallback probe order for upgraded songs without a pinned source. */
+val LOSSLESS_SOURCE_ORDER =
+    listOf(
+        LOSSLESS_SOURCE_MONOCHROME,
+        LOSSLESS_SOURCE_QOBUZ,
+        LOSSLESS_SOURCE_TIDAL,
+        LOSSLESS_SOURCE_DEEZER,
+        LOSSLESS_SOURCE_ARCHIVE,
+    )
+
 fun copySongArtworkFromGallery(
     context: Context,
     songId: String,

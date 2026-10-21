@@ -12,6 +12,7 @@ package dev.yeshua.player.ui.player
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
@@ -70,6 +71,9 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.ui.graphics.toArgb
@@ -81,12 +85,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.animation.core.animateFloatAsState
+import dev.yeshua.player.ui.component.ListDialog
 import dev.yeshua.player.ui.component.LocalMenuState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -101,6 +108,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -124,8 +132,16 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import me.saket.squiggles.SquigglySlider
+import dev.yeshua.player.LocalPlayerConnection
 import dev.yeshua.player.R
+import dev.yeshua.player.constants.AudioQuality
+import dev.yeshua.player.constants.AudioQualityKey
+import dev.yeshua.player.constants.DeezerArlKey
+import dev.yeshua.player.constants.DeezerEnabledKey
 import dev.yeshua.player.constants.EnableHapticFeedbackKey
+import dev.yeshua.player.constants.LosslessUpgradeSourceKey
+import dev.yeshua.player.constants.QobuzAuthTokenKey
+import dev.yeshua.player.constants.TidalAccessTokenKey
 import dev.yeshua.player.constants.PlayerBackgroundStyle
 import dev.yeshua.player.constants.PlayerDesignStyle
 import dev.yeshua.player.constants.PlayerHorizontalPadding
@@ -147,7 +163,14 @@ import dev.yeshua.player.ui.theme.PlayerBackgroundColorUtils
 import dev.yeshua.player.ui.theme.PlayerSliderColors
 import dev.yeshua.player.ui.utils.ShowMediaInfo
 import dev.yeshua.player.ui.utils.highRes
+import dev.yeshua.player.utils.LOSSLESS_SOURCE_ARCHIVE
+import dev.yeshua.player.utils.LOSSLESS_SOURCE_DEEZER
+import dev.yeshua.player.utils.LOSSLESS_SOURCE_MONOCHROME
+import dev.yeshua.player.utils.LOSSLESS_SOURCE_QOBUZ
+import dev.yeshua.player.utils.LOSSLESS_SOURCE_TIDAL
+import dev.yeshua.player.utils.isLocalMediaId
 import dev.yeshua.player.utils.makeTimeString
+import dev.yeshua.player.utils.parseTabMap
 import dev.yeshua.player.utils.rememberLowDataModeActive
 import dev.yeshua.player.utils.rememberPreference
 import dev.yeshua.player.utils.rememberEnumPreference
@@ -3075,7 +3098,18 @@ private fun V8QualityChip(
             currentFormat.codecLabel()
         }
 
+    val playerConnection = LocalPlayerConnection.current
+    var showChooser by remember { mutableStateOf(false) }
+    // The chip used to be a passive label — tapping it did nothing, which
+    // read as "the quality button doesn't work". It now opens the
+    // quality/source chooser for the current song whenever a player
+    // connection is available and the song is a stream (not a local file).
+    val chooserEnabled =
+        playerConnection != null && !isLocalMediaId(currentFormat.id)
+
     Surface(
+        onClick = { if (chooserEnabled) showChooser = true },
+        enabled = chooserEnabled,
         shape = RoundedCornerShape(6.dp),
         color = foreground.copy(alpha = 0.1f),
         border =
@@ -3104,7 +3138,224 @@ private fun V8QualityChip(
             )
         }
     }
+
+    if (showChooser && playerConnection != null) {
+        QualitySourceChooserDialog(
+            songId = currentFormat.id,
+            onDismiss = { showChooser = false },
+        )
+    }
 }
+
+/**
+ * Chooser opened from the player's quality chip, for the CURRENT song:
+ *
+ * - Quality section: the global [AudioQuality] values. Picking one stores
+ *   it and immediately re-resolves the current song at that quality via
+ *   MusicService (previously a quality change only affected future songs,
+ *   and in-memory URL reuse could keep even those on the old rendition).
+ * - Lossless sources section: every lossless server. Account sources
+ *   (Qobuz/Tidal/Deezer) are enabled only when their credential is
+ *   stored; Monochrome and the Internet Archive always are. Picking one
+ *   resolves the current song from that source now and pins it as the
+ *   song's preferred source for future plays.
+ */
+@Composable
+private fun QualitySourceChooserDialog(
+    songId: String,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val playerConnection = LocalPlayerConnection.current ?: return
+    val service = playerConnection.service
+    val coroutineScope = rememberCoroutineScope()
+
+    val (audioQuality) =
+        rememberEnumPreference(AudioQualityKey, defaultValue = AudioQuality.AUTO)
+    val (qobuzAuthToken) = rememberPreference(QobuzAuthTokenKey, defaultValue = "")
+    val (tidalAccessToken) = rememberPreference(TidalAccessTokenKey, defaultValue = "")
+    val (deezerArl) = rememberPreference(DeezerArlKey, defaultValue = "")
+    val (deezerEnabled) = rememberPreference(DeezerEnabledKey, defaultValue = false)
+    val (losslessUpgradeSourcesRaw) =
+        rememberPreference(LosslessUpgradeSourceKey, defaultValue = "")
+    val pinnedSource =
+        remember(losslessUpgradeSourcesRaw, songId) {
+            parseTabMap(losslessUpgradeSourcesRaw)[songId]
+        }
+    val playingSource = remember(songId) { service.playbackSourceFor(songId) }
+
+    var switching by remember { mutableStateOf(false) }
+
+    val losslessSources =
+        listOf(
+            LosslessSourceChoice(
+                id = LOSSLESS_SOURCE_MONOCHROME,
+                label = stringResource(R.string.monochrome_source),
+                available = true,
+            ),
+            LosslessSourceChoice(
+                id = LOSSLESS_SOURCE_QOBUZ,
+                label = stringResource(R.string.qobuz_source),
+                available = qobuzAuthToken.isNotBlank(),
+            ),
+            LosslessSourceChoice(
+                id = LOSSLESS_SOURCE_TIDAL,
+                label = stringResource(R.string.tidal_source),
+                available = tidalAccessToken.isNotBlank(),
+            ),
+            LosslessSourceChoice(
+                id = LOSSLESS_SOURCE_DEEZER,
+                label = stringResource(R.string.deezer_source),
+                available = deezerEnabled && deezerArl.isNotBlank(),
+            ),
+            LosslessSourceChoice(
+                id = LOSSLESS_SOURCE_ARCHIVE,
+                label = stringResource(R.string.internet_archive_source),
+                available = true,
+            ),
+        )
+
+    ListDialog(onDismiss = onDismiss) {
+        item {
+            Text(
+                text = stringResource(R.string.audio_quality),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+            )
+        }
+
+        listOf(
+            AudioQuality.AUTO,
+            AudioQuality.HIGH,
+            AudioQuality.HIGHEST,
+            AudioQuality.LOW,
+        ).forEach { quality ->
+            item {
+                ListItem(
+                    headlineContent = {
+                        Text(
+                            text =
+                                stringResource(
+                                    when (quality) {
+                                        AudioQuality.AUTO -> R.string.audio_quality_auto
+                                        AudioQuality.HIGH -> R.string.audio_quality_high
+                                        AudioQuality.HIGHEST -> R.string.audio_quality_max
+                                        AudioQuality.LOW -> R.string.audio_quality_low
+                                    },
+                                ),
+                        )
+                    },
+                    leadingContent =
+                        if (quality == audioQuality) {
+                            {
+                                Icon(
+                                    painter = painterResource(R.drawable.check),
+                                    contentDescription = null,
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                    modifier =
+                        Modifier.clickable(enabled = !switching) {
+                            switching = true
+                            coroutineScope.launch {
+                                val switched = service.switchCurrentSongQuality(quality)
+                                switching = false
+                                if (switched) {
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            R.string.quality_switch_applied,
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
+                                    onDismiss()
+                                }
+                            }
+                        },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+            }
+        }
+
+        item {
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        }
+
+        item {
+            Text(
+                text = stringResource(R.string.lossless_source),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+            )
+        }
+
+        losslessSources.forEach { source ->
+            item {
+                ListItem(
+                    headlineContent = { Text(text = source.label) },
+                    supportingContent =
+                        when {
+                            !source.available -> {
+                                { Text(text = stringResource(R.string.source_not_signed_in)) }
+                            }
+
+                            playingSource == source.id -> {
+                                { Text(text = stringResource(R.string.source_now_playing)) }
+                            }
+
+                            pinnedSource == source.id -> {
+                                { Text(text = stringResource(R.string.source_preferred)) }
+                            }
+
+                            else -> {
+                                null
+                            }
+                        },
+                    leadingContent =
+                        if (playingSource == source.id || pinnedSource == source.id) {
+                            {
+                                Icon(
+                                    painter = painterResource(R.drawable.check),
+                                    contentDescription = null,
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                    modifier =
+                        Modifier.clickable(enabled = source.available && !switching) {
+                            switching = true
+                            coroutineScope.launch {
+                                val switched = service.switchCurrentSongLosslessSource(source.id)
+                                switching = false
+                                Toast
+                                    .makeText(
+                                        context,
+                                        if (switched) {
+                                            R.string.upgrade_lossless_success
+                                        } else {
+                                            R.string.upgrade_lossless_not_found
+                                        },
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
+                                if (switched) onDismiss()
+                            }
+                        },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+            }
+        }
+    }
+}
+
+private data class LosslessSourceChoice(
+    val id: String,
+    val label: String,
+    val available: Boolean,
+)
 
 @Composable
 private fun V8TransportControls(

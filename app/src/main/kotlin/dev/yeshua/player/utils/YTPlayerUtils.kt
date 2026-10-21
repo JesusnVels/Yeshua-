@@ -16,6 +16,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import dev.yeshua.player.constants.AudioQuality
 import dev.yeshua.player.constants.PlayerStreamClient
+import dev.yeshua.player.constants.DeezerArlKey
+import dev.yeshua.player.constants.DeezerEnabledKey
+import dev.yeshua.player.constants.QobuzAuthTokenKey
 import moe.rukamori.archivetune.innertube.NewPipeUtils
 import moe.rukamori.archivetune.innertube.PlaybackAuthState
 import moe.rukamori.archivetune.innertube.YouTube
@@ -921,14 +924,45 @@ object YTPlayerUtils {
             Timber.tag(logTag).i("Fetching download response for videoId: $videoId, playlistId: $playlistId")
 
             // NewPipe-first: upstream-maintained decipher with unthrottled URLs.
-            // Falls through to the FLOSS API resolvers (Piped, Invidious, Navidrome,
-            // Internet Archive, Audius), then to InnerTube (which carries login
-            // context) on failure.
+            // Falls through to Qobuz and Tidal (the user's own accounts,
+            // lossless), then the FLOSS API resolvers (Piped, Invidious,
+            // Navidrome, Internet Archive, Audius), then to InnerTube
+            // (which carries login context) on failure.
             val newPipeResult = NewPipeStreamResolver.resolve(videoId, audioQuality)
             if (newPipeResult.isSuccess) return@runCatching newPipeResult.getOrThrow()
             Timber.tag(logTag).w(
                 newPipeResult.exceptionOrNull(),
-                "NewPipe primary resolution failed for %s, falling back to Piped",
+                "NewPipe primary resolution failed for %s, falling back to Qobuz",
+                videoId,
+            )
+
+            // Qobuz: the user's own account (Studio trial or subscription) —
+            // lossless FLAC, so it ranks above the lossy public mirrors. It
+            // fails fast and silently when the user is not signed in.
+            val qobuzResult =
+                QobuzStreamResolver.resolve(
+                    videoId,
+                    audioQuality,
+                    songTitle,
+                    songArtist,
+                    PreferenceStore.get(QobuzAuthTokenKey),
+                )
+            if (qobuzResult.isSuccess) return@runCatching qobuzResult.getOrThrow()
+            Timber.tag(logTag).w(
+                qobuzResult.exceptionOrNull(),
+                "Qobuz resolution failed for %s, falling back to Tidal",
+                videoId,
+            )
+
+            // Tidal: the user's own linked account — lossless FLAC
+            // (HI_RES/LOSSLESS). Fails fast and silently when no account
+            // is linked, so unlinked installs see zero extra traffic.
+            val tidalResult =
+                TidalStreamResolver.resolve(videoId, audioQuality, songTitle, songArtist)
+            if (tidalResult.isSuccess) return@runCatching tidalResult.getOrThrow()
+            Timber.tag(logTag).w(
+                tidalResult.exceptionOrNull(),
+                "Tidal resolution failed for %s, falling back to Piped",
                 videoId,
             )
 
@@ -978,7 +1012,32 @@ object YTPlayerUtils {
             if (audiusResult.isSuccess) return@runCatching audiusResult.getOrThrow()
             Timber.tag(logTag).w(
                 audiusResult.exceptionOrNull(),
-                "Audius resolution failed for %s, falling back to InnerTube clients",
+                "Audius resolution failed for %s, falling back to Deezer",
+                videoId,
+            )
+
+            // Deezer: the user's own account via its arl session — last of
+            // the account sources because it is the most fragile (cookie
+            // session, encrypted streams). Fails fast when signed out or
+            // when the Deezer toggle is off. Streams are Blowfish-
+            // encrypted; the decrypting data source handles them via the
+            // resolver's URL registry (see DEEZER_WIRING.md §6).
+            val deezerConfig =
+                if (PreferenceStore.get(DeezerEnabledKey) == true) {
+                    PreferenceStore
+                        .get(DeezerArlKey)
+                        ?.trim()
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { DeezerStreamResolver.Config(it) }
+                } else {
+                    null
+                }
+            val deezerResult =
+                DeezerStreamResolver.resolve(videoId, audioQuality, songTitle, songArtist, deezerConfig)
+            if (deezerResult.isSuccess) return@runCatching deezerResult.getOrThrow()
+            Timber.tag(logTag).w(
+                deezerResult.exceptionOrNull(),
+                "Deezer resolution failed for %s, falling back to InnerTube clients",
                 videoId,
             )
 

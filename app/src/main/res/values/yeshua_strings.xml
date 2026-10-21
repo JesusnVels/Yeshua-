@@ -955,4 +955,8 @@
     <string name="assistant_disabled_title">Assistant is off</string>
     <string name="assistant_disabled_body">Turn it back on anytime from Settings.</string>
     <string name="assistant_enable_label">Enable assistant</string>
+    <string name="upgrade_to_lossless">Upgrade to lossless</string>
+    <string name="upgrade_to_lossless_subtitle">Switch this song to a lossless source</string>
+    <string name="upgrade_lossless_success">Now playing in lossless</string>
+    <string name="upgrade_lossless_not_found">No lossless source found for this song</string>
 </resources>

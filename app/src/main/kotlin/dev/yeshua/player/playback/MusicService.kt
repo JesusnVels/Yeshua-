@@ -12,6 +12,7 @@ package dev.yeshua.player.playback
 import dev.yeshua.player.constants.NeverRecommendSongIdsKey
 import dev.yeshua.player.utils.neverRecommendIds
 import dev.yeshua.player.utils.parseIdSet
+import dev.yeshua.player.utils.toggleIdSet
 import dev.yeshua.player.playback.queues.YouTubeAlbumRadio
 import dev.yeshua.player.playback.queues.LocalMixQueue
 import dev.yeshua.player.playback.queues.LocalAlbumRadio
@@ -258,6 +259,7 @@ import dev.yeshua.player.ui.screens.settings.DiscordPresenceManager
 import dev.yeshua.player.ui.screens.settings.ListenBrainzManager
 import dev.yeshua.player.utils.AuthScopedCacheValue
 import dev.yeshua.player.utils.CoilBitmapLoader
+import dev.yeshua.player.utils.InternetArchiveStreamResolver
 import dev.yeshua.player.utils.NetworkConnectivityObserver
 import dev.yeshua.player.utils.StreamClientUtils
 import dev.yeshua.player.utils.SyncUtils
@@ -410,6 +412,19 @@ class MusicService :
         dev.yeshua.player.constants.MonochromeInstanceKey,
         dev.yeshua.player.monochrome.MonochromeAudioProvider.DEFAULT_INSTANCE,
     )
+
+    // Per-song lossless upgrades chosen from the player menu ("Upgrade to
+    // lossless"), as a newline-joined id set. Unlike monochromeEnabled this
+    // is not a global source toggle: only these songs take the Monochrome →
+    // Internet Archive lossless path on every play.
+    private val losslessUpgradedSongIdsRaw by preference(
+        this,
+        dev.yeshua.player.constants.LosslessUpgradedSongIdsKey,
+        "",
+    )
+
+    private fun isLosslessUpgraded(songId: String): Boolean =
+        songId in parseIdSet(losslessUpgradedSongIdsRaw)
     private val playbackUrlCache = ConcurrentHashMap<String, AuthScopedCacheValue>()
     private var nextMediaItemPrefetchJob: Job? = null
     private val remotePlaybackTrackingUrlCache = ConcurrentHashMap<String, String>()
@@ -7014,6 +7029,7 @@ class MusicService :
             contentLength = contentLengthCache[mediaId]?.takeIf { it > 0L }
         } else {
             val lowData = isLowDataModeActive()
+            val (fallbackTitle, fallbackArtist) = playbackFallbackTitleArtist(mediaId)
             val playbackData =
                 retryWithoutPlaybackLoginContext {
                     YTPlayerUtils.playerResponseForPlayback(
@@ -7022,6 +7038,8 @@ class MusicService :
                         connectivityManager = connectivityManager,
                         preferredStreamClient = preferredStreamClient,
                         networkMetered = lowData,
+                        songTitle = fallbackTitle,
+                        songArtist = fallbackArtist,
                     )
                 }.getOrThrow()
             if (lowData) return
@@ -7288,6 +7306,7 @@ class MusicService :
                 }?.let { return }
             if (isPreloadFullyCached(mediaId)) return
             currentCoroutineContext().ensureActive()
+            val (fallbackTitle, fallbackArtist) = playbackFallbackTitleArtist(mediaId)
             val playbackData =
                 retryWithoutPlaybackLoginContext {
                     YTPlayerUtils.playerResponseForPlayback(
@@ -7296,6 +7315,8 @@ class MusicService :
                         connectivityManager = connectivityManager,
                         preferredStreamClient = preferredStreamClient,
                         networkMetered = false,
+                        songTitle = fallbackTitle,
+                        songArtist = fallbackArtist,
                     )
                 }.getOrThrow()
             currentCoroutineContext().ensureActive()
@@ -8026,13 +8047,25 @@ class MusicService :
         // Lossless must be attempted before reusing an in-memory YouTube URL. Nearly every
         // previously played song has an entry in playbackUrlCache; checking that cache first
         // silently locked those songs to Opus/AAC even after Monochrome was enabled.
-        if (!lowDataModeActive && monochromeEnabled) {
+        // Songs the user upgraded from the player menu take the same path per-song,
+        // with the Internet Archive as a second lossless source behind Monochrome.
+        val losslessUpgraded = isLosslessUpgraded(mediaId)
+        if (!lowDataModeActive && (monochromeEnabled || losslessUpgraded)) {
             resolveLosslessDataSpec(
                 dataSpec = dataSpec,
                 mediaId = mediaId,
                 previousFormat = storedFormat,
             )?.let { losslessDataSpec ->
                 return losslessDataSpec
+            }
+            if (losslessUpgraded) {
+                resolveArchiveLosslessDataSpec(
+                    dataSpec = dataSpec,
+                    mediaId = mediaId,
+                    previousFormat = storedFormat,
+                )?.let { archiveDataSpec ->
+                    return archiveDataSpec
+                }
             }
         }
 
@@ -8061,6 +8094,7 @@ class MusicService :
                 } ?: resolvedDataSpec
             }
 
+        val (fallbackTitle, fallbackArtist) = playbackFallbackTitleArtist(mediaId)
         val playbackData =
             runBlocking(Dispatchers.IO) {
                 retryWithoutPlaybackLoginContext {
@@ -8070,6 +8104,8 @@ class MusicService :
                         connectivityManager = connectivityManager,
                         preferredStreamClient = preferredStreamClient,
                         networkMetered = lowDataModeActive,
+                        songTitle = fallbackTitle,
+                        songArtist = fallbackArtist,
                     )
                 }.recoverCatching { youtubeFailure ->
                     if (youtubeFailure !is YTPlayerUtils.BotDetectionPlaybackException) throw youtubeFailure
@@ -8259,6 +8295,218 @@ class MusicService :
             .setUri(resolved.url.toUri())
             .setKey(MonochromeStreamResolver.cacheKeyFor(mediaId))
             .build()
+    }
+
+    /**
+     * Attempts to resolve a lossless stream for a user-upgraded song from
+     * the Internet Archive, the second source behind Monochrome for
+     * per-song upgrades (see [upgradeCurrentSongToLossless]). Only a
+     * genuinely lossless encode counts — the archive also hosts MP3/Ogg
+     * derivatives, and those are not an upgrade. Returns null when the
+     * archive has no confident lossless match so regular YouTube Music
+     * resolution can proceed.
+     *
+     * The returned DataSpec uses the
+     * [InternetArchiveStreamResolver.CACHE_KEY_PREFIX] cache key so
+     * archive bytes never mix with YouTube Music spans in the Media3
+     * caches, and the persisted FormatEntity is replaced exactly like the
+     * Monochrome path replaces it.
+     */
+    private fun resolveArchiveLosslessDataSpec(
+        dataSpec: DataSpec,
+        mediaId: String,
+        previousFormat: FormatEntity?,
+    ): DataSpec? {
+        if (mediaId.startsWith(InternetArchiveStreamResolver.CACHE_KEY_PREFIX)) return dataSpec
+        if (mediaId.startsWith(MonochromeStreamResolver.CACHE_KEY_PREFIX)) return null
+        if (dataSpec.uri.shouldBypassYouTubeResolver()) return null
+        val song =
+            runBlocking(Dispatchers.IO) {
+                database.getSongByIdBlocking(mediaId)
+            } ?: return null
+        if (song.song.isLocal || song.song.isMusicVideo) return null
+        val playbackData =
+            runBlocking(Dispatchers.IO) {
+                withTimeoutOrNull(15_000L) {
+                    InternetArchiveStreamResolver
+                        .resolve(
+                            videoId = mediaId,
+                            audioQuality = audioQuality,
+                            title = song.song.title,
+                            artist = song.artists.firstOrNull()?.name,
+                        ).getOrNull()
+                }
+            } ?: return null
+        if (!isLosslessMimeType(playbackData.format.mimeType)) return null
+
+        val format = playbackData.format
+        database.query {
+            upsert(
+                FormatEntity(
+                    id = mediaId,
+                    itag = format.itag,
+                    mimeType = format.mimeType.substringBefore(";"),
+                    codecs =
+                        format.mimeType
+                            .substringAfter("codecs=", "")
+                            .removeSurrounding("\"")
+                            .substringBefore("\"")
+                            .ifBlank { format.mimeType.substringAfter("/").substringBefore(";") },
+                    bitrate = format.bitrate,
+                    sampleRate = format.audioSampleRate,
+                    contentLength = format.contentLength ?: 0L,
+                    loudnessDb = previousFormat?.loudnessDb,
+                    perceptualLoudnessDb = previousFormat?.perceptualLoudnessDb,
+                    playbackUrl = null,
+                ),
+            )
+        }
+        format.contentLength?.takeIf { it > 0L }?.let { contentLengthCache[mediaId] = it }
+        Timber.tag("ArchiveLossless").d(
+            "Using lossless stream for %s: %s, bitrate=%s",
+            mediaId,
+            format.mimeType,
+            format.bitrate,
+        )
+
+        return dataSpec
+            .buildUpon()
+            .setUri(playbackData.streamUrl.toUri())
+            .setKey(InternetArchiveStreamResolver.cacheKeyFor(mediaId))
+            .build()
+    }
+
+    private val losslessMimeTypes =
+        setOf("audio/flac", "audio/wav", "audio/x-wav", "audio/aiff", "audio/x-aiff")
+
+    /** FLAC/WAV/AIFF/ALAC check on a stream mime type (codecs parameter included). */
+    private fun isLosslessMimeType(mimeType: String): Boolean {
+        val base = mimeType.substringBefore(";").trim().lowercase()
+        if (base in losslessMimeTypes) return true
+        val codecs =
+            mimeType
+                .substringAfter("codecs=", "")
+                .removeSurrounding("\"")
+                .substringBefore("\"")
+                .lowercase()
+        return codecs.contains("flac") || codecs.contains("alac")
+    }
+
+    /**
+     * Player-menu action ("Upgrade to lossless"): switch the currently
+     * playing song to a lossless stream and remember the choice so future
+     * plays take the lossless path in [resolvePlaybackDataSpec].
+     *
+     * Sources are probed in order — Monochrome, then the Internet Archive —
+     * and only a confirmed lossless match changes anything: the song id is
+     * added to [dev.yeshua.player.constants.LosslessUpgradedSongIdsKey] and
+     * the current item is reloaded at the same position so the data source
+     * re-resolves it through the lossless path (which also persists the
+     * lossless FormatEntity, mirroring the Monochrome preference path).
+     * Returns false when no lossless source has the song; playback is then
+     * left completely untouched.
+     */
+    suspend fun upgradeCurrentSongToLossless(): Boolean {
+        val mediaId =
+            withContext(Dispatchers.Main) {
+                runCatching { player.currentMediaItem?.mediaId }.getOrNull()
+            } ?: return false
+        if (mediaId.isLocalMediaId()) return false
+        val song =
+            withContext(Dispatchers.IO) {
+                runCatching { database.getSongByIdBlocking(mediaId) }.getOrNull()
+            } ?: return false
+        if (song.song.isLocal || song.song.isMusicVideo) return false
+
+        val matched =
+            withContext(Dispatchers.IO) {
+                probeMonochromeLossless(
+                    mediaId = mediaId,
+                    title = song.song.title,
+                    artists = song.artists.map { it.name },
+                    durationSec = song.song.duration.takeIf { it > 0 },
+                ) ||
+                    probeArchiveLossless(
+                        mediaId = mediaId,
+                        title = song.song.title,
+                        artist = song.artists.firstOrNull()?.name,
+                    )
+            }
+        if (!matched) return false
+
+        dataStore.edit { prefs ->
+            prefs[dev.yeshua.player.constants.LosslessUpgradedSongIdsKey] =
+                toggleIdSet(
+                    prefs[dev.yeshua.player.constants.LosslessUpgradedSongIdsKey].orEmpty(),
+                    mediaId,
+                    true,
+                )
+        }
+
+        withContext(Dispatchers.Main) {
+            val index = player.currentMediaItemIndex
+            val currentItem = runCatching { player.getMediaItemAt(index) }.getOrNull()
+            if (currentItem != null && currentItem.mediaId == mediaId) {
+                val positionMs = player.currentPosition
+                val shouldPlay = player.playWhenReady
+                player.replaceMediaItem(index, currentItem.buildUpon().build())
+                player.seekTo(index, positionMs)
+                player.playWhenReady = shouldPlay
+            }
+        }
+        return true
+    }
+
+    private suspend fun probeMonochromeLossless(
+        mediaId: String,
+        title: String,
+        artists: List<String>,
+        durationSec: Int?,
+    ): Boolean {
+        val instanceUrl =
+            monochromeInstance.ifBlank {
+                dev.yeshua.player.monochrome.MonochromeAudioProvider.DEFAULT_INSTANCE
+            }
+        return withTimeoutOrNull(10_000L) {
+            MonochromeStreamResolver.resolve(
+                songId = mediaId,
+                title = title,
+                artists = artists,
+                durationSec = durationSec,
+                instanceUrl = instanceUrl,
+            )
+        } != null
+    }
+
+    private suspend fun probeArchiveLossless(
+        mediaId: String,
+        title: String,
+        artist: String?,
+    ): Boolean {
+        val playbackData =
+            InternetArchiveStreamResolver
+                .resolve(
+                    videoId = mediaId,
+                    audioQuality = audioQuality,
+                    title = title,
+                    artist = artist,
+                ).getOrNull() ?: return false
+        return isLosslessMimeType(playbackData.format.mimeType)
+    }
+
+    /**
+     * Title/artist for the no-login playback fallbacks in
+     * [YTPlayerUtils.playerResponseForPlayback] (the Internet Archive
+     * searches by metadata and has no YouTube-ID lookup), read from the
+     * local database the same way DownloadUtil feeds the download chain.
+     */
+    private fun playbackFallbackTitleArtist(mediaId: String): Pair<String?, String?> {
+        val song =
+            runBlocking(Dispatchers.IO) {
+                runCatching { database.getSongByIdBlocking(mediaId) }.getOrNull()
+            } ?: return null to null
+        return song.song.title.takeIf { it.isNotBlank() } to
+            song.artists.firstOrNull()?.name?.takeIf { it.isNotBlank() }
     }
 
     private fun FormatEntity?.hasDisplayablePlaybackDetails(): Boolean {

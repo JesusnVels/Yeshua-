@@ -316,6 +316,12 @@ val PinnedSettingsKeysKey = stringSetPreferencesKey("pinned_settings_keys")
 val MonochromeEnabledKey = booleanPreferencesKey("monochromeEnabled")
 val MonochromeInstanceKey = stringPreferencesKey("monochromeInstance")
 
+// Song ids the user explicitly upgraded to lossless from the player menu,
+// stored as a newline-joined id set (same format as NeverRecommendSongIdsKey,
+// see parseIdSet/serializeIdSet). Kept apart from MonochromeEnabledKey:
+// that one is a global source toggle, this one is a per-song choice.
+val LosslessUpgradedSongIdsKey = stringPreferencesKey("losslessUpgradedSongIds")
+
 enum class PlayerStreamClient {
     VISION_OS,
     ANDROID_VR,

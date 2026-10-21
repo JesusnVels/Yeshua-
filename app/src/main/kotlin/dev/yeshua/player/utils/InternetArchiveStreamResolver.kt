@@ -46,6 +46,16 @@ import java.net.URLEncoder
  * the regular ExoPlayer stack consumes them unchanged.
  */
 internal object InternetArchiveStreamResolver {
+    /**
+     * Dedicated cache key prefix for Internet Archive streams resolved at
+     * the data-spec level (per-song lossless upgrades), mirroring
+     * MonochromeStreamResolver's scheme so archive bytes never mix with
+     * YouTube Music spans in the Media3 caches for the same song.
+     */
+    const val CACHE_KEY_PREFIX = "archive:"
+
+    fun cacheKeyFor(songId: String): String = CACHE_KEY_PREFIX + songId
+
     private const val TAG = "ArchiveOrgFallback"
     private const val RESOLVE_TIMEOUT_MS = 15_000L
     private const val DEFAULT_STREAM_EXPIRY_SECONDS = 21_000

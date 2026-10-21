@@ -335,6 +335,10 @@ fun PlayerMenu(
         mutableStateOf(false)
     }
 
+    var upgradingToLossless by rememberSaveable {
+        mutableStateOf(false)
+    }
+
     var showEqualizerDialog by rememberSaveable {
         mutableStateOf(false)
     }
@@ -1079,6 +1083,82 @@ fun PlayerMenu(
                                 },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(start = 56.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                        )
+
+                        // Upgrade to lossless: shown only when the stored
+                        // format isn't already lossless (FLAC/WAV/AIFF/ALAC,
+                        // same codecs the format label treats as lossless).
+                        // Tapping probes Monochrome, then the Internet
+                        // Archive, inside MusicService and swaps playback
+                        // onto the lossless stream when one matches.
+                        val storedFormat by
+                            database.format(mediaMetadata.id).collectAsState(initial = null)
+                        val alreadyLossless =
+                            storedFormat?.let { format ->
+                                val mime = format.mimeType.lowercase()
+                                mime in
+                                    setOf(
+                                        "audio/flac",
+                                        "audio/wav",
+                                        "audio/x-wav",
+                                        "audio/aiff",
+                                        "audio/x-aiff",
+                                    ) ||
+                                    format.codecs.lowercase().contains("flac") ||
+                                    format.codecs.lowercase().contains("alac")
+                            } ?: false
+                        if (!isLocalMedia && !alreadyLossless) {
+                            ListItem(
+                                headlineContent = {
+                                    Text(text = stringResource(R.string.upgrade_to_lossless))
+                                },
+                                leadingContent = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.waves),
+                                        contentDescription = null,
+                                    )
+                                },
+                                supportingContent = {
+                                    Text(
+                                        text =
+                                            stringResource(
+                                                R.string.upgrade_to_lossless_subtitle,
+                                            ),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                },
+                                modifier =
+                                    Modifier.clickable(enabled = !upgradingToLossless) {
+                                        upgradingToLossless = true
+                                        coroutineScope.launch {
+                                            val upgraded =
+                                                playerConnection.service
+                                                    .upgradeCurrentSongToLossless()
+                                            upgradingToLossless = false
+                                            Toast.makeText(
+                                                    context,
+                                                    if (upgraded) {
+                                                        R.string.upgrade_lossless_success
+                                                    } else {
+                                                        R.string.upgrade_lossless_not_found
+                                                    },
+                                                    Toast.LENGTH_SHORT,
+                                                )
+                                                .show()
+                                            if (upgraded) onDismiss()
+                                        }
+                                    },
+                                colors =
+                                    ListItemDefaults.colors(
+                                        containerColor = Color.Transparent,
+                                    ),
+                            )
+                        }
                     }
                 }
             }

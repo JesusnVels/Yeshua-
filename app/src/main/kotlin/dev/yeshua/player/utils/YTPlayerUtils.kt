@@ -682,6 +682,11 @@ object YTPlayerUtils {
         preferredStreamClient: PlayerStreamClient = PlayerStreamClient.WEB_REMIX,
         // if provided, this preference overrides ConnectivityManager.isActiveNetworkMetered
         networkMetered: Boolean? = null,
+        // song metadata used only by the no-login fallbacks below (Internet
+        // Archive has no YouTube-ID lookup and searches by title/artist);
+        // callers that know the song pass them from the local database
+        songTitle: String? = null,
+        songArtist: String? = null,
     ): Result<PlaybackData> {
         // NOTE: never substitute another id for videoId here. The set_video_id
         // table holds YouTube *playlist-entry* tokens (for playlist removal),
@@ -709,23 +714,93 @@ object YTPlayerUtils {
                     authFingerprint = YouTube.currentPlaybackAuthState().fingerprint,
                 )
             getCachedPlaybackData(currentKey)?.let { return@withLock Result.success(it) }
-            resolvePlaybackData(
-                videoId = videoId,
-                playlistId = playlistId,
-                audioQuality = audioQuality,
-                connectivityManager = connectivityManager,
-                preferredStreamClient = preferredStreamClient,
-                networkMetered = isMetered,
-            ).onSuccess { playbackData ->
+            val innerTubeResult =
+                resolvePlaybackData(
+                    videoId = videoId,
+                    playlistId = playlistId,
+                    audioQuality = audioQuality,
+                    connectivityManager = connectivityManager,
+                    preferredStreamClient = preferredStreamClient,
+                    networkMetered = isMetered,
+                )
+            if (innerTubeResult.isSuccess) {
+                val playbackData = innerTubeResult.getOrThrow()
                 cachePlaybackData(
                     key = currentKey.copy(authFingerprint = playbackData.authFingerprint),
                     playbackData = playbackData,
                 )
-            }.also { result ->
-                val failure = result.exceptionOrNull()
-                if (failure is CancellationException) throw failure
+                return@withLock innerTubeResult
             }
+            val failure = innerTubeResult.exceptionOrNull()
+            if (failure is CancellationException) throw failure
+
+            // No-login fallbacks: YouTube refused this song on every client,
+            // so try the public sources that need no account before giving
+            // up. When they all miss, the original InnerTube failure is
+            // returned untouched so callers keep the exact failure semantics
+            // (bot detection, login-recovery prompts, auth repair retries).
+            val fallbackData =
+                resolveNoLoginFallbacks(
+                    videoId = videoId,
+                    audioQuality = audioQuality,
+                    songTitle = songTitle,
+                    songArtist = songArtist,
+                )
+            if (fallbackData != null) {
+                cachePlaybackData(
+                    key = currentKey.copy(authFingerprint = fallbackData.authFingerprint),
+                    playbackData = fallbackData,
+                )
+                return@withLock Result.success(fallbackData)
+            }
+            innerTubeResult
         }
+    }
+
+    /**
+     * Last-resort playback sources that require no YouTube login: Piped,
+     * then Invidious (both resolve by video id), then the Internet Archive
+     * (matched by title/artist). Returns null when every source misses so
+     * the caller can surface the original InnerTube failure unchanged.
+     */
+    private suspend fun resolveNoLoginFallbacks(
+        videoId: String,
+        audioQuality: AudioQuality,
+        songTitle: String?,
+        songArtist: String?,
+    ): PlaybackData? {
+        val pipedResult = PipedStreamResolver.resolve(videoId, audioQuality)
+        if (pipedResult.isSuccess) {
+            Timber.tag(logTag).i("No-login fallback: Piped resolved %s after InnerTube failure", videoId)
+            return pipedResult.getOrThrow()
+        }
+        pipedResult.exceptionOrNull()?.let { error ->
+            if (error is CancellationException) throw error
+            Timber.tag(logTag).w(error, "No-login fallback: Piped failed for %s, trying Invidious", videoId)
+        }
+
+        val invidiousResult = InvidiousStreamResolver.resolve(videoId, audioQuality)
+        if (invidiousResult.isSuccess) {
+            Timber.tag(logTag).i("No-login fallback: Invidious resolved %s after InnerTube failure", videoId)
+            return invidiousResult.getOrThrow()
+        }
+        invidiousResult.exceptionOrNull()?.let { error ->
+            if (error is CancellationException) throw error
+            Timber.tag(logTag).w(error, "No-login fallback: Invidious failed for %s, trying Internet Archive", videoId)
+        }
+
+        val archiveResult =
+            InternetArchiveStreamResolver.resolve(videoId, audioQuality, songTitle, songArtist)
+        if (archiveResult.isSuccess) {
+            Timber.tag(logTag).i("No-login fallback: Internet Archive resolved %s after InnerTube failure", videoId)
+            return archiveResult.getOrThrow()
+        }
+        archiveResult.exceptionOrNull()?.let { error ->
+            if (error is CancellationException) throw error
+            Timber.tag(logTag).w(error, "No-login fallback: Internet Archive failed for %s", videoId)
+        }
+
+        return null
     }
 
     private suspend fun resolvePlaybackData(
@@ -847,8 +922,8 @@ object YTPlayerUtils {
 
             // NewPipe-first: upstream-maintained decipher with unthrottled URLs.
             // Falls through to the FLOSS API resolvers (Piped, Invidious, Navidrome,
-            // Internet Archive), then to InnerTube (which carries login context)
-            // on failure.
+            // Internet Archive, Audius), then to InnerTube (which carries login
+            // context) on failure.
             val newPipeResult = NewPipeStreamResolver.resolve(videoId, audioQuality)
             if (newPipeResult.isSuccess) return@runCatching newPipeResult.getOrThrow()
             Timber.tag(logTag).w(
@@ -891,7 +966,19 @@ object YTPlayerUtils {
             if (archiveResult.isSuccess) return@runCatching archiveResult.getOrThrow()
             Timber.tag(logTag).w(
                 archiveResult.exceptionOrNull(),
-                "Internet Archive resolution failed for %s, falling back to InnerTube clients",
+                "Internet Archive resolution failed for %s, falling back to Audius",
+                videoId,
+            )
+
+            // Audius: free public catalog (no key, no account); matched by
+            // title/artist. Streams are 320 kbps MP3 — high-quality lossy,
+            // so this is a coverage fallback, never a quality upgrade.
+            val audiusResult =
+                AudiusStreamResolver.resolve(videoId, audioQuality, songTitle, songArtist)
+            if (audiusResult.isSuccess) return@runCatching audiusResult.getOrThrow()
+            Timber.tag(logTag).w(
+                audiusResult.exceptionOrNull(),
+                "Audius resolution failed for %s, falling back to InnerTube clients",
                 videoId,
             )
 

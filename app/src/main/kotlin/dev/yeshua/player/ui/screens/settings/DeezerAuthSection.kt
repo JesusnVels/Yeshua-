@@ -72,33 +72,39 @@ fun DeezerAuthSection() {
     val signedIn = arl.isNotBlank()
 
     PreferenceGroup(title = stringResource(R.string.deezer_source)) {
-        SwitchPreference(
-            title = { Text(stringResource(R.string.deezer)) },
-            description =
-                if (signedIn) {
-                    accountName.ifBlank { stringResource(R.string.deezer_signed_in) }
-                } else {
-                    stringResource(R.string.deezer_sign_in_subtitle)
-                },
-            checked = enabled && signedIn,
-            onCheckedChange = onEnabledChange,
-            isEnabled = signedIn,
-        )
+        item {
+            SwitchPreference(
+                title = { Text(stringResource(R.string.deezer)) },
+                description =
+                    if (signedIn) {
+                        accountName.ifBlank { stringResource(R.string.deezer_signed_in) }
+                    } else {
+                        stringResource(R.string.deezer_sign_in_subtitle)
+                    },
+                checked = enabled && signedIn,
+                onCheckedChange = onEnabledChange,
+                isEnabled = signedIn,
+            )
+        }
         if (signedIn) {
-            PreferenceEntry(
-                title = { Text(stringResource(R.string.deezer_sign_out)) },
-                onClick = {
-                    onArlChange("")
-                    onAccountNameChange("")
-                    onEnabledChange(false)
-                },
-            )
+            item {
+                PreferenceEntry(
+                    title = { Text(stringResource(R.string.deezer_sign_out)) },
+                    onClick = {
+                        onArlChange("")
+                        onAccountNameChange("")
+                        onEnabledChange(false)
+                    },
+                )
+            }
         } else {
-            PreferenceEntry(
-                title = { Text(stringResource(R.string.deezer_sign_in)) },
-                description = stringResource(R.string.deezer_sign_in_subtitle),
-                onClick = { showLogin = true },
-            )
+            item {
+                PreferenceEntry(
+                    title = { Text(stringResource(R.string.deezer_sign_in)) },
+                    description = stringResource(R.string.deezer_sign_in_subtitle),
+                    onClick = { showLogin = true },
+                )
+            }
         }
     }
 

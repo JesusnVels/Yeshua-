@@ -3105,7 +3105,7 @@ private fun V8QualityChip(
     // quality/source chooser for the current song whenever a player
     // connection is available and the song is a stream (not a local file).
     val chooserEnabled =
-        playerConnection != null && !isLocalMediaId(currentFormat.id)
+        playerConnection != null && !currentFormat.id.isLocalMediaId()
 
     Surface(
         onClick = { if (chooserEnabled) showChooser = true },

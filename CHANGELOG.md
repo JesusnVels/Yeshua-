@@ -3,6 +3,15 @@
 All notable changes to Yeshua, newest first. Each entry matches one
 pushed update so the GitHub history reads cleanly.
 
+## 2026-10-22 — Fix Tempo import foreground-service crash
+- **Fixed imports crashing the moment they start**: the import
+  worker promotes itself to a dataSync foreground service, but
+  WorkManager's service was not declared with that type in the
+  manifest, so Android killed it ("foregroundServiceType 0x1 is
+  not a subset of 0x0"). The manifest now declares
+  SystemForegroundService with foregroundServiceType="dataSync"
+  (merged over the library declaration).
+
 ## 2026-10-22 — Tempo importer checkpoint half (build fix)
 - **Fixed the fork build failing in StatsViewModel**: the
   resumable-import half in the importer never landed in the tree —

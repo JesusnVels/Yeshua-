@@ -255,6 +255,17 @@
             </intent-filter>
         </service>
 
+        <!-- WorkManager's foreground service. Tempo imports promote their
+             worker to a dataSync foreground service; the WorkManager library
+             manifest declares this service with no foregroundServiceType,
+             and Android refuses to start it with a type the manifest does
+             not list ("foregroundServiceType 0x1 is not a subset of
+             0x0") — so the type is merged in here. -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
+
         <service
             android:name="androidx.media3.exoplayer.scheduler.PlatformScheduler$PlatformSchedulerService"
             android:exported="true"

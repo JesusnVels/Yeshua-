@@ -3,6 +3,24 @@
 All notable changes to Yeshua, newest first. Each entry matches one
 pushed update so the GitHub history reads cleanly.
 
+## 2026-10-22 — Gradle fix for the Drive dependencies
+- **Fixed the build script failing to compile** (fork build, 73s):
+  the two Google API dependency declarations used a configuration
+  lambda this project's `add()` calls don't accept. They are now
+  plain declarations, and the Apache HttpClient exclusion moved
+  into the existing `configurations` block, scoped to
+  gmsImplementation — same effect, valid syntax.
+
+## 2026-10-21 — Qobuz web login stuck-checking fix
+- **Fixed the Qobuz sign-in dialog checking forever**: if token
+  validation timed out or was cancelled, the exception escaped and
+  the dialog's "checking" state never cleared — spinner forever,
+  button disabled, retries ignored. The check now always clears its
+  state, treats a timed-out validation as a failed check (with the
+  error shown), caps the page-storage read at 3s, and never
+  re-validates a token that already failed — a fresh sign-in's new
+  token is still picked up automatically.
+
 ## 2026-10-21 — Notification + Drive wiring fixes
 - **Import progress notification hardened**: the running notification
   is now posted directly at import start, not only through the

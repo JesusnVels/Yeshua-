@@ -334,12 +334,8 @@ dependencies {
     add("gmsImplementation", libs.credentials.play.services.auth)
     add("gmsImplementation", libs.googleid)
     add("gmsImplementation", libs.play.services.auth)
-    add("gmsImplementation", libs.google.api.client.android) {
-        exclude(group = "org.apache.httpcomponents")
-    }
-    add("gmsImplementation", libs.google.api.services.drive) {
-        exclude(group = "org.apache.httpcomponents")
-    }
+    add("gmsImplementation", libs.google.api.client.android)
+    add("gmsImplementation", libs.google.api.services.drive)
     add("gmsImplementation", libs.google.http.client.gson)
     add("gmsImplementation", libs.security.crypto)
 
@@ -460,6 +456,13 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 configurations.configureEach {
+    // The Google API client drags in the legacy Apache HttpClient, whose
+    // classes the app already gets from the platform legacy library
+    // (see the manifest's org.apache.http.legacy useLibrary) — keep the
+    // bundled copy out of the gms configuration to avoid duplicate classes.
+    if (name == "gmsImplementation") {
+        exclude(group = "org.apache.httpcomponents")
+    }
     resolutionStrategy.force(
         "androidx.compose.runtime:runtime:${libs.versions.compose.get()}",
         "androidx.compose.foundation:foundation:${libs.versions.compose.get()}",

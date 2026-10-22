@@ -39,6 +39,7 @@ import kotlin.coroutines.resume
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import org.json.JSONObject
 
 /**
@@ -56,6 +57,9 @@ data class QobuzCapturedAccount(
 )
 
 private const val QOBUZ_LOGIN_URL = "https://play.qobuz.com/login"
+
+/** Cap on reading the page storage; a WebView mid-navigation may never answer. */
+private const val QOBUZ_EXTRACT_TIMEOUT_MS = 3_000L
 
 /**
  * Desktop Chrome user agent for the login WebView. Google's sign-in
@@ -144,26 +148,46 @@ fun QobuzWebLoginDialog(
     var validating by remember { mutableStateOf(false) }
     var handled by remember { mutableStateOf(false) }
     var errorText by remember { mutableStateOf<String?>(null) }
+    var lastFailedToken by remember { mutableStateOf<String?>(null) }
 
     fun capture() {
         val view = webView ?: return
         if (validating || handled) return
         validating = true
         scope.launch {
-            val account = runCatching { extractQobuzAccount(view) }.getOrNull()
-            if (account == null) {
-                // Not signed in yet — stay quiet and let polling retry.
+            try {
+                val account =
+                    runCatching {
+                        withTimeoutOrNull(QOBUZ_EXTRACT_TIMEOUT_MS) { extractQobuzAccount(view) }
+                    }.getOrNull()
+                if (account == null) {
+                    // Not signed in yet — stay quiet and let polling retry.
+                    return@launch
+                }
+                if (account.userAuthToken == lastFailedToken) {
+                    // This exact token already failed validation once; don't
+                    // spin re-checking it on every poll. A fresh sign-in
+                    // produces a new token, which is picked up when it lands.
+                    return@launch
+                }
+                // runCatching on purpose: validateToken rethrows timeouts as
+                // CancellationException, which previously escaped this launch
+                // and left `validating` true forever — the dialog stuck on
+                // "Checking your Qobuz account…" with its button disabled.
+                val valid =
+                    runCatching { QobuzStreamResolver.validateToken(account.userAuthToken) }
+                        .getOrDefault(false)
+                if (valid) {
+                    handled = true
+                    errorText = null
+                    onTokenCaptured(account)
+                } else {
+                    lastFailedToken = account.userAuthToken
+                    errorText = signInFailedText
+                }
+            } finally {
                 validating = false
-                return@launch
             }
-            if (QobuzStreamResolver.validateToken(account.userAuthToken)) {
-                handled = true
-                errorText = null
-                onTokenCaptured(account)
-            } else {
-                errorText = signInFailedText
-            }
-            validating = false
         }
     }
 

@@ -39,6 +39,18 @@ The in-app updater checks **this repository only** — releases, build runs, and
 
 ## Updates
 
+### 2026-10-22 — Reliability & build fixes
+
+- Tempo import: the resumable importer's checkpoint system is fully in
+  place (an interrupted import now genuinely resumes where it stopped),
+  and the live progress notification posts reliably at import start.
+- Qobuz web sign-in no longer gets stuck on "Checking your Qobuz
+  account…" — a timed-out check now surfaces as an error instead of a
+  permanent spinner.
+- Build pipeline: fixed the Gradle script failure the Drive
+  dependencies introduced, and universal release builds are signed
+  again.
+
 ### 2026-10-21 — Tempo import from Google Drive + live progress notification
 - Pull Tempo backups straight from your Google Drive ("Tempo Backups" folder) after a one-time Google sign-in — no manual export. Re-picking an unchanged backup returns instantly as already imported.
 - Every Tempo import now runs as a foreground service with a live progress notification (download %, then plays processed), so it keeps running with the app closed.

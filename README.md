@@ -47,6 +47,7 @@ The in-app updater checks **this repository only** — releases, build runs, and
 - Qobuz web sign-in no longer gets stuck on "Checking your Qobuz
   account…" — a timed-out check now surfaces as an error instead of a
   permanent spinner.
+- Fixed Tempo imports crashing the moment they start (the foreground-service type the import worker uses is now declared in the manifest).
 - Build pipeline: fixed the Gradle script failure the Drive
   dependencies introduced, and universal release builds are signed
   again.

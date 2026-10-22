@@ -3,6 +3,16 @@
 All notable changes to Yeshua, newest first. Each entry matches one
 pushed update so the GitHub history reads cleanly.
 
+## 2026-10-22 — Tempo importer checkpoint half (build fix)
+- **Fixed the fork build failing in StatsViewModel**: the
+  resumable-import half in the importer never landed in the tree —
+  the view model reads a durable import checkpoint
+  (`readCheckpoint`) that the importer did not provide. The
+  importer now ships complete: durable checkpoint every 100 plays,
+  chunked writes, parallel YouTube matching (4 at a time), and the
+  per-song already-imported check — the resume + speed update as
+  designed.
+
 ## 2026-10-22 — Gradle fix for the Drive dependencies
 - **Fixed the build script failing to compile** (fork build, 73s):
   the two Google API dependency declarations used a configuration

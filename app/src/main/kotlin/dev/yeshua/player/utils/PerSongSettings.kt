@@ -75,7 +75,6 @@ fun neverRecommendIds(): Set<String> = parseIdSet(PreferenceStore.get(NeverRecom
 const val LOSSLESS_SOURCE_MONOCHROME = "monochrome"
 const val LOSSLESS_SOURCE_QOBUZ = "qobuz"
 const val LOSSLESS_SOURCE_TIDAL = "tidal"
-const val LOSSLESS_SOURCE_DEEZER = "deezer"
 const val LOSSLESS_SOURCE_ARCHIVE = "archive"
 
 /** Value recorded for a song whose current stream came from YouTube Music itself. */
@@ -87,7 +86,6 @@ val LOSSLESS_SOURCE_ORDER =
         LOSSLESS_SOURCE_MONOCHROME,
         LOSSLESS_SOURCE_QOBUZ,
         LOSSLESS_SOURCE_TIDAL,
-        LOSSLESS_SOURCE_DEEZER,
         LOSSLESS_SOURCE_ARCHIVE,
     )
 

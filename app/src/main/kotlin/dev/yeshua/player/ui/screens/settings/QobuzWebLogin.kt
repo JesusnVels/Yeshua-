@@ -54,6 +54,8 @@ data class QobuzCapturedAccount(
     val email: String?,
     val displayName: String?,
     val subscriptionLabel: String?,
+    /** Session cookies from the player's domains, as one Cookie header value. Also a credential. */
+    val cookies: String? = null,
 )
 
 private const val QOBUZ_LOGIN_URL = "https://play.qobuz.com/login"
@@ -74,17 +76,46 @@ private const val QOBUZ_DESKTOP_USER_AGENT =
         "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
 
 /**
- * JS run in the Qobuz player page: scans localStorage and
- * sessionStorage for the persisted `user_auth_token` (the web player
- * keeps its session in redux-persist state after any sign-in, email
- * or Google), falling back to document.cookie. Returns a small JSON
- * string with the token plus whatever profile fields the same blob
- * exposes, or an empty string when the user isn't signed in yet.
+ * JS run in the Qobuz player page: reads the player's session after
+ * any sign-in (email or Google). The current player keeps it in
+ * localStorage under `localuser` — an object whose token field is
+ * named `token`, with the profile nested under `user` — so that key
+ * is tried first; the value may itself be a JSON-encoded string, so
+ * it is parsed twice when needed. Falls back to scanning localStorage
+ * and sessionStorage for the older persisted `user_auth_token`
+ * (redux-persist state), then to document.cookie. Returns a small
+ * JSON string with the token plus whatever profile fields the same
+ * blob exposes, or an empty string when the user isn't signed in yet.
  * Persisted values are often JSON strings nested inside JSON, so the
  * text is unescaped once before the field regexes run.
  */
 private const val QOBUZ_EXTRACT_SCRIPT = """
 (function () {
+  function extractFromLocalUser() {
+    var raw = null;
+    try { raw = window.localStorage.getItem('localuser'); } catch (e) {}
+    if (!raw) return null;
+    var obj = null;
+    try { obj = JSON.parse(raw); } catch (e) {}
+    if (typeof obj === 'string') {
+      try { obj = JSON.parse(obj); } catch (e) { obj = null; }
+    }
+    if (!obj || typeof obj !== 'object') return null;
+    var token = obj.token || obj.user_auth_token;
+    if (!token) return null;
+    var out = { token: token };
+    var user = obj.user || obj;
+    var email = user.email;
+    if (email) out.email = email;
+    var display = ((user.firstname || '') + ' ' + (user.lastname || '')).trim();
+    if (!display) display = user.display_name || '';
+    if (display) out.displayName = display;
+    var credential = user.credential || {};
+    var params = credential.parameters || {};
+    var label = params.short_label || user.short_label;
+    if (label) out.subscriptionLabel = label;
+    return out;
+  }
   function extractFromText(text) {
     if (!text || text.indexOf('user_auth_token') === -1) return null;
     var norm = text.replace(/\\(.)/g, function (m, c) { return c; });
@@ -115,7 +146,7 @@ private const val QOBUZ_EXTRACT_SCRIPT = """
     } catch (e) {}
     return null;
   }
-  var account = scanStore(window.localStorage) || scanStore(window.sessionStorage);
+  var account = extractFromLocalUser() || scanStore(window.localStorage) || scanStore(window.sessionStorage);
   if (!account && document.cookie && document.cookie.indexOf('user_auth_token') !== -1) {
     var m = document.cookie.match(/user_auth_token=([^;]+)/);
     if (m) {
@@ -164,6 +195,9 @@ fun QobuzWebLoginDialog(
                     // Not signed in yet — stay quiet and let polling retry.
                     return@launch
                 }
+                // Grab the player's session cookies too: parts of the web
+                // API key off them, and they ride along with the token.
+                val signedInAccount = account.copy(cookies = grabQobuzCookies())
                 if (account.userAuthToken == lastFailedToken) {
                     // This exact token already failed validation once; don't
                     // spin re-checking it on every poll. A fresh sign-in
@@ -175,12 +209,16 @@ fun QobuzWebLoginDialog(
                 // and left `validating` true forever — the dialog stuck on
                 // "Checking your Qobuz account…" with its button disabled.
                 val valid =
-                    runCatching { QobuzStreamResolver.validateToken(account.userAuthToken) }
-                        .getOrDefault(false)
+                    runCatching {
+                        QobuzStreamResolver.validateToken(
+                            signedInAccount.userAuthToken,
+                            signedInAccount.cookies,
+                        )
+                    }.getOrDefault(false)
                 if (valid) {
                     handled = true
                     errorText = null
-                    onTokenCaptured(account)
+                    onTokenCaptured(signedInAccount)
                 } else {
                     lastFailedToken = account.userAuthToken
                     errorText = signInFailedText
@@ -272,6 +310,23 @@ private suspend fun extractQobuzAccount(webView: WebView): QobuzCapturedAccount?
             }
         }
     }
+
+/**
+ * The session cookies the WebView holds for Qobuz's domains, merged
+ * into a single Cookie header value. HttpOnly cookies never reach the
+ * extraction script, so these come from [CookieManager] instead.
+ */
+private fun grabQobuzCookies(): String? {
+    val cookieManager = CookieManager.getInstance()
+    val merged =
+        listOf("https://play.qobuz.com", "https://www.qobuz.com")
+            .mapNotNull { url -> runCatching { cookieManager.getCookie(url) }.getOrNull() }
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .distinct()
+            .joinToString("; ")
+    return merged.takeIf { it.isNotBlank() }
+}
 
 private fun parseQobuzExtractResult(raw: String): QobuzCapturedAccount? {
     // evaluateJavascript hands the JS string back JSON-encoded (quoted

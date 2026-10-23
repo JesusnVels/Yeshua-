@@ -327,6 +327,7 @@ val LosslessUpgradedSongIdsKey = stringPreferencesKey("losslessUpgradedSongIds")
 // settings. App id/secret are overrides for when Qobuz rotates its
 // web-player keys; blank = the bundled extracted pair.
 val QobuzAuthTokenKey = stringPreferencesKey("qobuzAuthToken")
+val QobuzCookiesKey = stringPreferencesKey("qobuzCookies")
 val QobuzEmailKey = stringPreferencesKey("qobuzEmail")
 val QobuzDisplayNameKey = stringPreferencesKey("qobuzDisplayName")
 val QobuzSubscriptionLabelKey = stringPreferencesKey("qobuzSubscriptionLabel")
@@ -339,14 +340,6 @@ val TidalAccessTokenKey = stringPreferencesKey("tidalAccessToken")
 val TidalRefreshTokenKey = stringPreferencesKey("tidalRefreshToken")
 val TidalCountryCodeKey = stringPreferencesKey("tidalCountryCode")
 val TidalUserIdKey = longPreferencesKey("tidalUserId")
-
-// Deezer account (the user's own login): the arl session cookie captured
-// from the in-app WebView sign-in, the display name shown in settings,
-// and the master toggle gating both resolver chains. The arl is a
-// credential — never log it.
-val DeezerArlKey = stringPreferencesKey("deezerArl")
-val DeezerAccountNameKey = stringPreferencesKey("deezerAccountName")
-val DeezerEnabledKey = booleanPreferencesKey("deezerEnabled")
 
 // Per-song pinned lossless source for upgraded songs: a tab map of
 // newline-joined "songId<TAB>sourceId" lines (same format family as

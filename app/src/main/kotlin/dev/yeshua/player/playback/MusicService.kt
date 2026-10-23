@@ -11,7 +11,6 @@ package dev.yeshua.player.playback
 
 import dev.yeshua.player.constants.NeverRecommendSongIdsKey
 import dev.yeshua.player.utils.LOSSLESS_SOURCE_ARCHIVE
-import dev.yeshua.player.utils.LOSSLESS_SOURCE_DEEZER
 import dev.yeshua.player.utils.LOSSLESS_SOURCE_MONOCHROME
 import dev.yeshua.player.utils.LOSSLESS_SOURCE_ORDER
 import dev.yeshua.player.utils.LOSSLESS_SOURCE_QOBUZ
@@ -273,7 +272,6 @@ import dev.yeshua.player.ui.screens.settings.DiscordPresenceManager
 import dev.yeshua.player.ui.screens.settings.ListenBrainzManager
 import dev.yeshua.player.utils.AuthScopedCacheValue
 import dev.yeshua.player.utils.CoilBitmapLoader
-import dev.yeshua.player.utils.DeezerStreamResolver
 import dev.yeshua.player.utils.InternetArchiveStreamResolver
 import dev.yeshua.player.utils.QobuzStreamResolver
 import dev.yeshua.player.utils.TidalStreamResolver
@@ -8045,14 +8043,9 @@ class MusicService :
 
     private fun createResolvedUpstreamDataSourceFactory(): DataSource.Factory {
         val youtubeMediaFactory =
-            // Deezer streams arrive Blowfish-encrypted; the wrapper
-            // decrypts specs keyed "deezer:<songId>" on open and passes
-            // every other source through untouched.
-            DeezerDecryptingDataSource.Factory(
-                DefaultDataSource.Factory(
-                    this,
-                    OkHttpDataSource.Factory(mediaOkHttpClient),
-                ),
+            DefaultDataSource.Factory(
+                this,
+                OkHttpDataSource.Factory(mediaOkHttpClient),
             )
 
         return ResolvingDataSource.Factory(youtubeMediaFactory) { dataSpec ->
@@ -8165,7 +8158,7 @@ class MusicService :
         // Songs the user upgraded from the player menu take the same path per-song:
         // the source pinned for the song in the quality/source chooser goes
         // first, then the remaining sources in LOSSLESS_SOURCE_ORDER
-        // (Monochrome, Qobuz, Tidal, Deezer, Internet Archive). Songs that
+        // (Monochrome, Qobuz, Tidal, Internet Archive). Songs that
         // are not upgraded only get the Monochrome attempt, and only when
         // the global Monochrome preference is on.
         val losslessUpgraded = isLosslessUpgraded(mediaId)
@@ -8197,13 +8190,6 @@ class MusicService :
 
                         LOSSLESS_SOURCE_TIDAL ->
                             resolveTidalLosslessDataSpec(
-                                dataSpec = dataSpec,
-                                mediaId = mediaId,
-                                previousFormat = storedFormat,
-                            )
-
-                        LOSSLESS_SOURCE_DEEZER ->
-                            resolveDeezerLosslessDataSpec(
                                 dataSpec = dataSpec,
                                 mediaId = mediaId,
                                 previousFormat = storedFormat,
@@ -8487,7 +8473,6 @@ class MusicService :
         if (mediaId.startsWith(MonochromeStreamResolver.CACHE_KEY_PREFIX)) return null
         if (mediaId.startsWith(QobuzStreamResolver.CACHE_KEY_PREFIX)) return null
         if (mediaId.startsWith(TidalStreamResolver.CACHE_KEY_PREFIX)) return null
-        if (mediaId.startsWith(DeezerStreamResolver.CACHE_KEY_PREFIX)) return null
         if (dataSpec.uri.shouldBypassYouTubeResolver()) return null
         val song =
             runBlocking(Dispatchers.IO) {
@@ -8569,7 +8554,6 @@ class MusicService :
         if (mediaId.startsWith(MonochromeStreamResolver.CACHE_KEY_PREFIX)) return null
         if (mediaId.startsWith(InternetArchiveStreamResolver.CACHE_KEY_PREFIX)) return null
         if (mediaId.startsWith(TidalStreamResolver.CACHE_KEY_PREFIX)) return null
-        if (mediaId.startsWith(DeezerStreamResolver.CACHE_KEY_PREFIX)) return null
         if (dataSpec.uri.shouldBypassYouTubeResolver()) return null
         val authToken = qobuzAuthToken.trim().takeIf { it.isNotBlank() } ?: return null
         val song =
@@ -8651,7 +8635,6 @@ class MusicService :
         if (mediaId.startsWith(MonochromeStreamResolver.CACHE_KEY_PREFIX)) return null
         if (mediaId.startsWith(QobuzStreamResolver.CACHE_KEY_PREFIX)) return null
         if (mediaId.startsWith(InternetArchiveStreamResolver.CACHE_KEY_PREFIX)) return null
-        if (mediaId.startsWith(DeezerStreamResolver.CACHE_KEY_PREFIX)) return null
         if (dataSpec.uri.shouldBypassYouTubeResolver()) return null
         val song =
             runBlocking(Dispatchers.IO) {
@@ -8709,93 +8692,6 @@ class MusicService :
             .build()
     }
 
-    /**
-     * Attempts to resolve a lossless stream for a user-upgraded song from
-     * the user's own Deezer account (see [upgradeCurrentSongToLossless]).
-     * Only a genuine FLAC hit counts — a free account's MP3 is not an
-     * upgrade, and signed-out users skip instantly because the resolver
-     * fails fast without an arl.
-     *
-     * The returned DataSpec uses the
-     * [DeezerStreamResolver.CACHE_KEY_PREFIX] cache key so Deezer bytes
-     * never mix with other sources' spans in the Media3 caches; the
-     * decrypting data source (see createResolvedUpstreamDataSourceFactory)
-     * keys off the same prefix to derive the Blowfish song key.
-     */
-    private fun resolveDeezerLosslessDataSpec(
-        dataSpec: DataSpec,
-        mediaId: String,
-        previousFormat: FormatEntity?,
-    ): DataSpec? {
-        if (mediaId.startsWith(DeezerStreamResolver.CACHE_KEY_PREFIX)) return dataSpec
-        if (mediaId.startsWith(MonochromeStreamResolver.CACHE_KEY_PREFIX)) return null
-        if (mediaId.startsWith(QobuzStreamResolver.CACHE_KEY_PREFIX)) return null
-        if (mediaId.startsWith(TidalStreamResolver.CACHE_KEY_PREFIX)) return null
-        if (mediaId.startsWith(InternetArchiveStreamResolver.CACHE_KEY_PREFIX)) return null
-        if (dataSpec.uri.shouldBypassYouTubeResolver()) return null
-        val song =
-            runBlocking(Dispatchers.IO) {
-                database.getSongByIdBlocking(mediaId)
-            } ?: return null
-        if (song.song.isLocal || song.song.isMusicVideo) return null
-        val playbackData =
-            runBlocking(Dispatchers.IO) {
-                // Deezer resolution is a 4-call chain (bootstrap, search,
-                // track token, get_url), so it gets a wider window than
-                // the single-call sources.
-                withTimeoutOrNull(25_000L) {
-                    val config =
-                        DeezerStreamResolver.configFromContext(this@MusicService)
-                            ?: return@withTimeoutOrNull null
-                    DeezerStreamResolver
-                        .resolve(
-                            videoId = mediaId,
-                            audioQuality = audioQuality,
-                            title = song.song.title,
-                            artist = song.artists.firstOrNull()?.name,
-                            config = config,
-                        ).getOrNull()
-                }
-            } ?: return null
-        if (!isLosslessMimeType(playbackData.format.mimeType)) return null
-
-        val format = playbackData.format
-        database.query {
-            upsert(
-                FormatEntity(
-                    id = mediaId,
-                    itag = format.itag,
-                    mimeType = format.mimeType.substringBefore(";"),
-                    codecs =
-                        format.mimeType
-                            .substringAfter("codecs=", "")
-                            .removeSurrounding("\"")
-                            .substringBefore("\"")
-                            .ifBlank { format.mimeType.substringAfter("/").substringBefore(";") },
-                    bitrate = format.bitrate,
-                    sampleRate = format.audioSampleRate,
-                    contentLength = format.contentLength ?: 0L,
-                    loudnessDb = previousFormat?.loudnessDb,
-                    perceptualLoudnessDb = previousFormat?.perceptualLoudnessDb,
-                    playbackUrl = null,
-                ),
-            )
-        }
-        format.contentLength?.takeIf { it > 0L }?.let { contentLengthCache[mediaId] = it }
-        Timber.tag("DeezerLossless").d(
-            "Using lossless stream for %s: %s, bitrate=%s",
-            mediaId,
-            format.mimeType,
-            format.bitrate,
-        )
-
-        return dataSpec
-            .buildUpon()
-            .setUri(playbackData.streamUrl.toUri())
-            .setKey(DeezerStreamResolver.cacheKeyFor(mediaId))
-            .build()
-    }
-
     private val losslessMimeTypes =
         setOf("audio/flac", "audio/wav", "audio/x-wav", "audio/aiff", "audio/x-aiff")
 
@@ -8818,8 +8714,8 @@ class MusicService :
      * plays take the lossless path in [resolvePlaybackDataSpec].
      *
      * Sources are probed in [LOSSLESS_SOURCE_ORDER] — Monochrome, Qobuz
-     * (only when signed in), Tidal (only when linked), Deezer (only when
-     * signed in), then the Internet Archive — and only a confirmed
+     * (only when signed in), Tidal (only when linked), then the Internet
+     * Archive — and only a confirmed
      * lossless match changes anything: the song id is added to
      * [dev.yeshua.player.constants.LosslessUpgradedSongIdsKey] and the
      * current item is reloaded at the same position so the data source
@@ -8854,11 +8750,6 @@ class MusicService :
                         artist = song.artists.firstOrNull()?.name,
                     ) ||
                     probeTidalLossless(
-                        mediaId = mediaId,
-                        title = song.song.title,
-                        artist = song.artists.firstOrNull()?.name,
-                    ) ||
-                    probeDeezerLossless(
                         mediaId = mediaId,
                         title = song.song.title,
                         artist = song.artists.firstOrNull()?.name,
@@ -8923,9 +8814,6 @@ class MusicService :
 
                     LOSSLESS_SOURCE_TIDAL ->
                         probeTidalLossless(mediaId = mediaId, title = title, artist = artist)
-
-                    LOSSLESS_SOURCE_DEEZER ->
-                        probeDeezerLossless(mediaId = mediaId, title = title, artist = artist)
 
                     else ->
                         probeArchiveLossless(mediaId = mediaId, title = title, artist = artist)
@@ -9064,24 +8952,6 @@ class MusicService :
                     audioQuality = audioQuality,
                     title = title,
                     artist = artist,
-                ).getOrNull() ?: return false
-        return isLosslessMimeType(playbackData.format.mimeType)
-    }
-
-    private suspend fun probeDeezerLossless(
-        mediaId: String,
-        title: String,
-        artist: String?,
-    ): Boolean {
-        val config = DeezerStreamResolver.configFromContext(this) ?: return false
-        val playbackData =
-            DeezerStreamResolver
-                .resolve(
-                    videoId = mediaId,
-                    audioQuality = audioQuality,
-                    title = title,
-                    artist = artist,
-                    config = config,
                 ).getOrNull() ?: return false
         return isLosslessMimeType(playbackData.format.mimeType)
     }

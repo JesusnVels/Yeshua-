@@ -64,6 +64,7 @@ import dev.yeshua.player.constants.NavidromeUsernameKey
 import dev.yeshua.player.constants.PlayerStreamClient
 import dev.yeshua.player.constants.PlayerStreamClientKey
 import dev.yeshua.player.constants.QobuzAuthTokenKey
+import dev.yeshua.player.constants.QobuzCookiesKey
 import dev.yeshua.player.constants.QobuzDisplayNameKey
 import dev.yeshua.player.constants.QobuzEmailKey
 import dev.yeshua.player.constants.QobuzSubscriptionLabelKey
@@ -100,6 +101,8 @@ fun StreamSourcesSettings(navController: NavController) {
         rememberPreference(NavidromePasswordKey, defaultValue = "")
     val (qobuzAuthToken, onQobuzAuthTokenChange) =
         rememberPreference(QobuzAuthTokenKey, defaultValue = "")
+    val (qobuzCookies, onQobuzCookiesChange) =
+        rememberPreference(QobuzCookiesKey, defaultValue = "")
     val (qobuzEmail, onQobuzEmailChange) =
         rememberPreference(QobuzEmailKey, defaultValue = "")
     val (qobuzDisplayName, onQobuzDisplayNameChange) =
@@ -360,6 +363,7 @@ fun StreamSourcesSettings(navController: NavController) {
                             description = qobuzEmail,
                             onClick = {
                                 onQobuzAuthTokenChange("")
+                                onQobuzCookiesChange("")
                                 onQobuzDisplayNameChange("")
                                 onQobuzSubscriptionLabelChange("")
                             },
@@ -369,8 +373,6 @@ fun StreamSourcesSettings(navController: NavController) {
             }
 
             TidalAuthSection()
-
-            DeezerAuthSection()
         }
     }
 
@@ -423,6 +425,7 @@ fun StreamSourcesSettings(navController: NavController) {
             onTokenCaptured = { account ->
                 showQobuzWebLogin = false
                 onQobuzAuthTokenChange(account.userAuthToken)
+                onQobuzCookiesChange(account.cookies.orEmpty())
                 account.email?.let { onQobuzEmailChange(it) }
                 account.displayName?.let { onQobuzDisplayNameChange(it) }
                 onQobuzSubscriptionLabelChange(account.subscriptionLabel.orEmpty())

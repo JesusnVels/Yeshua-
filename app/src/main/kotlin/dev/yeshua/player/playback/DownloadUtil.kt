@@ -56,7 +56,6 @@ import dev.yeshua.player.di.DownloadCache
 import dev.yeshua.player.di.PlayerCache
 import moe.rukamori.archivetune.innertube.YouTube
 import dev.yeshua.player.utils.AuthScopedCacheValue
-import dev.yeshua.player.utils.DeezerStreamResolver
 import dev.yeshua.player.utils.NavidromeStreamResolver
 import dev.yeshua.player.utils.NewPipeStreamResolver
 import dev.yeshua.player.utils.DownloadedArtwork
@@ -163,18 +162,9 @@ class DownloadUtil
 
         private val dataSourceFactory =
             ResolvingDataSource.Factory(
-                // Deezer downloads arrive Blowfish-encrypted; the wrapper
-                // decrypts them on the fly (it finds the song id via
-                // DeezerStreamResolver's URL registry because download
-                // specs keep the app media id as their key). Every other
-                // source passes through untouched. The CacheDataSource above
-                // this factory therefore stores decrypted bytes under the
-                // normal media id.
-                DeezerDecryptingDataSource.Factory(
-                    // Eager whole-file prefetch (4nx3b pattern on our OkHttp stack) instead of
-                    // ExoPlayer's throttled read loop: full connection speed, then local serve.
-                    PrefetchDataSource.Factory(context, mediaOkHttpClient),
-                ),
+                // Eager whole-file prefetch (4nx3b pattern on our OkHttp stack) instead of
+                // ExoPlayer's throttled read loop: full connection speed, then local serve.
+                PrefetchDataSource.Factory(context, mediaOkHttpClient),
             ) { dataSpec ->
                 val mediaId = dataSpec.key ?: error("No media id")
                 val lowDataModeActive = context.isLowDataModeActive()
@@ -241,18 +231,12 @@ class DownloadUtil
 
                 val streamUrl = playbackData.streamUrl
 
-                // Deezer URLs must be re-resolved per process so the
-                // decrypting data source can identify them (in-memory
-                // URL -> song id registry); never serve them from the
-                // cross-process URL cache.
-                if (DeezerStreamResolver.songIdForStream(streamUrl) == null) {
-                    songUrlCache[streamCacheKey] =
-                        AuthScopedCacheValue(
-                            url = streamUrl,
-                            expiresAtMs = System.currentTimeMillis() + (playbackData.streamExpiresInSeconds * 1000L),
-                            authFingerprint = playbackData.authFingerprint,
-                        )
-                }
+                songUrlCache[streamCacheKey] =
+                    AuthScopedCacheValue(
+                        url = streamUrl,
+                        expiresAtMs = System.currentTimeMillis() + (playbackData.streamExpiresInSeconds * 1000L),
+                        authFingerprint = playbackData.authFingerprint,
+                    )
                 dataSpec.withUri(streamUrl.toUri())
             }
 

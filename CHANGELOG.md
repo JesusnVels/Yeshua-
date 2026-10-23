@@ -3,6 +3,52 @@
 All notable changes to Yeshua, newest first. Each entry matches one
 pushed update so the GitHub history reads cleanly.
 
+## 2026-10-23 — Remove Deezer
+- **Removed the Deezer source entirely**: the stream resolver,
+  the Blowfish crypto and decrypting data source, and the arl
+  sign-in section are gone, along with the Deezer settings
+  section, its preference keys, its entry in the player's
+  source chooser, and its slots in the lossless-upgrade order
+  and the download chain. Playback and download factories no
+  longer wrap streams in the (now deleted) decrypting layer.
+  Remaining lossless order: Monochrome, Qobuz, Tidal, Archive.
+  Songs that were pinned to Deezer simply fall back to the
+  remaining sources. This also removes the component behind
+  the error-2000 playback crash for good.
+
+## 2026-10-23 — Fix playback "Source error" crash (error 2000)
+- **Fixed the crash that killed playback with a generic source
+  error**: when a stream's connection failed while opening (a
+  rejected or dropped request), the Deezer decrypting data
+  source — which wraps every playback stream, Deezer or not —
+  still announced "transfer ended" on close even though the
+  transfer had never started. Media3's bandwidth meter then
+  read its transfer state from an empty slot and crashed,
+  masking the real (ordinary, retryable) connection error
+  behind a fatal NullPointerException. The data source now
+  only ends transfers that actually started, so a failed open
+  surfaces as the normal playback error it is.
+
+## 2026-10-22 — Qobuz sign-in fix + stats backup
+- **Fixed Qobuz web sign-in never completing**: the player moved
+  its session — it now stores it in localStorage under
+  `localuser` with the token in a field named `token`, while the
+  sign-in dialog only looked for the old `user_auth_token`, so a
+  successful login captured nothing. The dialog now reads
+  `localuser` first (older storage formats and cookies remain as
+  fallbacks), and also grabs the play.qobuz.com / qobuz.com
+  session cookies from the WebView. The cookies are stored with
+  the token (new `qobuzCookies` preference, cleared on sign-out)
+  and sent with Qobuz API validation and stream requests.
+- **New: stats backup & restore** (Stats screen, backup icon
+  next to the Tempo import button). Back up saves your plays and
+  play counts — plus the song info needed to relink them — to a
+  small zip file. Restore brings just the stats back on any
+  install: plays already in the database are skipped (matched
+  by song + timestamp), and play counts are only ever raised to
+  the backup's value, never lowered or double-counted. The rest
+  of the library is untouched.
+
 ## 2026-10-22 — Fix Tempo import foreground-service crash
 - **Fixed imports crashing the moment they start**: the import
   worker promotes itself to a dataSync foreground service, but

@@ -229,6 +229,7 @@ internal object QobuzStreamResolver {
         title: String?,
         artist: String?,
         authToken: String?,
+        cookies: String? = null,
     ): Result<YTPlayerUtils.PlaybackData> =
         runCatching {
             val token = authToken?.trim()?.takeIf { it.isNotBlank() }
@@ -248,6 +249,7 @@ internal object QobuzStreamResolver {
                         title = queryTitle,
                         artist = artist?.trim()?.takeIf { it.isNotBlank() },
                         authToken = token,
+                        cookies = cookies,
                     )
                 }
             }
@@ -259,6 +261,7 @@ internal object QobuzStreamResolver {
         title: String,
         artist: String?,
         authToken: String,
+        cookies: String? = null,
     ): YTPlayerUtils.PlaybackData {
         val query = listOfNotNull(title, artist).joinToString(" ").trim()
         val searchText =
@@ -266,6 +269,7 @@ internal object QobuzStreamResolver {
                 endpoint = "catalog/search",
                 params = mapOf("query" to query, "limit" to SEARCH_LIMIT.toString()),
                 authToken = authToken,
+                cookies = cookies,
             )
         val search =
             runCatching { json.decodeFromString<QobuzCatalogSearchResponse>(searchText) }
@@ -296,7 +300,7 @@ internal object QobuzStreamResolver {
         for (formatId in formatIds) {
             val file =
                 try {
-                    getFileUrl(trackId = trackId, formatId = formatId, authToken = authToken)
+                    getFileUrl(trackId = trackId, formatId = formatId, authToken = authToken, cookies = cookies)
                 } catch (cancellation: CancellationException) {
                     throw cancellation
                 } catch (e: Exception) {
@@ -363,6 +367,7 @@ internal object QobuzStreamResolver {
         trackId: Long,
         formatId: Int,
         authToken: String,
+        cookies: String? = null,
     ): QobuzFileUrlResponse {
         var lastError: Throwable? = null
         for (secret in candidateSecrets()) {
@@ -389,6 +394,7 @@ internal object QobuzStreamResolver {
                                 "request_sig" to signature,
                             ),
                         authToken = authToken,
+                        cookies = cookies,
                     )
                 workingSecret = secret
                 return runCatching { json.decodeFromString<QobuzFileUrlResponse>(text) }
@@ -472,7 +478,10 @@ internal object QobuzStreamResolver {
      * stored token still works: a one-result catalog search. Returns
      * false on any failure (expired token, rotated keys, no network).
      */
-    suspend fun validateToken(authToken: String): Boolean {
+    suspend fun validateToken(
+        authToken: String,
+        cookies: String? = null,
+    ): Boolean {
         val token = authToken.trim().takeIf { it.isNotBlank() } ?: return false
         return runCatching {
             withContext(Dispatchers.IO) {
@@ -481,6 +490,7 @@ internal object QobuzStreamResolver {
                         endpoint = "catalog/search",
                         params = mapOf("query" to "a", "limit" to "1"),
                         authToken = token,
+                        cookies = cookies,
                     )
                 }
             }
@@ -502,6 +512,7 @@ internal object QobuzStreamResolver {
         endpoint: String,
         params: Map<String, String>,
         authToken: String?,
+        cookies: String? = null,
     ): String {
         val response: HttpResponse =
             try {
@@ -509,6 +520,9 @@ internal object QobuzStreamResolver {
                     header("X-App-Id", effectiveAppId())
                     if (!authToken.isNullOrBlank()) {
                         header("X-User-Auth-Token", authToken)
+                    }
+                    if (!cookies.isNullOrBlank()) {
+                        header("Cookie", cookies)
                     }
                     params.forEach { (key, value) -> parameter(key, value) }
                 }

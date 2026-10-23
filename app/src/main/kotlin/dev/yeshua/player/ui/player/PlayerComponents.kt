@@ -136,8 +136,6 @@ import dev.yeshua.player.LocalPlayerConnection
 import dev.yeshua.player.R
 import dev.yeshua.player.constants.AudioQuality
 import dev.yeshua.player.constants.AudioQualityKey
-import dev.yeshua.player.constants.DeezerArlKey
-import dev.yeshua.player.constants.DeezerEnabledKey
 import dev.yeshua.player.constants.EnableHapticFeedbackKey
 import dev.yeshua.player.constants.LosslessUpgradeSourceKey
 import dev.yeshua.player.constants.QobuzAuthTokenKey
@@ -164,7 +162,6 @@ import dev.yeshua.player.ui.theme.PlayerSliderColors
 import dev.yeshua.player.ui.utils.ShowMediaInfo
 import dev.yeshua.player.ui.utils.highRes
 import dev.yeshua.player.utils.LOSSLESS_SOURCE_ARCHIVE
-import dev.yeshua.player.utils.LOSSLESS_SOURCE_DEEZER
 import dev.yeshua.player.utils.LOSSLESS_SOURCE_MONOCHROME
 import dev.yeshua.player.utils.LOSSLESS_SOURCE_QOBUZ
 import dev.yeshua.player.utils.LOSSLESS_SOURCE_TIDAL
@@ -3155,7 +3152,7 @@ private fun V8QualityChip(
  *   MusicService (previously a quality change only affected future songs,
  *   and in-memory URL reuse could keep even those on the old rendition).
  * - Lossless sources section: every lossless server. Account sources
- *   (Qobuz/Tidal/Deezer) are enabled only when their credential is
+ *   (Qobuz/Tidal) are enabled only when their credential is
  *   stored; Monochrome and the Internet Archive always are. Picking one
  *   resolves the current song from that source now and pins it as the
  *   song's preferred source for future plays.
@@ -3174,8 +3171,6 @@ private fun QualitySourceChooserDialog(
         rememberEnumPreference(AudioQualityKey, defaultValue = AudioQuality.AUTO)
     val (qobuzAuthToken) = rememberPreference(QobuzAuthTokenKey, defaultValue = "")
     val (tidalAccessToken) = rememberPreference(TidalAccessTokenKey, defaultValue = "")
-    val (deezerArl) = rememberPreference(DeezerArlKey, defaultValue = "")
-    val (deezerEnabled) = rememberPreference(DeezerEnabledKey, defaultValue = false)
     val (losslessUpgradeSourcesRaw) =
         rememberPreference(LosslessUpgradeSourceKey, defaultValue = "")
     val pinnedSource =
@@ -3202,11 +3197,6 @@ private fun QualitySourceChooserDialog(
                 id = LOSSLESS_SOURCE_TIDAL,
                 label = stringResource(R.string.tidal_source),
                 available = tidalAccessToken.isNotBlank(),
-            ),
-            LosslessSourceChoice(
-                id = LOSSLESS_SOURCE_DEEZER,
-                label = stringResource(R.string.deezer_source),
-                available = deezerEnabled && deezerArl.isNotBlank(),
             ),
             LosslessSourceChoice(
                 id = LOSSLESS_SOURCE_ARCHIVE,

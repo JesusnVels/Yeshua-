@@ -3,6 +3,17 @@
 All notable changes to Yeshua, newest first. Each entry matches one
 pushed update so the GitHub history reads cleanly.
 
+## 2026-10-23 — Fix duplicate strings build failure
+- **Fixed the resource merger failing the build** ("Duplicate
+  resources" between strings.xml and yeshua_strings.xml): the
+  stats update's new strings were delivered inside the wrong
+  file — a full copy of yeshua_strings.xml under the name
+  strings.xml — so every string existed twice. strings.xml is
+  restored to its exact previous content (the upstream string
+  set, which shares no names with yeshua_strings.xml), and the
+  eight stats_backup strings now live in yeshua_strings.xml
+  where they belong.
+
 ## 2026-10-23 — Remove Deezer
 - **Removed the Deezer source entirely**: the stream resolver,
   the Blowfish crypto and decrypting data source, and the arl

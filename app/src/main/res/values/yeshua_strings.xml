@@ -1034,4 +1034,12 @@
     <string name="tempo_import_drive_not_configured">Google sign-in is not configured in this build. Use a backup file instead.</string>
 
     <string name="tempo_import_drive_already_imported">This backup was already imported — it has not changed since, so there is nothing new to import.</string>
+    <string name="stats_backup_title">Stats backup</string>
+    <string name="stats_backup_description">Save your listening history and play counts to a file, or restore them on a fresh install. Restoring never duplicates plays you already have.</string>
+    <string name="stats_backup_export">Back up stats</string>
+    <string name="stats_backup_restore">Restore stats backup</string>
+    <string name="stats_backup_working">Working…</string>
+    <string name="stats_backup_export_done">Backup saved: %1$d plays</string>
+    <string name="stats_backup_restore_done">Restored %1$d plays (%2$d already there, skipped)</string>
+    <string name="stats_backup_error">Stats backup failed. The file may be damaged or not a Yeshua stats backup.</string>
 </resources>

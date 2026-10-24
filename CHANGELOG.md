@@ -3,6 +3,13 @@
 All notable changes to Yeshua, newest first. Each entry matches one
 pushed update so the GitHub history reads cleanly.
 
+## 2026-10-23 — Fix StatsBackup compile error
+- **Kotlin compile fix:** the play-count restore in StatsBackup
+  built its SQL bind arguments with a mixed-type `arrayOf(...)`
+  (Int/String), which Kotlin rejects because the reified array
+  type would be an intersection type. The array is now declared
+  explicitly as `arrayOf<Any>(...)`. One line; no behavior change.
+
 ## 2026-10-23 — Fix duplicate strings build failure
 - **Fixed the resource merger failing the build** ("Duplicate
   resources" between strings.xml and yeshua_strings.xml): the

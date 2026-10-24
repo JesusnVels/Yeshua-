@@ -316,7 +316,7 @@ object StatsBackup {
                             // with the rest of the chunk).
                             database.openHelper.writableDatabase.execSQL(
                                 "UPDATE playCount SET count = ? WHERE song = ? AND year = ? AND month = ?",
-                                arrayOf(
+                                arrayOf<Any>(
                                     playCount.count,
                                     playCount.songId,
                                     playCount.year,

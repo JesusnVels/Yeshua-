@@ -103,6 +103,32 @@ class DownloadUtil
         )
         private val downloadScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         private val songUrlCache = ConcurrentHashMap<String, AuthScopedCacheValue>()
+        private val maxSongUrlCacheEntries = 1_000
+
+        /** Writes a resolved download URL and keeps [songUrlCache] bounded. */
+        private fun putSongUrlCache(
+            key: String,
+            value: AuthScopedCacheValue,
+        ) {
+            songUrlCache[key] = value
+            trimSongUrlCache()
+        }
+
+        /**
+         * Bounds [songUrlCache]: entries are expiry-checked on every read,
+         * so dropping them is always safe — expired entries go first, then
+         * the ones closest to expiring. Mirrors the eviction YTPlayerUtils
+         * applies to its playback-data cache.
+         */
+        private fun trimSongUrlCache() {
+            if (songUrlCache.size <= maxSongUrlCacheEntries) return
+            val now = System.currentTimeMillis()
+            songUrlCache.entries.removeIf { (_, cached) -> cached.expiresAtMs <= now }
+            while (songUrlCache.size > maxSongUrlCacheEntries) {
+                val earliestExpiring = songUrlCache.entries.minByOrNull { it.value.expiresAtMs } ?: break
+                songUrlCache.remove(earliestExpiring.key, earliestExpiring.value)
+            }
+        }
         private val downloadAttempts = ConcurrentHashMap<String, Int>()
         private val autoRetriedSongIds = Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
         private val sessionFailedSongIds = Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
@@ -231,12 +257,14 @@ class DownloadUtil
 
                 val streamUrl = playbackData.streamUrl
 
-                songUrlCache[streamCacheKey] =
+                putSongUrlCache(
+                    streamCacheKey,
                     AuthScopedCacheValue(
                         url = streamUrl,
                         expiresAtMs = System.currentTimeMillis() + (playbackData.streamExpiresInSeconds * 1000L),
                         authFingerprint = playbackData.authFingerprint,
-                    )
+                    ),
+                )
                 dataSpec.withUri(streamUrl.toUri())
             }
 

@@ -489,6 +489,33 @@ class MusicService :
     fun playbackSourceFor(songId: String): String? = resolvedSourceBySongId[songId]
 
     private val playbackUrlCache = ConcurrentHashMap<String, AuthScopedCacheValue>()
+    private val maxPlaybackUrlCacheEntries = 1_000
+
+    /** Writes a resolved stream URL and keeps [playbackUrlCache] bounded. */
+    private fun putPlaybackUrlCache(
+        mediaId: String,
+        value: AuthScopedCacheValue,
+    ) {
+        playbackUrlCache[mediaId] = value
+        trimPlaybackUrlCache()
+    }
+
+    /**
+     * Bounds [playbackUrlCache]: entries are expiry-checked on every read,
+     * so dropping them is always safe — expired entries go first, then the
+     * ones closest to expiring. Mirrors the eviction YTPlayerUtils applies
+     * to its playback-data cache.
+     */
+    private fun trimPlaybackUrlCache() {
+        if (playbackUrlCache.size <= maxPlaybackUrlCacheEntries) return
+        val now = System.currentTimeMillis()
+        playbackUrlCache.entries.removeIf { (_, cached) -> cached.expiresAtMs <= now }
+        while (playbackUrlCache.size > maxPlaybackUrlCacheEntries) {
+            val earliestExpiring = playbackUrlCache.entries.minByOrNull { it.value.expiresAtMs } ?: break
+            playbackUrlCache.remove(earliestExpiring.key, earliestExpiring.value)
+        }
+    }
+
     private var nextMediaItemPrefetchJob: Job? = null
     private val remotePlaybackTrackingUrlCache = ConcurrentHashMap<String, String>()
     private val contentLengthCache = ConcurrentHashMap<String, Long>()
@@ -7134,7 +7161,8 @@ class MusicService :
                 }.getOrThrow()
             if (lowData) return
             persistResolvedPlaybackFormat(mediaId, playbackData)
-            playbackUrlCache[mediaId] =
+            putPlaybackUrlCache(
+                mediaId,
                 AuthScopedCacheValue(
                     url = playbackData.streamUrl,
                     expiresAtMs =
@@ -7143,7 +7171,8 @@ class MusicService :
                     authFingerprint = playbackData.authFingerprint,
                     audioQuality = audioQuality,
                     sourceKey = null,
-                )
+                ),
+            )
             streamUrl = playbackData.streamUrl
             contentLength = playbackData.format.contentLength
         }
@@ -7413,14 +7442,16 @@ class MusicService :
                 }.getOrThrow()
             currentCoroutineContext().ensureActive()
             persistResolvedPlaybackFormat(mediaId, playbackData)
-            playbackUrlCache[mediaId] =
+            putPlaybackUrlCache(
+                mediaId,
                 AuthScopedCacheValue(
                     url = playbackData.streamUrl,
                     expiresAtMs = System.currentTimeMillis() + (playbackData.streamExpiresInSeconds * 1000L),
                     authFingerprint = playbackData.authFingerprint,
                     audioQuality = audioQuality,
                     sourceKey = null,
-                )
+                ),
+            )
         } catch (cancellation: CancellationException) {
             throw cancellation
         } catch (throwable: Throwable) {
@@ -8346,14 +8377,16 @@ class MusicService :
         val trackingExpiryMs = System.currentTimeMillis() + (nonNullPlayback.streamExpiresInSeconds * 1000L)
 
         if (!lowDataModeActive) {
-            playbackUrlCache[mediaId] =
+            putPlaybackUrlCache(
+                mediaId,
                 AuthScopedCacheValue(
                     url = streamUrl,
                     expiresAtMs = trackingExpiryMs,
                     authFingerprint = nonNullPlayback.authFingerprint,
                     audioQuality = effectiveAudioQuality,
                     sourceKey = null,
-                )
+                ),
+            )
         }
         resolvedSourceBySongId[mediaId] = PLAYBACK_SOURCE_YOUTUBE
         forceFreshResolutionSongIds.remove(mediaId)

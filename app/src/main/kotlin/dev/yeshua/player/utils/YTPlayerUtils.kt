@@ -12,6 +12,8 @@ import androidx.media3.common.PlaybackException
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import dev.yeshua.player.constants.AudioQuality
@@ -764,46 +766,62 @@ object YTPlayerUtils {
      * then Invidious (both resolve by video id), then the Internet Archive
      * (matched by title/artist). Returns null when every source misses so
      * the caller can surface the original InnerTube failure unchanged.
+     *
+     * Piped keeps strict priority — its result is awaited first and wins
+     * whenever it succeeds — but the Invidious attempt is started at the
+     * same time, so when Piped misses, Invidious is already in flight
+     * instead of only beginning then. This path only runs after the whole
+     * InnerTube client chain has failed, so the serial wait here was pure
+     * added latency on an already-degraded play. Source order and failure
+     * semantics are unchanged.
      */
     private suspend fun resolveNoLoginFallbacks(
         videoId: String,
         audioQuality: AudioQuality,
         songTitle: String?,
         songArtist: String?,
-    ): PlaybackData? {
-        val pipedResult = PipedStreamResolver.resolve(videoId, audioQuality)
-        if (pipedResult.isSuccess) {
-            Timber.tag(logTag).i("No-login fallback: Piped resolved %s after InnerTube failure", videoId)
-            return pipedResult.getOrThrow()
-        }
-        pipedResult.exceptionOrNull()?.let { error ->
-            if (error is CancellationException) throw error
-            Timber.tag(logTag).w(error, "No-login fallback: Piped failed for %s, trying Invidious", videoId)
-        }
+    ): PlaybackData? =
+        coroutineScope {
+            val pipedDeferred = async { PipedStreamResolver.resolve(videoId, audioQuality) }
+            val invidiousDeferred = async { InvidiousStreamResolver.resolve(videoId, audioQuality) }
 
-        val invidiousResult = InvidiousStreamResolver.resolve(videoId, audioQuality)
-        if (invidiousResult.isSuccess) {
-            Timber.tag(logTag).i("No-login fallback: Invidious resolved %s after InnerTube failure", videoId)
-            return invidiousResult.getOrThrow()
-        }
-        invidiousResult.exceptionOrNull()?.let { error ->
-            if (error is CancellationException) throw error
-            Timber.tag(logTag).w(error, "No-login fallback: Invidious failed for %s, trying Internet Archive", videoId)
-        }
+            val pipedResult = pipedDeferred.await()
+            if (pipedResult.isSuccess) {
+                invidiousDeferred.cancel()
+                Timber.tag(logTag).i("No-login fallback: Piped resolved %s after InnerTube failure", videoId)
+                return@coroutineScope pipedResult.getOrThrow()
+            }
+            pipedResult.exceptionOrNull()?.let { error ->
+                if (error is CancellationException) {
+                    invidiousDeferred.cancel()
+                    throw error
+                }
+                Timber.tag(logTag).w(error, "No-login fallback: Piped failed for %s, trying Invidious", videoId)
+            }
 
-        val archiveResult =
-            InternetArchiveStreamResolver.resolve(videoId, audioQuality, songTitle, songArtist)
-        if (archiveResult.isSuccess) {
-            Timber.tag(logTag).i("No-login fallback: Internet Archive resolved %s after InnerTube failure", videoId)
-            return archiveResult.getOrThrow()
-        }
-        archiveResult.exceptionOrNull()?.let { error ->
-            if (error is CancellationException) throw error
-            Timber.tag(logTag).w(error, "No-login fallback: Internet Archive failed for %s", videoId)
-        }
+            val invidiousResult = invidiousDeferred.await()
+            if (invidiousResult.isSuccess) {
+                Timber.tag(logTag).i("No-login fallback: Invidious resolved %s after InnerTube failure", videoId)
+                return@coroutineScope invidiousResult.getOrThrow()
+            }
+            invidiousResult.exceptionOrNull()?.let { error ->
+                if (error is CancellationException) throw error
+                Timber.tag(logTag).w(error, "No-login fallback: Invidious failed for %s, trying Internet Archive", videoId)
+            }
 
-        return null
-    }
+            val archiveResult =
+                InternetArchiveStreamResolver.resolve(videoId, audioQuality, songTitle, songArtist)
+            if (archiveResult.isSuccess) {
+                Timber.tag(logTag).i("No-login fallback: Internet Archive resolved %s after InnerTube failure", videoId)
+                return@coroutineScope archiveResult.getOrThrow()
+            }
+            archiveResult.exceptionOrNull()?.let { error ->
+                if (error is CancellationException) throw error
+                Timber.tag(logTag).w(error, "No-login fallback: Internet Archive failed for %s", videoId)
+            }
+
+            null
+        }
 
     private suspend fun resolvePlaybackData(
         videoId: String,

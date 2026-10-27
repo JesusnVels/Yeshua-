@@ -3,6 +3,21 @@
 All notable changes to Yeshua, newest first. Each entry matches one
 pushed update so the GitHub history reads cleanly.
 
+## 2026-10-27 — Playback speed & cache hygiene
+- **Faster fallback playback start:** when YouTube refuses a song on
+  every InnerTube client, the no-login fallbacks no longer wait in
+  line — the Invidious attempt now starts at the same time as the
+  Piped attempt instead of only after Piped has fully failed. Piped
+  still wins whenever it succeeds (source order unchanged); the
+  change only removes the serial wait on an already-slow path.
+- **Bounded stream-URL caches:** the playback URL cache in
+  MusicService and the download URL cache in DownloadUtil were
+  unbounded and grew by one entry per song forever. Both are now
+  capped at 1,000 entries with expiry-aware eviction (expired
+  entries are dropped first, then the ones closest to expiring).
+  Entries were already expiry-checked on every read, so reuse
+  behavior is unchanged — this only puts a ceiling on memory.
+
 ## 2026-10-23 — Fix StatsBackup compile error
 - **Kotlin compile fix:** the play-count restore in StatsBackup
   built its SQL bind arguments with a mixed-type `arrayOf(...)`

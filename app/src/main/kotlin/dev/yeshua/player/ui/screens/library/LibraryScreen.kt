@@ -336,7 +336,13 @@ fun LibraryScreen(
                     // top bar on scroll down and return with it on scroll up.
                     .offset { IntOffset(0, scrollBehavior.state.heightOffset.roundToInt()) }
                     .windowInsetsPadding(WindowInsets.statusBars)
-                    .padding(top = AppBarHeight),
+                    .padding(top = AppBarHeight)
+                    // Opaque on purpose: every pager page scrolls underneath
+                    // this header block, and the shelves/chips have no
+                    // background of their own — without one, scrolled-under
+                    // page content ghosts through the shelf rows and reads
+                    // as cards drawn on top of the shelves.
+                    .background(MaterialTheme.colorScheme.background),
         ) {
             // Smart shelves ride the header above the filter tabs; only on the
             // main Library page so the Songs/Artists/Albums tabs stay clean.

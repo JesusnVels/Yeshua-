@@ -3,6 +3,17 @@
 All notable changes to Yeshua, newest first. Each entry matches one
 pushed update so the GitHub history reads cleanly.
 
+## 2026-10-27 — Fix library shelves overlap glitch
+- **Library header block is now opaque:** the smart shelves
+  (On repeat / Forgotten / New discoveries) and the filter chips sit
+  in a transparent overlay above the library pages while the page
+  content scrolls underneath them, so a scrolled-up card — the
+  Most Played album spotlight first — showed through the shelf rows
+  and looked drawn on top of them. The overlay block now paints the
+  app background behind the shelves and chips, so content passes
+  behind it cleanly instead of ghosting through. No layout, spacing,
+  or behavior changes anywhere else.
+
 ## 2026-10-27 — Playback speed & cache hygiene
 - **Faster fallback playback start:** when YouTube refuses a song on
   every InnerTube client, the no-login fallbacks no longer wait in
